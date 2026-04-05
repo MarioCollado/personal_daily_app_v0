@@ -162,6 +162,6 @@ export async function getExerciseNames(userId: string): Promise<string[]> {
     .select('name, workouts!inner(user_id)')
     .eq('workouts.user_id', userId)
   if (!data) return []
-  const names = [...new Set(data.map((e) => e.name as string))]
+  const names = Array.from(new Set(data.map((e) => e.name as string)))
   return names.sort()
 }
