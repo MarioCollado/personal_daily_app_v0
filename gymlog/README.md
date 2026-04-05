@@ -1,6 +1,6 @@
-# GymLog 🏋️
+# Daily App 🏋️
 
-> Diario de entrenamiento minimalista. PWA instalable. Next.js + Supabase + TailwindCSS.
+> Diario de rutina diaria minimalista. PWA instalable. Next.js + Supabase + TailwindCSS.
 
 ---
 
