@@ -1,0 +1,96 @@
+'use client'
+import { useState } from 'react'
+import { createClient } from '@/lib/supabase-client'
+import { useRouter } from 'next/navigation'
+import { Dumbbell, Mail, Lock, Loader2 } from 'lucide-react'
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+  const router = useRouter()
+  const supabase = createClient()
+
+  async function handleSubmit() {
+    setLoading(true)
+    setError(null)
+    setMessage(null)
+    try {
+      if (mode === 'login') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
+        router.push('/today')
+        router.refresh()
+      } else {
+        const { error } = await supabase.auth.signUp({ email, password })
+        if (error) throw error
+        setMessage('Revisa tu email para confirmar la cuenta.')
+      }
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-surface-0 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm animate-fade-in">
+        {/* Logo */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-4">
+            <Dumbbell className="w-8 h-8 text-brand-500" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">GymLog</h1>
+          <p className="text-zinc-500 text-sm mt-1">Tu diario de entrenamiento</p>
+        </div>
+
+        {/* Form */}
+        <div className="card p-6 space-y-4">
+          <div className="space-y-3">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="input-field pl-10"
+                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="input-field pl-10"
+                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+          </div>
+
+          {error && <p className="text-red-400 text-sm bg-red-500/10 rounded-lg px-3 py-2">{error}</p>}
+          {message && <p className="text-brand-400 text-sm bg-brand-500/10 rounded-lg px-3 py-2">{message}</p>}
+
+          <button onClick={handleSubmit} disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {mode === 'login' ? 'Entrar' : 'Crear cuenta'}
+          </button>
+        </div>
+
+        <p className="text-center text-sm text-zinc-500 mt-4">
+          {mode === 'login' ? '¿Sin cuenta?' : '¿Ya tienes cuenta?'}{' '}
+          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-brand-400 hover:text-brand-300 transition-colors">
+            {mode === 'login' ? 'Regístrate' : 'Inicia sesión'}
+          </button>
+        </p>
+      </div>
+    </div>
+  )
+}

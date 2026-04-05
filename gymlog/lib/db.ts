@@ -1,0 +1,167 @@
+import { createClient } from './supabase-client'
+import type { Workout, Exercise, Set } from '../types'
+
+// ─── Workouts ────────────────────────────────────────────────
+export async function getTodayWorkout(userId: string): Promise<Workout | null> {
+  const supabase = createClient()
+  const today = new Date().toISOString().split('T')[0]
+  const { data } = await supabase
+    .from('workouts')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('date', today)
+    .single()
+  return data
+}
+
+export async function createWorkout(userId: string, date: string, name?: string): Promise<Workout> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('workouts')
+    .insert({ user_id: userId, date, name: name || null })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateWorkoutName(workoutId: string, name: string) {
+  const supabase = createClient()
+  await supabase.from('workouts').update({ name }).eq('id', workoutId)
+}
+
+export async function getWorkoutHistory(userId: string, limit = 20): Promise<Workout[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('workouts')
+    .select('*')
+    .eq('user_id', userId)
+    .order('date', { ascending: false })
+    .limit(limit)
+  return data || []
+}
+
+export async function duplicateWorkout(sourceWorkoutId: string, userId: string, targetDate: string) {
+  const supabase = createClient()
+  // Create new workout
+  const { data: newWorkout, error: wErr } = await supabase
+    .from('workouts')
+    .insert({ user_id: userId, date: targetDate, name: null })
+    .select().single()
+  if (wErr) throw wErr
+
+  // Copy exercises
+  const { data: exercises } = await supabase
+    .from('exercises')
+    .select('*, sets(*)')
+    .eq('workout_id', sourceWorkoutId)
+
+  for (const ex of (exercises || [])) {
+    const { data: newEx } = await supabase
+      .from('exercises')
+      .insert({ workout_id: newWorkout.id, name: ex.name, muscle_group: ex.muscle_group })
+      .select().single()
+    if (newEx && ex.sets?.length) {
+      await supabase.from('sets').insert(
+        ex.sets.map((s: Set) => ({
+          exercise_id: newEx.id,
+          reps: s.reps,
+          weight: s.weight,
+          rir: s.rir,
+          notes: s.notes,
+        }))
+      )
+    }
+  }
+  return newWorkout
+}
+
+// ─── Exercises ───────────────────────────────────────────────
+export async function getExercisesForWorkout(workoutId: string): Promise<Exercise[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('exercises')
+    .select('*, sets(*)')
+    .eq('workout_id', workoutId)
+    .order('created_at', { ascending: true })
+  return (data || []).map((ex) => ({
+    ...ex,
+    sets: (ex.sets || []).sort((a: Set, b: Set) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    ),
+  }))
+}
+
+export async function addExercise(workoutId: string, name: string, muscleGroup?: string): Promise<Exercise> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('exercises')
+    .insert({ workout_id: workoutId, name, muscle_group: muscleGroup || null })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteExercise(exerciseId: string) {
+  const supabase = createClient()
+  await supabase.from('exercises').delete().eq('id', exerciseId)
+}
+
+// ─── Sets ─────────────────────────────────────────────────────
+export async function addSet(exerciseId: string, reps: number, weight: number, rir?: number, notes?: string): Promise<Set> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('sets')
+    .insert({ exercise_id: exerciseId, reps, weight, rir: rir ?? null, notes: notes || null })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateSet(setId: string, updates: Partial<Pick<Set, 'reps' | 'weight' | 'rir' | 'notes'>>) {
+  const supabase = createClient()
+  await supabase.from('sets').update(updates).eq('id', setId)
+}
+
+export async function deleteSet(setId: string) {
+  const supabase = createClient()
+  await supabase.from('sets').delete().eq('id', setId)
+}
+
+// ─── History per exercise ─────────────────────────────────────
+export async function getExerciseHistory(userId: string, exerciseName: string, limit = 5) {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('exercises')
+    .select('*, sets(*), workouts!inner(date, user_id)')
+    .eq('name', exerciseName)
+    .eq('workouts.user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit * 3) // fetch extra to group
+
+  if (!data) return []
+
+  // Group by workout date
+  const sessionMap = new Map<string, { date: string; sets: Set[] }>()
+  for (const ex of data) {
+    const date = (ex.workouts as any)?.date
+    if (!date) continue
+    if (!sessionMap.has(date)) sessionMap.set(date, { date, sets: [] })
+    sessionMap.get(date)!.sets.push(...(ex.sets || []))
+  }
+  return Array.from(sessionMap.values()).slice(0, limit)
+}
+
+// ─── Autocomplete exercise names ──────────────────────────────
+export async function getExerciseNames(userId: string): Promise<string[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('exercises')
+    .select('name, workouts!inner(user_id)')
+    .eq('workouts.user_id', userId)
+  if (!data) return []
+  const names = [...new Set(data.map((e) => e.name as string))]
+  return names.sort()
+}
