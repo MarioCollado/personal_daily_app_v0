@@ -1,18 +1,17 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter_Tight } from 'next/font/google'
 import './globals.css'
 
-const geistSans = Geist({ variable: '--font-geist', subsets: ['latin'] })
-const geistMono = Geist_Mono({ variable: '--font-mono', subsets: ['latin'] })
+const interTight = Inter_Tight({ variable: '--font-inter-tight', subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GymLog',
+  title: 'Daily App',
   description: 'Tu diario de entrenamiento minimalista',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'GymLog',
+    title: 'Daily App',
   },
   icons: {
     apple: '/icons/apple-touch-icon.png',
@@ -29,7 +28,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="es" className={`${interTight.variable}`}>
       <body className="bg-surface-0 text-white antialiased">
         {children}
       </body>
