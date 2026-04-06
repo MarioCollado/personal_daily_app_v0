@@ -2,11 +2,15 @@ import type { Metadata, Viewport } from 'next'
 import { Inter_Tight } from 'next/font/google'
 import './globals.css'
 
-const interTight = Inter_Tight({ variable: '--font-inter-tight', subsets: ['latin'] })
+const interTight = Inter_Tight({
+  variable: '--font-inter-tight',
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+})
 
 export const metadata: Metadata = {
   title: 'Daily App',
-  description: 'Tu diario de entrenamiento minimalista',
+  description: 'Diario de entrenamiento minimalista',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

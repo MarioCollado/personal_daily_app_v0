@@ -1,7 +1,7 @@
 export interface Workout {
   id: string
   user_id: string
-  date: string        // ISO date 'YYYY-MM-DD'
+  date: string
   name: string | null
   created_at: string
 }
@@ -25,10 +25,26 @@ export interface Set {
   created_at: string
 }
 
-export interface ExerciseHistory {
-  exercise_name: string
-  sessions: {
-    date: string
-    sets: Set[]
-  }[]
+export interface DailyMetrics {
+  id: string
+  user_id: string
+  date: string
+  sleep_hours: number | null
+  energy: number | null
+  stress: number | null
+  motivation: number | null
+  book_title: string | null
+  pages_read: number | null
+  book_total_pages: number | null
+  weather_temp: number | null
+  weather_condition: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface WeatherData {
+  temp: number
+  condition: string
+  icon: string
+  city: string
 }

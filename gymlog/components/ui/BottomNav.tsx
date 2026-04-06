@@ -1,12 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Dumbbell, Clock, BarChart2, User } from 'lucide-react'
+import { LayoutDashboard, Dumbbell, Clock } from 'lucide-react'
 import { clsx } from 'clsx'
 
 const tabs = [
-  { href: '/today',   label: 'Hoy',      Icon: Dumbbell },
-  { href: '/history', label: 'Historial', Icon: Clock },
+  { href: '/dashboard', label: 'Hoy',      Icon: LayoutDashboard },
+  { href: '/today',     label: 'Entreno',  Icon: Dumbbell },
+  { href: '/history',   label: 'Historial', Icon: Clock },
 ]
 
 export default function BottomNav() {
