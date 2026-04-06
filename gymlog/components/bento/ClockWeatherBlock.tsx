@@ -78,7 +78,7 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
   const mins = time.getMinutes().toString().padStart(2, '0')
   const secs = time.getSeconds().toString().padStart(2, '0')
   const dayName = time.toLocaleDateString('es-ES', { weekday: 'long' })
-  const dateStr = time.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  const dateStr = time.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })
 
   const conditionKey = weather ? getConditionKey(weather.condition) : 'clear'
   const WeatherIcon = CONDITION_ICONS[conditionKey] || <Sun className="w-5 h-5 text-amber-400" />
@@ -89,7 +89,9 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
       <div>
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-mono font-bold tracking-tight leading-none">
-            {hours}<span className="text-zinc-600">:</span>{mins}
+            {hours}
+            <span className="text-zinc-600 mx-1">:</span>
+            {mins}
           </span>
           <span className="text-sm font-mono text-zinc-600">{secs}</span>
         </div>

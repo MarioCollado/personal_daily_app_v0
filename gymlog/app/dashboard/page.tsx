@@ -120,18 +120,26 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
+
       {/* Header */}
       <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between">
-          <div>
-            <h1 className="font-bold text-sm tracking-tight">Dashboard</h1>
-            <p className="text-zinc-600 text-[11px] capitalize">
-              {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
-          </div>
-          <button onClick={handleSignOut} className="text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors">
+        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-center relative">
+
+          <p className="font-bold text-sm tracking-tight capitalize">
+            {new Date().toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            })}
+          </p>
+
+          <button
+            onClick={handleSignOut}
+            className="absolute right-4 text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+          >
             <LogOut className="w-4 h-4" />
           </button>
+
         </div>
       </header>
 

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
-import { Dumbbell, Mail, Lock, Loader2 } from 'lucide-react'
+import { Dumbbell, Mail, Lock, Loader2, Rocket } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -22,7 +22,7 @@ export default function LoginPage() {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        router.push('/today')
+        router.push('/dashboard')
         router.refresh()
       } else {
         const { error } = await supabase.auth.signUp({ email, password })
@@ -42,10 +42,10 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-4">
-            <Dumbbell className="w-8 h-8 text-brand-500" />
+            <Rocket className="w-8 h-8 text-brand-500" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">GymLog</h1>
-          <p className="text-zinc-500 text-sm mt-1">Tu diario de entrenamiento</p>
+          <h1 className="text-2xl font-bold tracking-tight">VITAL</h1>
+          <p className="text-zinc-500 text-sm mt-1">Harder, Better, Faster, Stronger</p>
         </div>
 
         {/* Form */}

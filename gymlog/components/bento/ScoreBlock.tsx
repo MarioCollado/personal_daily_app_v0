@@ -65,15 +65,30 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
   return (
     <div className="bento-card flex flex-col h-full">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">Score</span>
+        <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">
+          Score
+        </span>
       </div>
 
-      <div className="flex items-center justify-center gap-3 flex-1">
+      <div className="flex items-center justify-center flex-1">
         {/* Big grade */}
         <div className="relative flex-shrink-0">
-          <svg viewBox="0 0 64 64" className="w-14 h-14">
-            <circle cx="32" cy="32" r="26" fill="none" stroke="#1a1a1a" strokeWidth="6" />
-            <circle cx="32" cy="32" r="26" fill="none" stroke={color} strokeWidth="6"
+          <svg viewBox="0 0 64 64" className="w-20 h-20">
+            <circle
+              cx="32"
+              cy="32"
+              r="26"
+              fill="none"
+              stroke="#1a1a1a"
+              strokeWidth="6"
+            />
+            <circle
+              cx="32"
+              cy="32"
+              r="26"
+              fill="none"
+              stroke={color}
+              strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={`${2 * Math.PI * 26}`}
               strokeDashoffset={`${2 * Math.PI * 26 * (1 - score / 100)}`}
@@ -81,17 +96,13 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
               style={{ transition: 'stroke-dashoffset 0.6s ease' }}
             />
           </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xl font-bold font-mono" style={{ color }}>{grade}</span>
-          </div>
-        </div>
 
-        {/* Number */}
-        <div className="flex items-baseline gap-0.5 flex-shrink-0">
-          <span className="text-2xl font-mono font-bold" style={{ color }}>
-            {score}
-          </span>
-          <span className="text-[10px] text-zinc-700">/100</span>
+          <div className="absolute inset-0 flex items-center justify-center flex-col">
+            <span className="text-2xl font-bold font-mono leading-none" style={{ color }}>
+              {score}
+            </span>
+            <span className="text-[10px] text-zinc-600">/100</span>
+          </div>
         </div>
       </div>
     </div>
