@@ -79,7 +79,7 @@ export default function DashboardPage() {
     }, 600)
   }
 
-  function handleStateChange(field: 'energy' | 'stress' | 'motivation', value: number) {
+  function handleStateChange(field: 'energy' | 'stress' | 'motivation' | 'free_time', value: number) {
     setMetrics(m => m ? { ...m, [field]: value } : { [field]: value } as any)
     saveMetrics({ [field]: value }, [field])
   }
@@ -120,7 +120,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
-
       {/* Header */}
       <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
         <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-center relative">
@@ -144,17 +143,21 @@ export default function DashboardPage() {
       </header>
 
       {/* Bento Grid */}
-      <main className="max-w-lg mx-auto px-3 pt-3 pb-4">
-        <div className="grid grid-cols-2 gap-2.5 auto-rows-auto">
+      <main className="w-full max-w-lg sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-4">
 
-          {/* Row 1: Clock (small) + Sleep (large-ish) */}
-          <div className="col-span-1 row-span-1" style={{ minHeight: '130px' }}>
+        {/* Mobile/Tablet: 2-col grid | Desktop: 4-col grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 auto-rows-auto">
+
+          {/* Clock — 1 col mobile, 1 col desktop */}
+          <div className="col-span-1 min-h-[130px]">
             <ClockWeatherBlock
               cachedTemp={metrics?.weather_temp}
               cachedCondition={metrics?.weather_condition}
             />
           </div>
-          <div className="col-span-1 row-span-2" style={{ minHeight: '280px' }}>
+
+          {/* Sleep — 1 col mobile (row-span-2), 1 col desktop */}
+          <div className="col-span-1 row-span-2 min-h-[280px]">
             <SleepBlock
               value={metrics?.sleep_hours ?? null}
               onChange={handleSleepChange}
@@ -162,24 +165,25 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Row 1 cont: Score under clock */}
-          <div className="col-span-1 row-span-1" style={{ minHeight: '140px' }}>
+          {/* Score — 1 col mobile, 1 col desktop */}
+          <div className="col-span-1 min-h-[140px]">
             <ScoreBlock metrics={metrics} hasWorkout={!!workout} />
           </div>
 
-          {/* Row 2: State (full width) */}
-          <div className="col-span-2" style={{ minHeight: '130px' }}>
+          {/* State — full width mobile, 1 col desktop */}
+          <div className="col-span-2 md:col-span-3 xl:col-span-1 min-h-[160px]">
             <StateBlock
               energy={metrics?.energy ?? null}
               stress={metrics?.stress ?? null}
               motivation={metrics?.motivation ?? null}
+              freeTime={metrics?.free_time ?? null}
               onChange={handleStateChange}
               saving={savingFields.has('energy') || savingFields.has('stress') || savingFields.has('motivation')}
             />
           </div>
 
-          {/* Row 3: Reading + Workout side by side */}
-          <div className="col-span-1" style={{ minHeight: '220px' }}>
+          {/* Reading — 1 col */}
+          <div className="col-span-1 min-h-[220px]">
             <ReadingBlock
               bookTitle={metrics?.book_title ?? null}
               pagesRead={metrics?.pages_read ?? null}
@@ -189,7 +193,9 @@ export default function DashboardPage() {
               saving={savingFields.has('book_title') || savingFields.has('pages_read')}
             />
           </div>
-          <div className="col-span-1" style={{ minHeight: '220px' }}>
+
+          {/* Workout — 1 col */}
+          <div className="col-span-1 min-h-[220px]">
             <WorkoutBlock
               workout={workout}
               exercises={exercises}

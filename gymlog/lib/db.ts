@@ -109,11 +109,11 @@ export async function deleteExercise(exerciseId: string) {
 }
 
 // ─── Sets ─────────────────────────────────────────────────────
-export async function addSet(exerciseId: string, reps: number, weight: number, rir?: number, notes?: string): Promise<Set> {
+export async function addSet(exerciseId: string, reps: number, weight: number, rir?: number, notes?: string, distanceKm?: number, durationSeconds?: number): Promise<Set> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('sets')
-    .insert({ exercise_id: exerciseId, reps, weight, rir: rir ?? null, notes: notes || null })
+    .insert({ exercise_id: exerciseId, reps, weight, rir: rir ?? null, notes: notes || null, distance_km: distanceKm ?? null, duration_seconds: durationSeconds ?? null })
     .select()
     .single()
   if (error) throw error

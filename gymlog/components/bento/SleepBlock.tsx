@@ -9,8 +9,8 @@ interface Props {
   saving?: boolean
 }
 
-const MIN = 3
-const MAX = 12
+const MIN = 1
+const MAX = 14
 const START_DEG = 150
 const TOTAL_DEG = 240
 
@@ -112,7 +112,7 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
     <div className="bento-card flex flex-col h-full">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <Moon className="w-3.5 h-3.5 text-amber-400" />
+          <Moon className="w-3.5 h-3.5 text-blue-400" />
           <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">Sueño</span>
         </div>
         {saving && <span className="text-[10px] text-zinc-600 animate-pulse-dot">guardando</span>}

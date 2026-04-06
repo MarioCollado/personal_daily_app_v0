@@ -15,6 +15,7 @@ export interface Exercise {
   sets?: Set[]
 }
 
+// is_cardio: true = store distance_km + duration_seconds instead of reps/weight
 export interface Set {
   id: string
   exercise_id: string
@@ -22,6 +23,9 @@ export interface Set {
   weight: number
   rir: number | null
   notes: string | null
+  // Cardio fields (nullable for strength sets)
+  distance_km: number | null
+  duration_seconds: number | null
   created_at: string
 }
 
@@ -36,6 +40,7 @@ export interface DailyMetrics {
   book_title: string | null
   pages_read: number | null
   book_total_pages: number | null
+  free_time: number | null   // 1-5: cuánto tiempo libre tuviste hoy
   weather_temp: number | null
   weather_condition: string | null
   created_at: string
@@ -47,4 +52,21 @@ export interface WeatherData {
   condition: string
   icon: string
   city: string
+}
+
+// ─── Recetas (mock, sin backend aún) ─────────────────────────
+export interface RecipeMock {
+  id: string
+  name: string
+  calories: number
+  prepMinutes: number
+  protein: number
+  tags: string[]
+  emoji: string
+}
+
+export interface IngredientMock {
+  name: string
+  amount: string
+  emoji: string
 }
