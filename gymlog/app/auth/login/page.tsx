@@ -25,8 +25,17 @@ export default function LoginPage() {
         router.push('/dashboard')
         router.refresh()
       } else {
-        const { error } = await supabase.auth.signUp({ email, password })
+        const redirectTo = `${window.location.origin}/auth/callback`
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: redirectTo },
+        })
         if (error) throw error
+        // Supabase devuelve identities vacío si el email ya está registrado
+        if (data.user && data.user.identities?.length === 0) {
+          throw new Error('Este email ya tiene una cuenta. Inicia sesión.')
+        }
         setMessage('Revisa tu email para confirmar la cuenta.')
       }
     } catch (e: any) {
