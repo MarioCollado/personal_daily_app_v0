@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
-import { Dumbbell, Mail, Lock, Loader2, Rocket } from 'lucide-react'
+import { Mail, Lock, Loader2, Rocket } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')

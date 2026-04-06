@@ -1,6 +1,7 @@
 'use client'
 import type { DailyMetrics } from '@/types'
 import { clsx } from 'clsx'
+import { Flame } from 'lucide-react'
 
 interface Props {
   metrics: DailyMetrics | null
@@ -64,7 +65,8 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
 
   return (
     <div className="bento-card flex flex-col h-full">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center gap-1.5">
+        <Flame className="w-3.5 h-3.5 text-amber-400" />
         <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">
           Score
         </span>
