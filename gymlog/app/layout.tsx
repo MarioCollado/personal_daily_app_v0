@@ -1,12 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter_Tight } from 'next/font/google'
 import './globals.css'
-
-const interTight = Inter_Tight({
-  variable: '--font-inter-tight',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-})
 
 export const metadata: Metadata = {
   title: 'Daily App',
@@ -32,8 +25,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${interTight.variable}`}>
-      <body className="bg-surface-0 text-white antialiased">
+    <html lang="es">
+      <body className="bg-surface-0 text-white antialiased font-sans">
         {children}
       </body>
     </html>

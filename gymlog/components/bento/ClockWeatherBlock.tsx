@@ -41,7 +41,7 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
   const [time, setTime] = useState(new Date())
   const [weather, setWeather] = useState<WeatherData | null>(
     cachedTemp && cachedCondition
-      ? { temp: cachedTemp, condition: cachedCondition, icon: cachedCondition, city: 'Posada de Llanera' }
+      ? { temp: cachedTemp, condition: cachedCondition, icon: cachedCondition, city: 'Llanera' }
       : null
   )
   const [loadingWeather, setLoadingWeather] = useState(!cachedTemp)
@@ -64,7 +64,7 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
         const temp = Math.round(json.current.temperature_2m)
         const code = json.current.weather_code as number
         const condition = wmoToCondition(code)
-        setWeather({ temp, condition, icon: condition, city: 'Posada de Llanera' })
+        setWeather({ temp, condition, icon: condition, city: 'Llanera' })
       } catch {
         // silent fail
       } finally {

@@ -11,9 +11,9 @@ interface Props {
 }
 
 const METRICS = [
-  { key: 'energy' as const,     label: 'Energía',    Icon: Zap,   color: '#f59e0b' },
-  { key: 'stress' as const,     label: 'Estrés',     Icon: Brain, color: '#ef4444' },
-  { key: 'motivation' as const, label: 'Motivación', Icon: Flame, color: '#22c55e' },
+  { key: 'energy' as const, label: 'Energía', Icon: Zap, color: '#f59e0b' },
+  { key: 'stress' as const, label: 'Estrés', Icon: Brain, color: '#ef4444' },
+  { key: 'motivation' as const, label: 'Motivación', Icon: Flame, color: '#4a5cffff' },
 ]
 
 function DotRow({ value, max = 5, color, onClick }: { value: number | null; max?: number; color: string; onClick: (v: number) => void }) {

@@ -11,31 +11,29 @@ interface Props {
 
 const MIN = 3
 const MAX = 12
-// The track spans 240° (from 150° to 390°, i.e. 150° to 30° going clockwise)
-const START_DEG = 150   // 7 o'clock position (in standard math coords)
-const TOTAL_DEG = 240   // total arc sweep
+const START_DEG = 150
+const TOTAL_DEG = 240
 
 function getSleepColor(h: number | null): string {
   if (h === null) return '#3f3f46'
-  if (h < 5)    return '#ef4444'
-  if (h < 6.5)  return '#f97316'
-  if (h < 7.5)  return '#eab308'
-  if (h <= 9)   return '#22c55e'
+  if (h < 5) return '#ef4444'
+  if (h < 6.5) return '#f97316'
+  if (h < 7.5) return '#eab308'
+  if (h <= 9) return '#22c55e'
   return '#3b82f6'
 }
 
 function getSleepLabel(h: number | null): string {
   if (h === null) return '—'
-  if (h < 5)    return 'Insuficiente'
-  if (h < 6.5)  return 'Poco'
-  if (h < 7.5)  return 'Regular'
-  if (h <= 9)   return 'Óptimo'
-  return 'Largo'
+  if (h < 5) return 'Poco'
+  if (h < 6.5) return 'Bien'
+  if (h < 7.5) return 'Óptimo'
+  if (h <= 9) return 'Mucho'
+  return 'Demasiado'
 }
 
 const CX = 60, CY = 60, R = 46
 const CIRCUMFERENCE = 2 * Math.PI * R
-// What fraction of the full circle is our 240° track
 const TRACK_FRACTION = TOTAL_DEG / 360
 
 function valueToFraction(v: number): number {
@@ -43,8 +41,6 @@ function valueToFraction(v: number): number {
 }
 
 function getThumbPoint(fraction: number) {
-  // START_DEG is where the track begins (clockwise from 3-o'clock = 0°)
-  // SVG rotation: 0° = 3 o'clock, increases clockwise
   const angleDeg = START_DEG + fraction * TOTAL_DEG
   const angleRad = (angleDeg * Math.PI) / 180
   return {
@@ -106,11 +102,11 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
   const rotateOffset = START_DEG  // degrees to rotate the circle
 
   const trackDash = CIRCUMFERENCE * TRACK_FRACTION
-  const trackGap  = CIRCUMFERENCE * (1 - TRACK_FRACTION)
+  const trackGap = CIRCUMFERENCE * (1 - TRACK_FRACTION)
 
   const progressDash = CIRCUMFERENCE * TRACK_FRACTION * fraction
   // gap fills remaining circumference so only the progress segment shows
-  const progressGap  = CIRCUMFERENCE - progressDash
+  const progressGap = CIRCUMFERENCE - progressDash
 
   return (
     <div className="bento-card flex flex-col h-full">

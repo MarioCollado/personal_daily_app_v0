@@ -5,9 +5,9 @@ import { LayoutDashboard, Dumbbell, Clock } from 'lucide-react'
 import { clsx } from 'clsx'
 
 const tabs = [
-  { href: '/dashboard', label: 'Hoy',      Icon: LayoutDashboard },
-  { href: '/today',     label: 'Entreno',  Icon: Dumbbell },
-  { href: '/history',   label: 'Historial', Icon: Clock },
+  { href: '/dashboard', label: 'Hoy', Icon: LayoutDashboard },
+  { href: '/today', label: 'Entreno', Icon: Dumbbell },
+  { href: '/history', label: 'Historial', Icon: Clock },
 ]
 
 export default function BottomNav() {

@@ -50,11 +50,11 @@ function computeScore(m: DailyMetrics | null, hasWorkout: boolean): { score: num
 
   let grade = '—'
   let color = '#3f3f46'
-  if (score >= 90) { grade = 'S'; color = '#f59e0b' }
-  else if (score >= 75) { grade = 'A'; color = '#22c55e' }
-  else if (score >= 60) { grade = 'B'; color = '#3b82f6' }
-  else if (score >= 40) { grade = 'C'; color = '#a855f7' }
-  else if (score > 0) { grade = 'D'; color = '#ef4444' }
+  if (score >= 90) { grade = '10'; color = '#3b82f6' }
+  else if (score >= 75) { grade = '8'; color = '#22c55e' }
+  else if (score >= 60) { grade = '6'; color = '#f59e0b' }
+  else if (score >= 40) { grade = '4'; color = '#a855f7' }
+  else if (score > 0) { grade = '0'; color = '#ef4444' }
 
   return { score, grade, color }
 }
@@ -62,20 +62,13 @@ function computeScore(m: DailyMetrics | null, hasWorkout: boolean): { score: num
 export default function ScoreBlock({ metrics, hasWorkout }: Props) {
   const { score, grade, color } = computeScore(metrics, hasWorkout)
 
-  const pillars = [
-    { label: 'Sueño', done: metrics?.sleep_hours != null },
-    { label: 'Estado', done: metrics?.energy != null },
-    { label: 'Lectura', done: (metrics?.pages_read ?? 0) > 0 },
-    { label: 'Entreno', done: hasWorkout },
-  ]
-
   return (
     <div className="bento-card flex flex-col h-full">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">Score</span>
       </div>
 
-      <div className="flex items-center gap-3 flex-1">
+      <div className="flex items-center justify-center gap-3 flex-1">
         {/* Big grade */}
         <div className="relative flex-shrink-0">
           <svg viewBox="0 0 64 64" className="w-14 h-14">
@@ -93,20 +86,12 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
           </div>
         </div>
 
-        {/* Pillars */}
-        <div className="flex-1 space-y-1.5">
-          {pillars.map(p => (
-            <div key={p.label} className="flex items-center gap-2">
-              <div className={clsx('w-1.5 h-1.5 rounded-full flex-shrink-0', p.done ? 'bg-brand-500' : 'bg-surface-3')} />
-              <span className={clsx('text-[11px]', p.done ? 'text-zinc-300' : 'text-zinc-700')}>{p.label}</span>
-            </div>
-          ))}
-        </div>
-
         {/* Number */}
-        <div className="text-right flex-shrink-0">
-          <span className="text-2xl font-mono font-bold" style={{ color }}>{score}</span>
-          <div className="text-[10px] text-zinc-700">/100</div>
+        <div className="flex items-baseline gap-0.5 flex-shrink-0">
+          <span className="text-2xl font-mono font-bold" style={{ color }}>
+            {score}
+          </span>
+          <span className="text-[10px] text-zinc-700">/100</span>
         </div>
       </div>
     </div>
