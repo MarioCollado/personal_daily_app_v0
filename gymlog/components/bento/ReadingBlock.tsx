@@ -43,7 +43,7 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
   const longPress = useLongPress({ onLongPress: () => onToggleLock?.() })
 
   return (
-    <div className="bento-card flex flex-col h-full relative overflow-hidden" {...longPress}>
+    <div className="bento-card flex flex-col h-full relative overflow-hidden select-none [-webkit-touch-callout:none]" {...longPress}>
       {isLocked && (
         <div className="absolute inset-0 z-20 bg-surface-1/60 backdrop-blur-sm flex flex-col items-center justify-center p-4">
           <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center mb-2">

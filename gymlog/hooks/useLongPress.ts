@@ -28,5 +28,9 @@ export function useLongPress({ onLongPress, ms = 600 }: UseLongPressOptions) {
     onPointerUp: clear,
     onPointerLeave: clear,
     onPointerCancel: clear,
+    onTouchStart: start,
+    onTouchEnd: clear,
+    onTouchMove: clear,
+    onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
   }
 }
