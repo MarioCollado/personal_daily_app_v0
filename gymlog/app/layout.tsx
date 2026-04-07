@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: 'VITAL',
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body className="bg-surface-0 text-white antialiased font-sans">
         {children}
+        <Analytics />
       </body>
     </html>
   )

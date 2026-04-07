@@ -54,7 +54,6 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
   const [localVal, setLocalVal] = useState<number | null>(value)
   const svgRef = useRef<SVGSVGElement>(null)
 
-  // Convert pointer position → value
   const handleInteract = useCallback((clientX: number, clientY: number) => {
     if (!svgRef.current) return
     const rect = svgRef.current.getBoundingClientRect()
@@ -66,20 +65,14 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
     const dx = svgX - CX
     const dy = svgY - CY
 
-    // atan2 gives angle in [-180, 180], 0 = right (3 o'clock)
     let angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI
-    // Normalize to [0, 360)
     if (angleDeg < 0) angleDeg += 360
 
-    // Map angle to fraction along our arc
-    // Arc starts at START_DEG and sweeps TOTAL_DEG clockwise
     let delta = angleDeg - START_DEG
     if (delta < 0) delta += 360
 
-    // Clamp to arc range
     const fraction = Math.min(1, Math.max(0, delta / TOTAL_DEG))
     const raw = MIN + fraction * (MAX - MIN)
-    // Snap to 0.5h steps
     const snapped = Math.round(raw * 2) / 2
     setLocalVal(Math.min(MAX, Math.max(MIN, snapped)))
   }, [])
@@ -94,18 +87,10 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
   const fraction = display !== null ? valueToFraction(display) : 0
   const thumb = display !== null ? getThumbPoint(fraction) : null
 
-  // strokeDasharray trick:
-  // The full circle circumference = 2πR
-  // We draw only TRACK_FRACTION of it (240/360 = 2/3)
-  // We rotate the circle so the track starts at START_DEG
-  // rotateZ offset: SVG 0° = 3 o'clock; we want track start at START_DEG
-  const rotateOffset = START_DEG  // degrees to rotate the circle
-
   const trackDash = CIRCUMFERENCE * TRACK_FRACTION
   const trackGap = CIRCUMFERENCE * (1 - TRACK_FRACTION)
 
   const progressDash = CIRCUMFERENCE * TRACK_FRACTION * fraction
-  // gap fills remaining circumference so only the progress segment shows
   const progressGap = CIRCUMFERENCE - progressDash
 
   return (
@@ -118,7 +103,6 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
         {saving && <span className="absolute right-0 text-[10px] text-zinc-600 animate-pulse-dot">guardando</span>}
       </div>
 
-      {/* SVG Dial */}
       <div className="flex-1 flex items-center justify-center">
         <svg
           ref={svgRef}
@@ -132,7 +116,6 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
           onTouchMove={e => { e.preventDefault(); handleInteract(e.touches[0].clientX, e.touches[0].clientY) }}
           onTouchEnd={commit}
         >
-          {/* Track (grey arc, 240°) */}
           <circle
             cx={CX} cy={CY} r={R}
             fill="none"
@@ -140,10 +123,9 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={`${trackDash} ${trackGap}`}
-            transform={`rotate(${rotateOffset} ${CX} ${CY})`}
+            transform={`rotate(${START_DEG} ${CX} ${CY})`}
           />
 
-          {/* Progress arc — same trick, fraction of track */}
           {display !== null && fraction > 0 && (
             <circle
               cx={CX} cy={CY} r={R}
@@ -152,12 +134,11 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
               strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={`${progressDash} ${progressGap}`}
-              transform={`rotate(${rotateOffset} ${CX} ${CY})`}
+              transform={`rotate(${START_DEG} ${CX} ${CY})`}
               style={{ transition: dragging ? 'none' : 'stroke 0.3s ease, stroke-dasharray 0.15s ease' }}
             />
           )}
 
-          {/* Thumb dot */}
           {thumb && (
             <circle
               cx={thumb.x} cy={thumb.y} r="6"
@@ -167,7 +148,6 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
             />
           )}
 
-          {/* Center: value */}
           <text x="60" y="54" textAnchor="middle" fill="white" fontSize="22" fontWeight="700" fontFamily="monospace">
             {display !== null ? display : '—'}
           </text>
@@ -181,7 +161,6 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
         </svg>
       </div>
 
-      {/* Quick presets */}
       <div className="flex justify-between mt-1 gap-1">
         {[5, 6, 7, 8, 9].map(h => (
           <button

@@ -17,7 +17,6 @@ export default function RestTimer() {
       intervalRef.current = setInterval(() => setRemaining(r => r - 1), 1000)
     } else if (remaining === 0) {
       setRunning(false)
-      // Vibrate on finish
       if ('vibrate' in navigator) navigator.vibrate([200, 100, 200])
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
@@ -32,7 +31,6 @@ export default function RestTimer() {
 
   return (
     <>
-      {/* FAB trigger */}
       <button
         onClick={() => setOpen(true)}
         className={clsx(
@@ -49,7 +47,6 @@ export default function RestTimer() {
         )}
       </button>
 
-      {/* Timer sheet */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="bg-surface-1 border border-surface-border rounded-t-2xl w-full max-w-lg p-6 animate-slide-up" onClick={e => e.stopPropagation()}>
@@ -58,7 +55,6 @@ export default function RestTimer() {
               <button onClick={() => setOpen(false)} className="text-zinc-500 hover:text-white p-1"><X className="w-5 h-5" /></button>
             </div>
 
-            {/* Circle timer */}
             <div className="flex justify-center mb-6">
               <div className="relative w-36 h-36">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
@@ -80,7 +76,6 @@ export default function RestTimer() {
               </div>
             </div>
 
-            {/* Presets */}
             <div className="flex gap-2 mb-4 justify-center">
               {PRESETS.map(s => (
                 <button key={s} onClick={() => setPreset(s)}
@@ -90,7 +85,6 @@ export default function RestTimer() {
               ))}
             </div>
 
-            {/* Controls */}
             <div className="flex gap-3 justify-center">
               <button onClick={reset} className="btn-ghost p-3 rounded-full"><RotateCcw className="w-5 h-5" /></button>
               <button onClick={toggle} className={clsx('px-8 py-3 rounded-full font-semibold text-sm flex items-center gap-2 transition-colors', running ? 'bg-surface-3 text-white' : 'bg-brand-500 text-black')}>

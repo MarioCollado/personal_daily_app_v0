@@ -53,7 +53,6 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
   return (
     <div className={card.bento + ' flex flex-col h-full p-4'}>
 
-      {/* Header CONSISTENTE */}
       <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <Brain className="w-3.5 h-3.5 text-purple-400" />
@@ -69,7 +68,6 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
         )}
       </div>
 
-      {/* Content */}
       <div className="flex flex-col gap-2.5 flex-1 justify-around">
         {METRICS.map(({ key, label, Icon, color }) => {
           const val = values[key]
@@ -77,7 +75,6 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
           return (
             <div key={key} className="flex items-center gap-2 min-w-0">
 
-              {/* Label */}
               <div className="flex items-center gap-1.5 w-20 sm:w-24 flex-shrink-0">
                 <Icon className="w-3 h-3 flex-shrink-0" style={{ color }} />
                 <span className="text-[11px] sm:text-xs text-zinc-500 truncate">
@@ -85,10 +82,8 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
                 </span>
               </div>
 
-              {/* Dots */}
               <DotRow value={val} color={color} max={5} onClick={v => onChange(key, v)} />
 
-              {/* Value */}
               <span className="text-xs font-mono text-zinc-600 w-4 text-right flex-shrink-0">
                 {val ?? '—'}
               </span>

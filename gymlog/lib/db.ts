@@ -1,7 +1,6 @@
 import { createClient } from './supabase-client'
 import type { Workout, Exercise, Set, UserProfile } from '../types'
 
-// ─── User Profile ────────────────────────────────────────────
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const supabase = createClient()
   const { data } = await supabase
@@ -26,7 +25,6 @@ export async function upsertUserProfile(userId: string, updates: Partial<Omit<Us
   return data
 }
 
-// ─── Workouts ────────────────────────────────────────────────
 export async function getTodayWorkout(userId: string, targetDate?: string): Promise<Workout | null> {
   const supabase = createClient()
   
@@ -73,14 +71,12 @@ export async function getWorkoutHistory(userId: string, limit = 20): Promise<Wor
 
 export async function duplicateWorkout(sourceWorkoutId: string, userId: string, targetDate: string) {
   const supabase = createClient()
-  // Create new workout
   const { data: newWorkout, error: wErr } = await supabase
     .from('workouts')
     .insert({ user_id: userId, date: targetDate, name: null })
     .select().single()
   if (wErr) throw wErr
 
-  // Copy exercises
   const { data: exercises } = await supabase
     .from('exercises')
     .select('*, sets(*)')
@@ -106,7 +102,6 @@ export async function duplicateWorkout(sourceWorkoutId: string, userId: string, 
   return newWorkout
 }
 
-// ─── Exercises ───────────────────────────────────────────────
 export async function getExercisesForWorkout(workoutId: string): Promise<Exercise[]> {
   const supabase = createClient()
   const { data } = await supabase
@@ -138,7 +133,6 @@ export async function deleteExercise(exerciseId: string) {
   await supabase.from('exercises').delete().eq('id', exerciseId)
 }
 
-// ─── Sets ─────────────────────────────────────────────────────
 export async function addSet(exerciseId: string, reps: number, weight: number, rir?: number, notes?: string, distanceKm?: number, durationSeconds?: number): Promise<Set> {
   const supabase = createClient()
   const { data, error } = await supabase
@@ -160,7 +154,6 @@ export async function deleteSet(setId: string) {
   await supabase.from('sets').delete().eq('id', setId)
 }
 
-// ─── History per exercise ─────────────────────────────────────
 export async function getExerciseHistory(userId: string, exerciseName: string, limit = 5) {
   const supabase = createClient()
   const { data } = await supabase
@@ -184,7 +177,6 @@ export async function getExerciseHistory(userId: string, exerciseName: string, l
   return Array.from(sessionMap.values()).slice(0, limit)
 }
 
-// ─── Autocomplete exercise names ──────────────────────────────
 export async function getExerciseNames(userId: string): Promise<string[]> {
   const supabase = createClient()
   const { data } = await supabase

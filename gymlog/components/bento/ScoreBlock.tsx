@@ -11,7 +11,6 @@ interface Props {
   hasWorkout: boolean
 }
 
-// ─── Scoring con penalización ─────────
 function computeScore(m: DailyMetrics | null, hasWorkout: boolean): number {
   type Pillar = { filled: boolean; points: number; max: number }
   const pillars: Pillar[] = []
@@ -105,7 +104,6 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
 
   const total = 5
 
-  // Background dinámico según score
   const bgColor =
     score >= 85
       ? 'bg-lime-400/10'
@@ -184,12 +182,10 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
         </div>
       </div>
 
-      {/* Penalty hint */}
-      {filled < total && (
-        <div className="text-[10px] text-red-700 text-center mt-1">
-          -{(total - filled) * 4} pen.
-        </div>
-      )}
+      {/* Penalty hint — always rendered to avoid layout shift */}
+      <div className={clsx('text-[10px] text-center mt-1', filled < total ? 'text-red-700' : 'invisible')}>
+        -{(total - filled) * 4} pen.
+      </div>
     </div>
   )
 }

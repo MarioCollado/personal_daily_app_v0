@@ -30,7 +30,6 @@ export async function upsertDailyMetrics(
   return data
 }
 
-// Reading history — pages per book accumulated
 export async function getBookHistory(userId: string, bookTitle: string) {
   const supabase = createClient()
   const { data } = await supabase
@@ -42,7 +41,6 @@ export async function getBookHistory(userId: string, bookTitle: string) {
   return data || []
 }
 
-// All books the user has tracked
 export async function getUserBooks(userId: string): Promise<string[]> {
   const supabase = createClient()
   const { data } = await supabase
@@ -54,7 +52,6 @@ export async function getUserBooks(userId: string): Promise<string[]> {
   return Array.from(new Set(data.map(d => d.book_title as string).filter(Boolean))).sort()
 }
 
-// Last N days of metrics for dashboard sparklines
 export async function getRecentMetrics(userId: string, days = 14): Promise<DailyMetrics[]> {
   const supabase = createClient()
   const since = new Date(Date.now() - days * 86400000).toISOString().split('T')[0]

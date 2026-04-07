@@ -56,7 +56,7 @@ export default function TodayPage() {
     let w = await getTodayWorkout(user.id, currentDate)
     const metrics = await getDailyMetrics(user.id, currentDate)
     const userProfile = await getUserProfile(user.id).catch(() => null)
-    
+
     setIsLocked(metrics?.workout_locked || false)
     setProfile(userProfile)
 
@@ -92,13 +92,13 @@ export default function TodayPage() {
         setCurrentDate(actual)
       }
     }
-    
+
     window.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') checkDate()
     })
     window.addEventListener('focus', checkDate)
     const interval = setInterval(checkDate, 60000)
-    
+
     return () => {
       window.removeEventListener('visibilitychange', checkDate)
       window.removeEventListener('focus', checkDate)
@@ -220,11 +220,11 @@ export default function TodayPage() {
         </div>
       </header>
 
-      <main 
+      <main
         className={clsx(
           "max-w-lg mx-auto px-4 pt-4 space-y-4 relative",
           isLocked && "select-none [-webkit-touch-callout:none]"
-        )} 
+        )}
         {...longPress}
       >
         {isLocked && workout && (
@@ -245,23 +245,23 @@ export default function TodayPage() {
             </div>
             {editingProfile ? (
               <div className="flex items-center gap-1 sm:gap-2">
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   step="0.1"
                   placeholder="kg"
                   value={profileInput.weight}
                   onChange={e => setProfileInput(s => ({ ...s, weight: e.target.value }))}
                   className="w-14 sm:w-16 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
                 />
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   placeholder="cm"
                   value={profileInput.height}
                   onChange={e => setProfileInput(s => ({ ...s, height: e.target.value }))}
                   className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
                 />
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   placeholder="años"
                   value={profileInput.age}
                   onChange={e => setProfileInput(s => ({ ...s, age: e.target.value }))}

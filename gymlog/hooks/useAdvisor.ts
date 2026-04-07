@@ -14,7 +14,6 @@ export function useAdvisor(currentAdvice: Advice | null) {
   const [advice, setAdvice] = useState<Advice | null>(null)
   const [isDismissed, setIsDismissed] = useState(false)
 
-  // Hydrate state
   useEffect(() => {
     if (!currentAdvice) {
       setAdvice(null)
@@ -29,7 +28,6 @@ export function useAdvisor(currentAdvice: Advice | null) {
       if (stored) {
         const state: AdvisorState = JSON.parse(stored)
         
-        // If it's a completely new advice, wipe dismissal and show it
         if (state.adviceId !== currentAdvice.id) {
           setAdvice(currentAdvice)
           setIsDismissed(false)
@@ -42,13 +40,9 @@ export function useAdvisor(currentAdvice: Advice | null) {
           return
         }
 
-        // It is the same advice. Check logic
         const hoursSinceLast = (now - state.lastShownTimestamp) / (1000 * 60 * 60)
         
         if (state.dismissed) {
-          // If dismissed, but it's been more than 4 hours, and it's still applicable?
-          // Usually, if a user dismissed it, we don't annoy them again for the same advice until next day.
-          // Since Advice ID remains same, let's keep it dismissed.
           setAdvice(currentAdvice)
           setIsDismissed(true)
         } else {
@@ -57,7 +51,6 @@ export function useAdvisor(currentAdvice: Advice | null) {
         }
 
       } else {
-        // First ever interaction
         setAdvice(currentAdvice)
         setIsDismissed(false)
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -68,7 +61,6 @@ export function useAdvisor(currentAdvice: Advice | null) {
         }))
       }
     } catch (e) {
-      // Fallback
       setAdvice(currentAdvice)
     }
   }, [currentAdvice])

@@ -53,7 +53,6 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
         </div>
 
         <div className="space-y-3">
-          {/* Name with autocomplete */}
           <div className="relative">
             <input
               ref={inputRef}
@@ -76,7 +75,6 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
             )}
           </div>
 
-          {/* Muscle group chips */}
           <div>
             <p className="text-xs text-zinc-500 mb-2 font-medium">Grupo muscular (opcional)</p>
             <div className="flex flex-wrap gap-2">

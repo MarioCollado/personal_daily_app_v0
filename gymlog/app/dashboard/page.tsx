@@ -31,11 +31,17 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
   const [startingWorkout, setStartingWorkout] = useState(false)
+  const [showDate, setShowDate] = useState(false)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
   const rawAdvice = useMemo(() => getDailyAdvice(metrics, !!workout), [metrics, workout])
   const { advice, isDismissed, dismissAdvice, restoreAdvice } = useAdvisor(rawAdvice)
+
+  useEffect(() => {
+    const id = setInterval(() => setShowDate(v => !v), 4000)
+    return () => clearInterval(id)
+  }, [])
 
   const load = useCallback(async () => {
     const supabase = createClient()
@@ -102,7 +108,6 @@ export default function DashboardPage() {
     }
   }
 
-  // Debounced save for sleep (dragging)
   function handleSleepChange(hours: number) {
     setMetrics(m => m ? { ...m, sleep_hours: hours } : { sleep_hours: hours } as any)
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -145,7 +150,7 @@ export default function DashboardPage() {
   async function handleResetMetrics() {
     if (!userId) return
     if (!confirm('¿Estás seguro de que quieres reiniciar las métricas y los hábitos de hoy?')) return
-    
+
     const resetData = {
       sleep_hours: null,
       energy: null,
@@ -155,7 +160,7 @@ export default function DashboardPage() {
       book_title: null,
       pages_read: null
     }
-    
+
     setLoading(true)
     try {
       await upsertDailyMetrics(userId, currentDate, resetData)
@@ -181,7 +186,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
-      {/* Header */}
       <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
         <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-center relative">
           <button
@@ -192,15 +196,25 @@ export default function DashboardPage() {
             <RotateCcw className="w-4 h-4" />
           </button>
 
-          <p className="font-bold text-sm tracking-tight capitalize">
-            {new Date(currentDate + 'T12:00:00').toLocaleDateString('es-ES', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            })}
-          </p>
+          <div className="relative h-5 w-40 flex items-center justify-center overflow-hidden">
+            <span
+              className="absolute font-bold text-sm tracking-widest transition-opacity duration-700"
+              style={{ opacity: showDate ? 0 : 1 }}
+            >
+              VITAL
+            </span>
+            <span
+              className="absolute font-bold text-sm tracking-tight capitalize transition-opacity duration-700"
+              style={{ opacity: showDate ? 1 : 0 }}
+            >
+              {new Date(currentDate + 'T12:00:00').toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric'
+              })}
+            </span>
+          </div>
 
-          {/* Alert Bell */}
           <div className="absolute right-12 flex items-center">
             {advice && isDismissed && (
               <button onClick={restoreAdvice} className="text-brand-400 hover:bg-surface-2 p-1.5 rounded-lg transition-colors">
@@ -219,13 +233,10 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Bento Grid */}
       <main className="w-full max-w-lg sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-4">
 
-        {/* Mobile/Tablet: 2-col grid | Desktop: 4-col grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 auto-rows-auto">
 
-          {/* Clock — 1 col mobile, 1 col desktop */}
           <div className="col-span-1 min-h-[130px]">
             <ClockWeatherBlock
               cachedTemp={metrics?.weather_temp}
@@ -233,7 +244,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Sleep — 1 col mobile (row-span-2), 1 col desktop */}
           <div className="col-span-1 row-span-2 min-h-[280px]">
             <SleepBlock
               value={metrics?.sleep_hours ?? null}
@@ -242,12 +252,10 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Score — 1 col mobile, 1 col desktop */}
           <div className="col-span-1 min-h-[140px]">
             <ScoreBlock metrics={metrics} hasWorkout={!!workout} />
           </div>
 
-          {/* State — full width mobile, 1 col desktop */}
           <div className="col-span-2 md:col-span-3 xl:col-span-1 min-h-[160px]">
             <StateBlock
               energy={metrics?.energy ?? null}
@@ -259,7 +267,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Reading — 1 col */}
           <div className="col-span-1 min-h-[220px]">
             <ReadingBlock
               bookTitle={metrics?.book_title ?? null}
@@ -273,7 +280,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Workout — 1 col */}
           <div className="col-span-1 min-h-[220px]">
             <WorkoutBlock
               workout={workout}
@@ -288,7 +294,6 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Advisor Modal (centered + blur backdrop, like lock overlays) */}
       {advice && !isDismissed && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm animate-fade-in"
@@ -298,7 +303,6 @@ export default function DashboardPage() {
             className="bg-surface-1 border border-surface-border shadow-2xl rounded-2xl p-6 w-full max-w-sm relative animate-slide-up"
             onClick={e => e.stopPropagation()}
           >
-            {/* Close */}
             <button
               onClick={dismissAdvice}
               className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-1 touch-manipulation"
@@ -306,7 +310,6 @@ export default function DashboardPage() {
               <X className="w-4 h-4" />
             </button>
 
-            {/* Icon + title */}
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-brand-500/15 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-5 h-5 text-brand-400" />
@@ -314,10 +317,8 @@ export default function DashboardPage() {
               <p className="font-semibold text-white text-sm">Tu Coach Diario</p>
             </div>
 
-            {/* Message */}
             <p className="text-sm text-zinc-300 leading-relaxed">{advice.text}</p>
 
-            {/* Dismiss button */}
             <button
               onClick={dismissAdvice}
               className="mt-5 w-full py-2.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-zinc-400 hover:text-white text-sm transition-colors touch-manipulation"

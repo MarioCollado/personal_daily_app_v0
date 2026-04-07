@@ -25,6 +25,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Algo fue mal — manda al login con aviso
   return NextResponse.redirect(`${origin}/auth/login?error=email_confirmation_failed`)
 }

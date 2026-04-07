@@ -48,7 +48,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-surface-0 flex items-center justify-center p-4">
       <div className="w-full max-w-sm animate-fade-in">
-        {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-4">
             <Rocket className="w-8 h-8 text-brand-500" />
@@ -57,7 +56,6 @@ export default function LoginPage() {
           <p className="text-zinc-500 text-sm mt-1">Harder, Better, Faster, Stronger</p>
         </div>
 
-        {/* Form */}
         <div className="card p-6 space-y-4">
           <div className="space-y-3">
             <div className="relative">

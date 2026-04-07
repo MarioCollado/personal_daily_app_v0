@@ -46,18 +46,15 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
   )
   const [loadingWeather, setLoadingWeather] = useState(!cachedTemp)
 
-  // Update clock every second
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
 
-  // Fetch weather via Open-Meteo (free, no key needed)
   useEffect(() => {
     if (cachedTemp) return
     async function fetchWeather() {
       try {
-        // llanera
         const url = 'https://api.open-meteo.com/v1/forecast?latitude=43.4419&longitude=-5.8580&current=temperature_2m,weather_code&timezone=Europe%2FMadrid'
         const res = await fetch(url)
         const json = await res.json()
@@ -66,7 +63,6 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
         const condition = wmoToCondition(code)
         setWeather({ temp, condition, icon: condition, city: 'Llanera' })
       } catch {
-        // silent fail
       } finally {
         setLoadingWeather(false)
       }
@@ -85,7 +81,6 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
 
   return (
     <div className="bento-card flex flex-col justify-between h-full">
-      {/* Clock */}
       <div>
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-mono font-bold tracking-tight leading-none">
@@ -101,7 +96,6 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
         </div>
       </div>
 
-      {/* Weather */}
       <div className="mt-3">
         {loadingWeather ? (
           <Loader2 className="w-4 h-4 text-zinc-600 animate-spin" />
@@ -124,7 +118,6 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
   )
 }
 
-// WMO weather code → condition string
 function wmoToCondition(code: number): string {
   if (code === 0) return 'clear'
   if (code <= 3) return 'clouds'

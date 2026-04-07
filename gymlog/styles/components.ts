@@ -1,8 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// Design system — clases reutilizables (mobile-first + responsive)
-// ─────────────────────────────────────────────────────────────
-
-// ─── Layout ──────────────────────────────────────────────────
 export const layout = {
   page:        'min-h-screen bg-surface-0 pb-24',
   // Contenedor principal fluid: lg usa más espacio
@@ -16,7 +11,6 @@ export const layout = {
   bento2:      'grid grid-cols-2 gap-2.5 sm:gap-3',
 } as const
 
-// ─── Cards ───────────────────────────────────────────────────
 export const card = {
   base:  'bg-surface-1 border border-surface-border rounded-2xl',
   bento: 'bg-surface-1 border border-surface-border rounded-2xl p-3.5 sm:p-4 h-full',
@@ -25,7 +19,6 @@ export const card = {
   recipe: 'bg-surface-1 border border-surface-border rounded-2xl p-4 sm:p-5 flex flex-col gap-2 hover:border-zinc-600 transition-colors',
 } as const
 
-// ─── Inputs ──────────────────────────────────────────────────
 export const input = {
   base:   'bg-surface-2 border border-surface-border rounded-xl px-3 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-colors duration-100 w-full text-sm sm:text-base',
   small:  'bg-surface-2 border border-surface-border rounded-lg px-2 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500 w-full',
@@ -34,7 +27,6 @@ export const input = {
   cardio: 'bg-surface-2 border border-surface-border rounded-xl px-3 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 transition-colors duration-100 w-full text-center font-mono text-base',
 } as const
 
-// ─── Botones ─────────────────────────────────────────────────
 export const btn = {
   primary:      'bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-black font-semibold rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation text-sm sm:text-base',
   ghost:        'bg-surface-3 hover:bg-surface-4 active:bg-surface-4 text-white rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation text-sm sm:text-base',
@@ -48,7 +40,6 @@ export const btn = {
   preset:       'flex-1 text-[11px] font-mono py-1 rounded-lg transition-colors touch-manipulation',
 } as const
 
-// ─── Texto ───────────────────────────────────────────────────
 export const text = {
   label:        'text-[11px] sm:text-xs font-medium text-zinc-500 uppercase tracking-widest',
   saving:       'text-[10px] text-zinc-600 animate-pulse-dot',
@@ -59,11 +50,9 @@ export const text = {
   pageSubtitle: 'text-zinc-500 text-xs sm:text-sm mt-0.5',
 } as const
 
-// ─── Bento block header ──────────────────────────────────────
 export const bentoHeader = 'flex items-center justify-between mb-2 sm:mb-3'
 export const bentoLabel  = 'flex items-center gap-1.5'
 
-// ─── Feedback / estado ───────────────────────────────────────
 export const feedback = {
   error:     'text-red-400 text-sm bg-red-500/10 rounded-lg px-3 py-2',
   success:   'text-brand-400 text-sm bg-brand-500/10 rounded-lg px-3 py-2',
@@ -71,7 +60,6 @@ export const feedback = {
   spinnerSm: 'w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin',
 } as const
 
-// ─── Nav ─────────────────────────────────────────────────────
 export const nav = {
   tab:        'flex flex-col items-center gap-0.5 sm:gap-1 py-2 text-[10px] sm:text-xs font-medium transition-colors duration-100 touch-manipulation flex-1',
   tabActive:  'text-brand-400',
@@ -79,7 +67,6 @@ export const nav = {
   iconActive: 'drop-shadow-[0_0_6px_rgba(74,222,128,0.5)]',
 } as const
 
-// ─── Sets / exercise table ────────────────────────────────────
 export const setRow = {
   grid:      'grid grid-cols-4 gap-2 items-center text-sm py-1.5 px-1 rounded-lg hover:bg-surface-2 group transition-colors',
   // Cardio row: distancia | tiempo | ritmo | delete
@@ -91,7 +78,6 @@ export const setRow = {
   deleteBtn: 'opacity-0 group-hover:opacity-100 transition-opacity text-zinc-600 hover:text-red-400 p-1 -mr-1',
 } as const
 
-// ─── Cardio específico ────────────────────────────────────────
 export const cardio = {
   paceDisplay: 'flex items-center justify-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-xl px-4 py-2.5',
   paceValue:   'text-xl font-mono font-bold text-sky-400',
@@ -99,7 +85,6 @@ export const cardio = {
   paceLabel:   'text-[10px] text-zinc-600 uppercase tracking-widest',
 } as const
 
-// ─── Recetas ──────────────────────────────────────────────────
 export const recipe = {
   heroBento:   'bg-gradient-to-br from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl p-4 sm:p-5',
   tag:         'text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-medium',

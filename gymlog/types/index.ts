@@ -65,7 +65,6 @@ export interface WeatherData {
   city: string
 }
 
-// ─── Recetas (mock, sin backend aún) ─────────────────────────
 export interface RecipeMock {
   id: string
   name: string

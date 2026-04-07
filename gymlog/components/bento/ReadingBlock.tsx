@@ -20,8 +20,8 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
   const [bookInput, setBookInput] = useState(bookTitle || '')
   const [showSuggestions, setShowSuggestions] = useState(false)
 
-  const progress = bookTitle && pagesRead && bookTotalPages
-    ? Math.min(100, Math.round((pagesRead / bookTotalPages) * 100))
+  const progress = (bookTitle && bookTotalPages)
+    ? Math.min(100, Math.round(((pagesRead ?? 0) / bookTotalPages) * 100))
     : null
 
   function commitBook() {
@@ -62,7 +62,6 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
         {saving && <span className="absolute right-0 text-[10px] text-zinc-600 animate-pulse-dot">guardando</span>}
       </div>
 
-      {/* Book title */}
       <div className="mb-3 relative">
         {editingBook ? (
           <>
@@ -98,7 +97,6 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
         )}
       </div>
 
-      {/* Pages counter */}
       <div className="flex items-center gap-2 mb-3">
         <button onClick={() => addPages(-5)} className="w-7 h-7 rounded-lg bg-surface-2 hover:bg-surface-3 flex items-center justify-center text-zinc-400 hover:text-white transition-colors touch-manipulation">
           <Minus className="w-3 h-3" />
@@ -112,7 +110,6 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
         </button>
       </div>
 
-      {/* Quick +page buttons */}
       <div className="flex gap-1 mb-3">
         {[1, 10, 25, 50].map(n => (
           <button key={n} onClick={() => addPages(n)}
@@ -122,21 +119,19 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
         ))}
       </div>
 
-      {/* Progress bar */}
       {bookTitle && bookTotalPages && (
         <div>
           <div className="flex justify-between text-[10px] text-zinc-600 mb-1">
             <span>{pagesRead ?? 0} / {bookTotalPages} pág.</span>
-            <span>{progress}%</span>
+            <span>{progress ?? 0}%</span>
           </div>
           <div className="h-1.5 bg-surface-2 rounded-full overflow-hidden">
             <div className="h-full bg-violet-500 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }} />
+              style={{ width: `${progress ?? 0}%` }} />
           </div>
         </div>
       )}
 
-      {/* Set total pages */}
       {bookTitle && !bookTotalPages && (
         <button
           onClick={() => {

@@ -134,7 +134,6 @@ export default function HistoryPage() {
                               ))}
                             </div>
                           )}
-                          {/* Progress link */}
                           <Link
                             href={`/exercise/${encodeURIComponent(ex.name)}`}
                             className="inline-flex items-center gap-1 mt-1 text-xs text-brand-500/70 hover:text-brand-400 transition-colors"

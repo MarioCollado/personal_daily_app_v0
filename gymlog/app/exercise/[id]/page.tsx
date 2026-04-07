@@ -34,7 +34,6 @@ export default function ExercisePage() {
     load()
   }, [exerciseName, router])
 
-  // Build chart data: max weight per session
   const chartData = sessions.map(s => ({
     date: formatDate(s.date),
     maxWeight: Math.max(...s.sets.map((set: any) => set.weight), 0),
@@ -88,7 +87,6 @@ export default function ExercisePage() {
           </div>
         ) : (
           <>
-            {/* Stats cards */}
             <div className="grid grid-cols-3 gap-3">
               <div className="card p-3 text-center">
                 <div className="text-xl font-bold font-mono text-brand-400">{best}<span className="text-sm text-zinc-600 font-normal">kg</span></div>
@@ -107,7 +105,6 @@ export default function ExercisePage() {
               </div>
             </div>
 
-            {/* Chart */}
             {chartData.length >= 2 && (
               <div className="card p-4">
                 <h3 className="text-sm font-semibold text-zinc-400 mb-3 flex items-center gap-2">
@@ -117,7 +114,6 @@ export default function ExercisePage() {
               </div>
             )}
 
-            {/* Session history */}
             <div className="space-y-3">
               {sessions.map((session, idx) => (
                 <div key={session.date} className="card p-4 animate-fade-in">

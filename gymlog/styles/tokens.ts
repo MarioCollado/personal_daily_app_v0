@@ -1,9 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// Design tokens — única fuente de verdad para colores y valores
-// Importa desde aquí, nunca pongas hex hardcodeados en componentes
-// ─────────────────────────────────────────────────────────────
-
-// ─── Paleta base ─────────────────────────────────────────────
 export const colors = {
   brand:   '#22c55e',
   brandHover: '#16a34a',
@@ -24,7 +18,6 @@ export const colors = {
   },
 } as const
 
-// ─── Sueño ───────────────────────────────────────────────────
 export const sleepThresholds = [
   { max: 5,    color: colors.red,    label: 'Insuficiente' },
   { max: 6.5,  color: colors.orange, label: 'Poco'         },
@@ -43,28 +36,24 @@ export function getSleepLabel(h: number | null): string {
   return sleepThresholds.find(t => h < t.max)?.label ?? 'Largo'
 }
 
-// ─── Estado (energía / estrés / motivación) ──────────────────
 export const metricColors = {
   energy:     colors.amber,
   stress:     colors.red,
   motivation: colors.brand,
 } as const
 
-// ─── Score / Grade ───────────────────────────────────────────
 export const gradeThresholds = [
-  { min: 90, grade: 'S', color: colors.amber  },
-  { min: 75, grade: 'A', color: colors.brand  },
-  { min: 60, grade: 'B', color: colors.blue   },
-  { min: 40, grade: 'C', color: colors.violet },
-  { min: 1,  grade: 'D', color: colors.red    },
-  { min: 0,  grade: '—', color: colors.zinc   },
+  { min: 85, grade: 'S', color: '#a3e635' },  // lime-400  — matches bg-lime-400/10
+  { min: 70, grade: 'A', color: '#22c55e' },  // green-500 — matches bg-green-500/10
+  { min: 55, grade: 'B', color: '#facc15' },  // yellow-400 — matches bg-yellow-400/10
+  { min: 1,  grade: 'D', color: '#ef4444' },  // red-500   — matches bg-red-500/10
+  { min: 0,  grade: '—', color: colors.zinc },
 ] as const
 
 export function getGrade(score: number): { grade: string; color: string } {
   return gradeThresholds.find(t => score >= t.min) ?? { grade: '—', color: colors.zinc }
 }
 
-// ─── Grupos musculares ───────────────────────────────────────
 export const muscleGroupStyles: Record<string, string> = {
   pecho:    'bg-red-500/20 text-red-300',
   espalda:  'bg-blue-500/20 text-blue-300',
@@ -82,7 +71,6 @@ export function getMuscleGroupStyle(group?: string | null): string {
   return muscleGroupStyles[group.toLowerCase()] ?? 'bg-zinc-500/20 text-zinc-400'
 }
 
-// ─── Dial de sueño ───────────────────────────────────────────
 export const sleepDial = {
   min: 3,
   max: 12,

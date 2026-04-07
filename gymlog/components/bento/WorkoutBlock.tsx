@@ -72,7 +72,6 @@ export default function WorkoutBlock({ workout, exercises, onStart, starting, is
         </div>
       ) : (
         <>
-          {/* Stats row */}
           <div className="flex gap-3 mb-3">
             <div className="flex-1 bg-surface-2 rounded-xl p-2 text-center">
               <div className="text-lg font-mono font-bold text-brand-400">{exercises.length}</div>
@@ -90,7 +89,6 @@ export default function WorkoutBlock({ workout, exercises, onStart, starting, is
             </div>
           </div>
 
-          {/* Exercise list preview */}
           {exercises.length > 0 && (
             <div className="space-y-1 mb-3 flex-1 overflow-hidden">
               {exercises.slice(0, 3).map(ex => (
@@ -105,7 +103,6 @@ export default function WorkoutBlock({ workout, exercises, onStart, starting, is
             </div>
           )}
 
-          {/* CTA */}
           <Link href="/today" className="flex items-center justify-between bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 rounded-xl px-3 py-2 transition-colors group">
             <span className="text-xs font-medium text-brand-400">
               {exercises.length === 0 ? 'Añadir ejercicios' : 'Continuar entreno'}

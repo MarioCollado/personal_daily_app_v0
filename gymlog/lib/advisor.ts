@@ -19,7 +19,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
   const p = metrics.pages_read
   const w = hasWorkout
 
-  // 1. Extreme Rest Warning
   if (s != null && s <= 5 && e != null && e <= 2) {
     return {
       id: 'extreme_rest',
@@ -28,7 +27,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
     }
   }
 
-  // 2. High Stress 
   if (st != null && st >= 4 && ft != null && ft <= 2) {
     return {
       id: 'high_stress',
@@ -37,7 +35,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
     }
   }
 
-  // 3. Perfect condition for workout
   if (!w && e != null && e >= 4 && ft != null && ft >= 3) {
     return {
       id: 'go_workout',
@@ -46,7 +43,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
     }
   }
 
-  // 4. Low Motivation but no workout yet
   if (!w && m != null && m <= 2) {
     return {
       id: 'low_motivation',
@@ -55,7 +51,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
     }
   }
 
-  // 5. Praise: workout done but tired
   if (w && s != null && s <= 6) {
     return {
       id: 'praise_tired',
@@ -64,7 +59,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
     }
   }
 
-  // 6. Praise: perfect day
   if (w && p != null && p >= 15 && e != null && e >= 4 && st != null && st <= 2) {
     return {
       id: 'praise_perfect',
@@ -73,7 +67,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
     }
   }
 
-  // 7. Reading prompt
   if (ft != null && ft >= 4 && (!p || p === 0)) {
     return {
       id: 'read_prompt',
@@ -82,7 +75,6 @@ export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean
     }
   }
 
-  // 8. General Active prompt
   if (!w && ft != null && ft >= 3) {
     return {
       id: 'general_active',

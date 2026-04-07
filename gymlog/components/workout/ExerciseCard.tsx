@@ -109,7 +109,6 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
 
   return (
     <div className={card.base + ' overflow-hidden animate-slide-up'}>
-      {/* Header */}
       <div className="flex items-center gap-3 p-4 cursor-pointer select-none"
         onClick={() => setExpanded(e => !e)}>
         <div className="flex-1 min-w-0">
@@ -162,7 +161,6 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
       {expanded && (
         <div className="border-t border-surface-border">
 
-          {/* Sets */}
           {(exercise.sets?.length || 0) > 0 && (
             <div className="px-4 pt-3 pb-1">
               {isCardio ? (
@@ -201,7 +199,6 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
             </div>
           )}
 
-          {/* Add */}
           <div className="p-4 pt-3">
             {isCardio ? (
               <div className="space-y-3">
@@ -259,7 +256,6 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
               </div>
             ) : (
 
-              // 🔥 AQUÍ ESTÁ LA CORRECCIÓN REAL
               <div className="flex items-center gap-2">
                 <input
                   type="number"
