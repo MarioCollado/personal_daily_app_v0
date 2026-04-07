@@ -148,7 +148,7 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
             />
           )}
 
-          <text x="60" y="54" textAnchor="middle" fill="white" fontSize="22" fontWeight="700" fontFamily="monospace">
+          <text x="60" y="54" textAnchor="middle" fill="#3f3f46" fontSize="22" fontWeight="700" fontFamily="monospace">
             {display !== null ? display : '—'}
           </text>
           <text x="60" y="67" textAnchor="middle" fill="#71717a" fontSize="8">

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ChefHat, Sparkles, Plus, X, Clock, Flame, Beef, Search } from 'lucide-react'
 import { clsx } from 'clsx'
 import BottomNav from '@/components/ui/BottomNav'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { card, text, btn, recipe, layout, bentoHeader, bentoLabel } from '@/styles/components'
 import type { RecipeMock, IngredientMock } from '@/types'
 
@@ -81,6 +82,7 @@ export default function RecipesPage() {
             </div>
             <p className={text.pageSubtitle}>Optimiza tu día según tu energía</p>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 

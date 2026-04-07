@@ -8,6 +8,7 @@ import BottomNav from '@/components/ui/BottomNav'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { clsx } from 'clsx'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00')
@@ -71,12 +72,15 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
       <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-brand-500" />
-            <h1 className="font-bold text-base">Historial</h1>
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-brand-500" />
+              <h1 className="font-bold text-base">Historial</h1>
+            </div>
+            <p className="text-zinc-500 text-xs mt-0.5">{workouts.length} sesiones registradas</p>
           </div>
-          <p className="text-zinc-500 text-xs mt-0.5">{workouts.length} sesiones registradas</p>
+          <ThemeToggle />
         </div>
       </header>
 

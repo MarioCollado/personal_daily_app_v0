@@ -7,6 +7,7 @@ import BottomNav from '@/components/ui/BottomNav'
 import ProgressChart from '@/components/charts/ProgressChart'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 interface Session { date: string; sets: any[] }
 
@@ -66,7 +67,7 @@ export default function ExercisePage() {
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
       <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-3">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/history" className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors text-zinc-400 hover:text-white">
               <ArrowLeft className="w-5 h-5" />
@@ -76,6 +77,7 @@ export default function ExercisePage() {
               <p className="text-zinc-500 text-xs">{sessions.length} sesiones</p>
             </div>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 

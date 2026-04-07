@@ -1,3 +1,75 @@
+:root {
+  --brand: #22c55e;
+  --brand-foreground: #ffffff;
+  --surface-0: #0a0a0a;
+  --surface-1: #111111;
+  --surface-2: #1a1a1a;
+  --surface-3: #242424;
+  --surface-border: #333333;
+  --text-main: #ffffff;
+  --text-muted: #71717a;
+}
+
+[data-theme='morning'] {
+  --brand: #22c55e;
+  --brand-foreground: #ffffff;
+  --surface-0: #f8fafc;
+  --surface-1: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --surface-border: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+}
+
+[data-theme='midday'] {
+  --brand: #10b981;
+  --brand-foreground: #ffffff;
+  --surface-0: #ffffff;
+  --surface-1: #f3f4f6;
+  --surface-2: #e5e7eb;
+  --surface-3: #d1d5db;
+  --surface-border: #e5e7eb;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+}
+
+[data-theme='afternoon'] {
+  --brand: #f59e0b;
+  --brand-foreground: #ffffff;
+  --surface-0: #fffbeb;
+  --surface-1: #fef3c7;
+  --surface-2: #fde68a;
+  --surface-3: #fcd34d;
+  --surface-border: #fde68a;
+  --text-main: #451a03;
+  --text-muted: #92400e;
+}
+
+[data-theme='night'] {
+  --brand: #fbbf24;
+  --brand-foreground: #000000;
+  --surface-0: #0a0b14;
+  --surface-1: #121421;
+  --surface-2: #1c1f2e;
+  --surface-3: #2a2e3f;
+  --surface-border: #1c1f2e;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+[data-theme='sober'] {
+  --brand: #22c55e;
+  --brand-foreground: #ffffff;
+  --surface-0: #0a0a0a;
+  --surface-1: #111111;
+  --surface-2: #1a1a1a;
+  --surface-3: #242424;
+  --surface-border: #333333;
+  --text-main: #ffffff;
+  --text-muted: #71717a;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,10 +77,16 @@
 @layer base {
   * {
     box-sizing: border-box;
+    transition: background-color 1.2s ease, border-color 1.2s ease, color 1.2s ease, fill 1.2s ease, stroke 1.2s ease;
   }
 
   html {
     -webkit-tap-highlight-color: transparent;
+    @apply bg-surface-0 text-main antialiased font-sans;
+  }
+
+  body {
+    @apply min-h-screen;
   }
 
   input[type='number']::-webkit-inner-spin-button,
@@ -23,12 +101,16 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-black font-semibold rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
+    @apply bg-brand-500 text-black font-semibold rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
   }
+  .btn-primary:hover { @apply bg-brand-600; }
+  .btn-primary:active { @apply bg-brand-700; }
 
   .btn-ghost {
-    @apply bg-surface-3 hover:bg-surface-4 active:bg-surface-4 text-white rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
+    @apply bg-surface-3 text-white rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
   }
+  .btn-ghost:hover { @apply bg-surface-4; }
+  .btn-ghost:active { @apply bg-surface-4; }
 
   .btn-danger {
     @apply text-red-400 hover:bg-red-500/10 active:bg-red-500/20 rounded-lg px-3 py-1.5 transition-colors duration-100 select-none touch-manipulation;
@@ -43,7 +125,10 @@
   }
 
   .input-field {
-    @apply bg-surface-2 border border-surface-border rounded-xl px-3 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition-colors duration-100 w-full;
+    @apply bg-surface-2 border border-surface-border rounded-xl px-3 py-2.5 text-white placeholder-zinc-500 transition-colors duration-100 w-full;
+  }
+  .input-field:focus {
+    @apply outline-none border-brand-500 ring-1 ring-brand-500;
   }
 
   .nav-tab {

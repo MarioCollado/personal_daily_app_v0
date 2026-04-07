@@ -16,6 +16,7 @@ import RestTimer from '@/components/ui/RestTimer'
 import { useLongPress } from '@/hooks/useLongPress'
 import { useRouter } from 'next/navigation'
 import { clsx } from 'clsx'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 function getLocalISODate() {
   const d = new Date()
@@ -214,9 +215,12 @@ export default function TodayPage() {
             </div>
             <p className="text-zinc-500 text-xs capitalize mt-0.5">{formatDate(currentDate)}</p>
           </div>
-          <button onClick={handleSignOut} className="text-zinc-600 hover:text-white p-2 rounded-lg hover:bg-surface-2 transition-colors">
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button onClick={handleSignOut} className="text-zinc-600 hover:text-white p-2 rounded-lg hover:bg-surface-2 transition-colors">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 

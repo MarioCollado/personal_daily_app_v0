@@ -15,6 +15,7 @@ import BottomNav from '@/components/ui/BottomNav'
 import { useRouter } from 'next/navigation'
 import { getDailyAdvice } from '@/lib/advisor'
 import { useAdvisor } from '@/hooks/useAdvisor'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 function getLocalISODate() {
   const d = new Date()
@@ -187,16 +188,18 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
       <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-center relative">
-          <button
-            onClick={handleResetMetrics}
-            className="absolute left-4 text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
-            title="Reiniciar métricas de hoy"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
+        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between relative">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleResetMetrics}
+              className="text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+              title="Reiniciar métricas de hoy"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          </div>
 
-          <div className="relative h-5 w-40 flex items-center justify-center overflow-hidden">
+          <div className="relative h-5 w-32 flex items-center justify-center overflow-hidden">
             <span
               className="absolute font-bold text-sm tracking-widest transition-opacity duration-700"
               style={{ opacity: showDate ? 0 : 1 }}
@@ -204,32 +207,33 @@ export default function DashboardPage() {
               VITAL
             </span>
             <span
-              className="absolute font-bold text-sm tracking-tight capitalize transition-opacity duration-700"
+              className="absolute font-bold text-sm tracking-tight capitalize transition-opacity duration-700 whitespace-nowrap"
               style={{ opacity: showDate ? 1 : 0 }}
             >
               {new Date(currentDate + 'T12:00:00').toLocaleDateString('es-ES', {
                 day: 'numeric',
                 month: 'numeric',
-                year: 'numeric'
+                year: '2-digit'
               })}
             </span>
           </div>
 
-          <div className="absolute right-12 flex items-center">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <ThemeToggle />
+
             {advice && isDismissed && (
               <button onClick={restoreAdvice} className="text-brand-400 hover:bg-surface-2 p-1.5 rounded-lg transition-colors">
                 <Bell className="w-4 h-4 animate-pulse" />
               </button>
             )}
+
+            <button
+              onClick={handleSignOut}
+              className="text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-
-          <button
-            onClick={handleSignOut}
-            className="absolute right-4 text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-
         </div>
       </header>
 
