@@ -14,6 +14,11 @@ import RestTimer from '@/components/ui/RestTimer'
 import { useRouter } from 'next/navigation'
 import { clsx } from 'clsx'
 
+function getLocalISODate() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00')
   return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -33,7 +38,7 @@ export default function TodayPage() {
   const [duplicating, setDuplicating] = useState(false)
   const router = useRouter()
 
-  const today = new Date().toISOString().split('T')[0]
+  const [currentDate, setCurrentDate] = useState(getLocalISODate)
 
   const loadData = useCallback(async () => {
     const supabase = createClient()
@@ -41,7 +46,7 @@ export default function TodayPage() {
     if (!user) { router.push('/auth/login'); return }
     setUserId(user.id)
 
-    let w = await getTodayWorkout(user.id)
+    let w = await getTodayWorkout(user.id, currentDate)
     if (!w) {
       // show empty state, don't auto-create
     }
@@ -50,22 +55,47 @@ export default function TodayPage() {
       setWorkoutName(w.name || '')
       const exs = await getExercisesForWorkout(w.id)
       setExercises(exs)
+    } else {
+      setWorkoutName('')
+      setExercises([])
     }
     const names = await getExerciseNames(user.id)
     setSuggestions(names)
 
     const history = await getWorkoutHistory(user.id, 5)
-    const last = history.find(h => h.date !== today)
+    const last = history.find(h => h.date !== currentDate)
     setLastWorkout(last || null)
 
     setLoading(false)
-  }, [today, router])
+  }, [currentDate, router])
 
   useEffect(() => { loadData() }, [loadData])
 
+  useEffect(() => {
+    const checkDate = () => {
+      const actual = getLocalISODate()
+      if (actual !== currentDate) {
+        setLoading(true)
+        setCurrentDate(actual)
+      }
+    }
+    
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkDate()
+    })
+    window.addEventListener('focus', checkDate)
+    const interval = setInterval(checkDate, 60000)
+    
+    return () => {
+      window.removeEventListener('visibilitychange', checkDate)
+      window.removeEventListener('focus', checkDate)
+      clearInterval(interval)
+    }
+  }, [currentDate])
+
   async function startWorkout() {
     if (!userId) return
-    const w = await createWorkout(userId, today)
+    const w = await createWorkout(userId, currentDate)
     setWorkout(w)
     setExercises([])
   }
@@ -81,7 +111,7 @@ export default function TodayPage() {
     if (!lastWorkout || !userId) return
     setDuplicating(true)
     try {
-      const w = await duplicateWorkout(lastWorkout.id, userId, today)
+      const w = await duplicateWorkout(lastWorkout.id, userId, currentDate)
       setWorkout(w)
       const exs = await getExercisesForWorkout(w.id)
       setExercises(exs)
@@ -138,7 +168,7 @@ export default function TodayPage() {
               <Dumbbell className="w-5 h-5 text-brand-500" />
               <h1 className="font-bold text-base">Entreno de hoy</h1>
             </div>
-            <p className="text-zinc-500 text-xs capitalize mt-0.5">{formatDate(today)}</p>
+            <p className="text-zinc-500 text-xs capitalize mt-0.5">{formatDate(currentDate)}</p>
           </div>
           <button onClick={handleSignOut} className="text-zinc-600 hover:text-white p-2 rounded-lg hover:bg-surface-2 transition-colors">
             <LogOut className="w-4 h-4" />

@@ -1,14 +1,17 @@
 'use client'
-import { Dumbbell, TrendingUp, TrendingDown, Minus, ChevronRight, Plus } from 'lucide-react'
+import { Dumbbell, TrendingUp, TrendingDown, Minus, ChevronRight, Plus, Lock } from 'lucide-react'
 import Link from 'next/link'
 import type { Workout, Exercise } from '@/types'
 import { clsx } from 'clsx'
+import { useLongPress } from '@/hooks/useLongPress'
 
 interface Props {
   workout: Workout | null
   exercises: Exercise[]
   onStart: () => void
   starting?: boolean
+  isLocked?: boolean
+  onToggleLock?: () => void
 }
 
 function ProgressBadge({ current, previous }: { current: number; previous: number | null }) {
@@ -25,20 +28,31 @@ function ProgressBadge({ current, previous }: { current: number; previous: numbe
   )
 }
 
-export default function WorkoutBlock({ workout, exercises, onStart, starting }: Props) {
+export default function WorkoutBlock({ workout, exercises, onStart, starting, isLocked, onToggleLock }: Props) {
   const totalSets = exercises.reduce((a, e) => a + (e.sets?.length || 0), 0)
   const totalVolume = exercises.reduce((a, e) => a + (e.sets || []).reduce((b, s) => b + s.reps * s.weight, 0), 0)
   const hasWorkout = !!workout
+  const longPress = useLongPress({ onLongPress: () => onToggleLock?.() })
 
   return (
-    <div className="bento-card flex flex-col h-full">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bento-card flex flex-col h-full relative overflow-hidden" {...longPress}>
+      {isLocked && (
+        <div className="absolute inset-0 z-20 bg-surface-1/60 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+          <div className="w-10 h-10 rounded-full bg-brand-500/20 flex items-center justify-center mb-2">
+            <Lock className="w-5 h-5 text-brand-400" />
+          </div>
+          <span className="text-brand-400 font-medium text-xs">Bloqueado</span>
+          <span className="text-zinc-500 text-[10px] mt-1 text-center">Mantén pulsado para abrir</span>
+        </div>
+      )}
+
+      <div className="relative flex items-center justify-center mb-3 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <Dumbbell className="w-3.5 h-3.5 text-brand-500" />
           <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">Entreno</span>
         </div>
         {hasWorkout && (
-          <div className="flex items-center gap-1">
+          <div className="absolute right-0 flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse-dot" />
             <span className="text-[10px] text-brand-500 font-medium">Activo</span>
           </div>

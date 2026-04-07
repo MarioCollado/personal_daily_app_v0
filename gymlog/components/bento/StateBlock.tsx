@@ -1,5 +1,5 @@
 'use client'
-import { Zap, Brain, Flame, Coffee } from 'lucide-react'
+import { Zap, Brain, Flame, Smartphone } from 'lucide-react'
 import { clsx } from 'clsx'
 import { card, text } from '@/styles/components'
 
@@ -16,7 +16,7 @@ const METRICS = [
   { key: 'energy' as const, label: 'Energía', Icon: Zap, color: '#f59e0b' },
   { key: 'stress' as const, label: 'Estrés', Icon: Brain, color: '#ef4444' },
   { key: 'motivation' as const, label: 'Motivación', Icon: Flame, color: '#22c55e' },
-  { key: 'free_time' as const, label: 'Tiempo', Icon: Coffee, color: '#3b82f6' },
+  { key: 'free_time' as const, label: 'Móvil', Icon: Smartphone, color: '#ef4444' },
 ]
 
 function DotRow({
@@ -34,7 +34,7 @@ function DotRow({
           key={i}
           onClick={() => onClick(i)}
           className={clsx(
-            'w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 rounded-md',
+            'flex-1 h-5 sm:h-6 flex-shrink-0 rounded-[4px] sm:rounded-md',
             'transition-all duration-100 active:scale-90',
             value !== null && i <= value ? 'opacity-100' : 'opacity-20 hover:opacity-50'
           )}
@@ -54,7 +54,7 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
     <div className={card.bento + ' flex flex-col h-full p-4'}>
 
       {/* Header CONSISTENTE */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <Brain className="w-3.5 h-3.5 text-purple-400" />
           <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">
@@ -63,7 +63,7 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
         </div>
 
         {saving && (
-          <span className="text-[10px] text-zinc-600 animate-pulse-dot">
+          <span className="absolute right-0 text-[10px] text-zinc-600 animate-pulse-dot">
             guardando
           </span>
         )}
@@ -86,7 +86,7 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
               </div>
 
               {/* Dots */}
-              <DotRow value={val} color={color} onClick={v => onChange(key, v)} />
+              <DotRow value={val} color={color} max={5} onClick={v => onChange(key, v)} />
 
               {/* Value */}
               <span className="text-xs font-mono text-zinc-600 w-4 text-right flex-shrink-0">

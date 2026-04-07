@@ -2,14 +2,19 @@ import { createClient } from './supabase-client'
 import type { Workout, Exercise, Set } from '../types'
 
 // ─── Workouts ────────────────────────────────────────────────
-export async function getTodayWorkout(userId: string): Promise<Workout | null> {
+export async function getTodayWorkout(userId: string, targetDate?: string): Promise<Workout | null> {
   const supabase = createClient()
-  const today = new Date().toISOString().split('T')[0]
+  
+  // Create local iso date if none provided
+  const d = new Date()
+  const fallbackDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const date = targetDate || fallbackDate
+
   const { data } = await supabase
     .from('workouts')
     .select('*')
     .eq('user_id', userId)
-    .eq('date', today)
+    .eq('date', date)
     .single()
   return data
 }

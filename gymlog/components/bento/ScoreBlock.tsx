@@ -71,7 +71,8 @@ function computeScore(m: DailyMetrics | null, hasWorkout: boolean): number {
     let points = 0
 
     if (filled) {
-      points = Math.round((m!.free_time! / 5) * 10)
+      const ft = m!.free_time!
+      points = Math.round(((5 - ft) / 4) * 10)
     }
 
     pillars.push({ filled, points, max: 10 })
@@ -130,7 +131,7 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
   return (
     <div className={clsx(card.bento, bgColor, glow, 'flex flex-col h-full p-4 transition-all')}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <Flame className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">
@@ -138,7 +139,7 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
           </span>
         </div>
 
-        <span className="text-[10px] text-zinc-700">
+        <span className="absolute right-0 text-[10px] text-zinc-700">
           {filled}/{total}
         </span>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { LogOut } from 'lucide-react'
+import { LogOut, RotateCcw } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import { getTodayWorkout, createWorkout, getExercisesForWorkout } from '@/lib/db'
 import { getDailyMetrics, upsertDailyMetrics, getUserBooks } from '@/lib/metrics'
@@ -15,9 +15,13 @@ import BottomNav from '@/components/ui/BottomNav'
 import RestTimer from '@/components/ui/RestTimer'
 import { useRouter } from 'next/navigation'
 
-const TODAY = new Date().toISOString().split('T')[0]
+function getLocalISODate() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 export default function DashboardPage() {
+  const [currentDate, setCurrentDate] = useState(getLocalISODate)
   const [userId, setUserId] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<DailyMetrics | null>(null)
   const [workout, setWorkout] = useState<Workout | null>(null)
@@ -36,8 +40,8 @@ export default function DashboardPage() {
     setUserId(user.id)
 
     const [m, w, b] = await Promise.all([
-      getDailyMetrics(user.id, TODAY),
-      getTodayWorkout(user.id),
+      getDailyMetrics(user.id, currentDate),
+      getTodayWorkout(user.id, currentDate),
       getUserBooks(user.id),
     ])
 
@@ -48,18 +52,42 @@ export default function DashboardPage() {
     if (w) {
       const exs = await getExercisesForWorkout(w.id)
       setExercises(exs)
+    } else {
+      setExercises([])
     }
 
     setLoading(false)
-  }, [router])
+  }, [router, currentDate])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    const checkDate = () => {
+      const actual = getLocalISODate()
+      if (actual !== currentDate) {
+        setLoading(true)
+        setCurrentDate(actual)
+      }
+    }
+
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkDate()
+    })
+    window.addEventListener('focus', checkDate)
+    const interval = setInterval(checkDate, 60000)
+
+    return () => {
+      window.removeEventListener('visibilitychange', checkDate)
+      window.removeEventListener('focus', checkDate)
+      clearInterval(interval)
+    }
+  }, [currentDate])
 
   async function saveMetrics(updates: Partial<DailyMetrics>, fieldKeys: string[]) {
     if (!userId) return
     setSavingFields(prev => new Set([...prev, ...fieldKeys]))
     try {
-      const updated = await upsertDailyMetrics(userId, TODAY, updates as any)
+      const updated = await upsertDailyMetrics(userId, currentDate, updates as any)
       setMetrics(updated)
     } finally {
       setSavingFields(prev => {
@@ -92,15 +120,44 @@ export default function DashboardPage() {
     }
   }
 
+  function handleToggleLock(field: 'reading_locked' | 'workout_locked') {
+    const isLocked = metrics?.[field] === true
+    setMetrics(m => m ? { ...m, [field]: !isLocked } : { [field]: !isLocked } as any)
+    saveMetrics({ [field]: !isLocked }, [field])
+  }
+
   async function handleStartWorkout() {
     if (!userId) return
     setStartingWorkout(true)
     try {
-      const w = await createWorkout(userId, TODAY)
+      const w = await createWorkout(userId, currentDate)
       setWorkout(w)
       setExercises([])
     } finally {
       setStartingWorkout(false)
+    }
+  }
+
+  async function handleResetMetrics() {
+    if (!userId) return
+    if (!confirm('¿Estás seguro de que quieres reiniciar las métricas y los hábitos de hoy?')) return
+    
+    const resetData = {
+      sleep_hours: null,
+      energy: null,
+      stress: null,
+      motivation: null,
+      free_time: null,
+      book_title: null,
+      pages_read: null
+    }
+    
+    setLoading(true)
+    try {
+      await upsertDailyMetrics(userId, currentDate, resetData)
+      setMetrics(prev => prev ? { ...prev, ...resetData } : null)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -123,9 +180,16 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
         <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-center relative">
+          <button
+            onClick={handleResetMetrics}
+            className="absolute left-4 text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+            title="Reiniciar métricas de hoy"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
 
           <p className="font-bold text-sm tracking-tight capitalize">
-            {new Date().toLocaleDateString('es-ES', {
+            {new Date(currentDate + 'T12:00:00').toLocaleDateString('es-ES', {
               day: '2-digit',
               month: '2-digit',
               year: 'numeric'
@@ -191,6 +255,8 @@ export default function DashboardPage() {
               bookSuggestions={books}
               onChange={handleReadingChange}
               saving={savingFields.has('book_title') || savingFields.has('pages_read')}
+              isLocked={metrics?.reading_locked ?? false}
+              onToggleLock={() => handleToggleLock('reading_locked')}
             />
           </div>
 
@@ -201,6 +267,8 @@ export default function DashboardPage() {
               exercises={exercises}
               onStart={handleStartWorkout}
               starting={startingWorkout}
+              isLocked={metrics?.workout_locked ?? false}
+              onToggleLock={() => handleToggleLock('workout_locked')}
             />
           </div>
 

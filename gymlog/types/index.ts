@@ -41,6 +41,8 @@ export interface DailyMetrics {
   pages_read: number | null
   book_total_pages: number | null
   free_time: number | null   // 1-5: cuánto tiempo libre tuviste hoy
+  reading_locked: boolean | null
+  workout_locked: boolean | null
   weather_temp: number | null
   weather_condition: string | null
   created_at: string
