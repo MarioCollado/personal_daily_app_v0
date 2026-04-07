@@ -1,16 +1,19 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, ChevronRight } from 'lucide-react'
+import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, ChevronRight, Lock, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import {
   getTodayWorkout, createWorkout, getExercisesForWorkout,
-  updateWorkoutName, getExerciseNames, getWorkoutHistory, duplicateWorkout
+  updateWorkoutName, getExerciseNames, getWorkoutHistory, duplicateWorkout,
+  getUserProfile, upsertUserProfile
 } from '@/lib/db'
-import type { Workout, Exercise, Set } from '@/types'
+import { getDailyMetrics, upsertDailyMetrics } from '@/lib/metrics'
+import type { Workout, Exercise, Set, UserProfile } from '@/types'
 import ExerciseCard from '@/components/workout/ExerciseCard'
 import AddExerciseModal from '@/components/workout/AddExerciseModal'
 import BottomNav from '@/components/ui/BottomNav'
 import RestTimer from '@/components/ui/RestTimer'
+import { useLongPress } from '@/hooks/useLongPress'
 import { useRouter } from 'next/navigation'
 import { clsx } from 'clsx'
 
@@ -36,6 +39,10 @@ export default function TodayPage() {
   const [showDuplicate, setShowDuplicate] = useState(false)
   const [lastWorkout, setLastWorkout] = useState<Workout | null>(null)
   const [duplicating, setDuplicating] = useState(false)
+  const [isLocked, setIsLocked] = useState(false)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [profileInput, setProfileInput] = useState({ weight: '', height: '', age: '' })
   const router = useRouter()
 
   const [currentDate, setCurrentDate] = useState(getLocalISODate)
@@ -47,6 +54,12 @@ export default function TodayPage() {
     setUserId(user.id)
 
     let w = await getTodayWorkout(user.id, currentDate)
+    const metrics = await getDailyMetrics(user.id, currentDate)
+    const userProfile = await getUserProfile(user.id).catch(() => null)
+    
+    setIsLocked(metrics?.workout_locked || false)
+    setProfile(userProfile)
+
     if (!w) {
       // show empty state, don't auto-create
     }
@@ -147,6 +160,37 @@ export default function TodayPage() {
     ))
   }
 
+  async function toggleLock() {
+    if (!userId) return
+    const nextState = !isLocked
+    setIsLocked(nextState)
+    await upsertDailyMetrics(userId, currentDate, { workout_locked: nextState })
+  }
+
+  function startEditingProfile() {
+    if (isLocked) return
+    setProfileInput({
+      weight: profile?.weight?.toString() || '',
+      height: profile?.height?.toString() || '',
+      age: profile?.age?.toString() || ''
+    })
+    setEditingProfile(true)
+  }
+
+  async function saveProfile() {
+    if (!userId) return
+    const updates = {
+      weight: parseFloat(profileInput.weight) || null,
+      height: parseInt(profileInput.height) || null,
+      age: parseInt(profileInput.age) || null
+    }
+    const up = await upsertUserProfile(userId, updates).catch(() => null)
+    if (up) setProfile(up)
+    setEditingProfile(false)
+  }
+
+  const longPress = useLongPress({ onLongPress: toggleLock })
+
   if (loading) {
     return (
       <div className="min-h-screen bg-surface-0 flex items-center justify-center">
@@ -176,7 +220,75 @@ export default function TodayPage() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 pt-4 space-y-4">
+      <main 
+        className={clsx(
+          "max-w-lg mx-auto px-4 pt-4 space-y-4 relative",
+          isLocked && "select-none [-webkit-touch-callout:none]"
+        )} 
+        {...longPress}
+      >
+        {isLocked && workout && (
+          <div className="absolute inset-0 z-50 bg-surface-0/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 m-2 rounded-2xl">
+            <div className="w-16 h-16 rounded-full bg-brand-500/20 flex items-center justify-center mb-4">
+              <Lock className="w-8 h-8 text-brand-400" />
+            </div>
+            <span className="text-brand-400 font-bold text-lg">Entreno Finalizado</span>
+            <span className="text-zinc-500 mt-2 text-sm text-center">Mantén pulsado para desbloquear</span>
+          </div>
+        )}
+
+        {/* User Profile Bar */}
+        <div className="bg-surface-1 border border-surface-border rounded-xl p-3 flex items-center justify-between shadow-sm animate-fade-in relative z-10 w-full">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-brand-500/10 flex items-center justify-center">
+              <User className="w-4 h-4 text-brand-500" />
+            </div>
+            {editingProfile ? (
+              <div className="flex items-center gap-1 sm:gap-2">
+                <input 
+                  type="number" 
+                  step="0.1"
+                  placeholder="kg"
+                  value={profileInput.weight}
+                  onChange={e => setProfileInput(s => ({ ...s, weight: e.target.value }))}
+                  className="w-14 sm:w-16 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
+                />
+                <input 
+                  type="number" 
+                  placeholder="cm"
+                  value={profileInput.height}
+                  onChange={e => setProfileInput(s => ({ ...s, height: e.target.value }))}
+                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
+                />
+                <input 
+                  type="number" 
+                  placeholder="años"
+                  value={profileInput.age}
+                  onChange={e => setProfileInput(s => ({ ...s, age: e.target.value }))}
+                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
+                />
+                <button onClick={saveProfile} className="text-brand-400 p-1.5 hover:bg-brand-500/10 rounded-md">
+                  <Check className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div onClick={startEditingProfile} className="flex flex-col cursor-pointer touch-manipulation group">
+                <span className="text-xs font-semibold text-white group-hover:text-brand-400 transition-colors">
+                  {profile?.weight ? `${profile.weight}kg` : '--kg'} • {profile?.height ? `${profile.height}cm` : '--cm'}
+                </span>
+                <span className="text-[10px] text-zinc-500">
+                  {profile?.age ? `${profile.age} años` : 'Añadir edad'}
+                </span>
+              </div>
+            )}
+          </div>
+          {!editingProfile && !isLocked && (
+            <button onClick={startEditingProfile} className="text-zinc-500 hover:text-white p-1.5 rounded-md hover:bg-surface-2 transition-colors touch-manipulation">
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
         {!workout ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">

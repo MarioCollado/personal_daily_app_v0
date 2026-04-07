@@ -1,5 +1,30 @@
 import { createClient } from './supabase-client'
-import type { Workout, Exercise, Set } from '../types'
+import type { Workout, Exercise, Set, UserProfile } from '../types'
+
+// ─── User Profile ────────────────────────────────────────────
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+  return data
+}
+
+export async function upsertUserProfile(userId: string, updates: Partial<Omit<UserProfile, 'user_id' | 'created_at' | 'updated_at'>>): Promise<UserProfile> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .upsert(
+      { user_id: userId, ...updates, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    )
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
 
 // ─── Workouts ────────────────────────────────────────────────
 export async function getTodayWorkout(userId: string, targetDate?: string): Promise<Workout | null> {

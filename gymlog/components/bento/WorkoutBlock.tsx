@@ -54,7 +54,6 @@ export default function WorkoutBlock({ workout, exercises, onStart, starting, is
         {hasWorkout && (
           <div className="absolute right-0 flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse-dot" />
-            <span className="text-[10px] text-brand-500 font-medium">Activo</span>
           </div>
         )}
       </div>

@@ -19,7 +19,14 @@ interface Props {
 const IS_CARDIO = (mg: string | null) => mg?.toLowerCase() === 'cardio'
 
 function parseTime(val: string): number | null {
-  const parts = val.trim().split(':').map(Number)
+  const trimmed = val.trim()
+  if (!trimmed) return null
+  // Plain number → treat as minutes (e.g. "30" → 1800 sec)
+  if (!trimmed.includes(':')) {
+    const mins = parseFloat(trimmed)
+    return isNaN(mins) ? null : Math.round(mins * 60)
+  }
+  const parts = trimmed.split(':').map(Number)
   if (parts.some(isNaN)) return null
   if (parts.length === 2) return parts[0] * 60 + parts[1]
   if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
@@ -46,6 +53,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
 
   const [expanded, setExpanded] = useState(true)
   const [adding, setAdding] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const distNum = parseFloat(distance)
@@ -63,12 +71,18 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
     : null
 
   async function handleAddSet() {
+    setAddError(null)
     if (isCardio) {
-      if (!distNum || distNum <= 0 || !durSec) return
+      if (!durSec) return
+      const safeDist = distNum > 0 ? distNum : 0
       setAdding(true)
       try {
-        const set = await addSet(exercise.id, 0, 0, undefined, undefined, distNum, durSec)
+        const set = await addSet(exercise.id, 0, 0, undefined, undefined, safeDist || undefined, durSec)
         onSetAdded(exercise.id, set)
+        setDistance('')
+        setDuration('')
+      } catch (e: any) {
+        setAddError(e?.message || 'Error al guardar el registro. Revisa la base de datos.')
       } finally { setAdding(false) }
     } else {
       const r = parseInt(reps)
@@ -78,6 +92,11 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
       try {
         const set = await addSet(exercise.id, r, w, rir ? parseInt(rir) : undefined)
         onSetAdded(exercise.id, set)
+        setReps('')
+        setWeight('')
+        setRir('')
+      } catch (e: any) {
+        setAddError(e?.message || 'Error al guardar la serie.')
       } finally { setAdding(false) }
     }
   }
@@ -207,7 +226,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                     <label className={text.label + ' block mb-1'}>Tiempo</label>
                     <input
                       type="text"
-                      placeholder="mm:ss"
+                      placeholder="mm:ss o minutos"
                       value={duration}
                       onChange={e => setDuration(e.target.value)}
                       className={input.cardio}
@@ -226,12 +245,16 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
 
                 <button
                   onClick={handleAddSet}
-                  disabled={adding || !distNum || !durSec || distNum <= 0}
+                  disabled={adding || !durSec}
                   className={clsx(btn.primary, 'w-full flex items-center justify-center gap-2 disabled:opacity-40')}
                 >
                   <Plus className="w-4 h-4" />
                   {adding ? 'Guardando...' : 'Registrar'}
                 </button>
+
+                {addError && (
+                  <p className="text-xs text-red-400 mt-1 text-center">{addError}</p>
+                )}
 
               </div>
             ) : (

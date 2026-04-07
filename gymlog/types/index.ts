@@ -6,6 +6,15 @@ export interface Workout {
   created_at: string
 }
 
+export interface UserProfile {
+  user_id: string
+  weight: number | null
+  height: number | null
+  age: number | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Exercise {
   id: string
   workout_id: string

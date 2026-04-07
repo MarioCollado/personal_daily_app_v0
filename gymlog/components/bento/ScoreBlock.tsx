@@ -40,10 +40,10 @@ function computeScore(m: DailyMetrics | null, hasWorkout: boolean): number {
     if (filled) {
       const moodAvg = moodVals.reduce((a, b) => a + b, 0) / moodVals.length
       const stressAdj = stressVals.length ? (5 - stressVals[0]) / 4 : 0.5
-      points = Math.round(((moodAvg / 5) * 0.7 + stressAdj * 0.3) * 25)
+      points = Math.round(((moodAvg / 5) * 0.7 + stressAdj * 0.3) * 20)
     }
 
-    pillars.push({ filled, points, max: 25 })
+    pillars.push({ filled, points, max: 20 })
   }
 
   // Lectura
@@ -53,17 +53,17 @@ function computeScore(m: DailyMetrics | null, hasWorkout: boolean): number {
 
     if (filled) {
       const p = m!.pages_read!
-      if (p >= 30) points = 20
-      else if (p >= 15) points = 14
-      else if (p >= 5) points = 8
+      if (p >= 30) points = 15
+      else if (p >= 15) points = 10
+      else if (p >= 5) points = 6
       else points = 3
     }
 
-    pillars.push({ filled, points, max: 20 })
+    pillars.push({ filled, points, max: 15 })
   }
 
   // Entreno
-  pillars.push({ filled: hasWorkout, points: hasWorkout ? 20 : 0, max: 20 })
+  pillars.push({ filled: hasWorkout, points: hasWorkout ? 30 : 0, max: 30 })
 
   // Tiempo libre
   {
@@ -82,7 +82,7 @@ function computeScore(m: DailyMetrics | null, hasWorkout: boolean): number {
   const maxPoints = pillars.reduce((a, p) => a + p.max, 0)
 
   const empty = pillars.filter(p => !p.filled).length
-  const penalty = empty * 8
+  const penalty = empty * 4
 
   return Math.max(0, Math.round((rawPoints / maxPoints) * 100) - penalty)
 }
@@ -187,7 +187,7 @@ export default function ScoreBlock({ metrics, hasWorkout }: Props) {
       {/* Penalty hint */}
       {filled < total && (
         <div className="text-[10px] text-red-700 text-center mt-1">
-          -{(total - filled) * 8} pen.
+          -{(total - filled) * 4} pen.
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { LogOut, RotateCcw } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { LogOut, RotateCcw, Sparkles, Bell, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import { getTodayWorkout, createWorkout, getExercisesForWorkout } from '@/lib/db'
 import { getDailyMetrics, upsertDailyMetrics, getUserBooks } from '@/lib/metrics'
@@ -12,8 +12,9 @@ import ReadingBlock from '@/components/bento/ReadingBlock'
 import WorkoutBlock from '@/components/bento/WorkoutBlock'
 import ScoreBlock from '@/components/bento/ScoreBlock'
 import BottomNav from '@/components/ui/BottomNav'
-import RestTimer from '@/components/ui/RestTimer'
 import { useRouter } from 'next/navigation'
+import { getDailyAdvice } from '@/lib/advisor'
+import { useAdvisor } from '@/hooks/useAdvisor'
 
 function getLocalISODate() {
   const d = new Date()
@@ -32,6 +33,9 @@ export default function DashboardPage() {
   const [startingWorkout, setStartingWorkout] = useState(false)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const router = useRouter()
+
+  const rawAdvice = useMemo(() => getDailyAdvice(metrics, !!workout), [metrics, workout])
+  const { advice, isDismissed, dismissAdvice, restoreAdvice } = useAdvisor(rawAdvice)
 
   const load = useCallback(async () => {
     const supabase = createClient()
@@ -196,6 +200,15 @@ export default function DashboardPage() {
             })}
           </p>
 
+          {/* Alert Bell */}
+          <div className="absolute right-12 flex items-center">
+            {advice && isDismissed && (
+              <button onClick={restoreAdvice} className="text-brand-400 hover:bg-surface-2 p-1.5 rounded-lg transition-colors">
+                <Bell className="w-4 h-4 animate-pulse" />
+              </button>
+            )}
+          </div>
+
           <button
             onClick={handleSignOut}
             className="absolute right-4 text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
@@ -275,7 +288,46 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {workout && <RestTimer />}
+      {/* Advisor Modal (centered + blur backdrop, like lock overlays) */}
+      {advice && !isDismissed && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+          onClick={dismissAdvice}
+        >
+          <div
+            className="bg-surface-1 border border-surface-border shadow-2xl rounded-2xl p-6 w-full max-w-sm relative animate-slide-up"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close */}
+            <button
+              onClick={dismissAdvice}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-1 touch-manipulation"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Icon + title */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-brand-500/15 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-brand-400" />
+              </div>
+              <p className="font-semibold text-white text-sm">Tu Coach Diario</p>
+            </div>
+
+            {/* Message */}
+            <p className="text-sm text-zinc-300 leading-relaxed">{advice.text}</p>
+
+            {/* Dismiss button */}
+            <button
+              onClick={dismissAdvice}
+              className="mt-5 w-full py-2.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-zinc-400 hover:text-white text-sm transition-colors touch-manipulation"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
       <BottomNav />
     </div>
   )
