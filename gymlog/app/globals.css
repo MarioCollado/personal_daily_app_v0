@@ -101,13 +101,13 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-500 text-black font-semibold rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
+    @apply bg-brand-500 text-brand-foreground font-semibold rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
   }
   .btn-primary:hover { @apply bg-brand-600; }
   .btn-primary:active { @apply bg-brand-700; }
 
   .btn-ghost {
-    @apply bg-surface-3 text-white rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
+    @apply bg-surface-3 text-main rounded-xl px-4 py-2.5 transition-colors duration-100 select-none touch-manipulation;
   }
   .btn-ghost:hover { @apply bg-surface-4; }
   .btn-ghost:active { @apply bg-surface-4; }
@@ -125,7 +125,7 @@
   }
 
   .input-field {
-    @apply bg-surface-2 border border-surface-border rounded-xl px-3 py-2.5 text-white placeholder-zinc-500 transition-colors duration-100 w-full;
+    @apply bg-surface-2 border border-surface-border rounded-xl px-3 py-2.5 text-main placeholder-muted transition-colors duration-100 w-full;
   }
   .input-field:focus {
     @apply outline-none border-brand-500 ring-1 ring-brand-500;

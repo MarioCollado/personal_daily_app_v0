@@ -15,12 +15,12 @@ const START_DEG = 150
 const TOTAL_DEG = 240
 
 function getSleepColor(h: number | null): string {
-  if (h === null) return '#3f3f46'
-  if (h < 5) return '#ef4444'
-  if (h < 6.5) return '#f97316'
-  if (h < 7.5) return '#eab308'
-  if (h <= 9) return '#22c55e'
-  return '#3b82f6'
+  if (h === null) return 'var(--text-muted)'
+  if (h < 5) return '#ef4444' // Red
+  if (h < 6.5) return '#f97316' // Orange
+  if (h < 7.5) return '#eab308' // Yellow
+  if (h <= 9) return 'var(--brand)' // Brand Green
+  return '#3b82f6' // Blue
 }
 
 function getSleepLabel(h: number | null): string {
@@ -98,9 +98,9 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
       <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <Moon className="w-3.5 h-3.5 text-blue-400" />
-          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">Sueño</span>
+          <span className="text-[11px] font-bold text-muted uppercase tracking-widest">Sueño</span>
         </div>
-        {saving && <span className="absolute right-0 text-[10px] text-zinc-600 animate-pulse-dot">guardando</span>}
+        {saving && <span className="absolute right-0 text-[10px] text-muted animate-pulse-dot">guardando</span>}
       </div>
 
       <div className="flex-1 flex items-center justify-center">
@@ -119,7 +119,8 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
           <circle
             cx={CX} cy={CY} r={R}
             fill="none"
-            stroke="#1f1f1f"
+            stroke="currentColor"
+            className="text-surface-border/50"
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={`${trackDash} ${trackGap}`}
@@ -143,19 +144,19 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
             <circle
               cx={thumb.x} cy={thumb.y} r="6"
               fill={color}
-              stroke="#0a0a0a"
+              stroke="var(--surface-0)"
               strokeWidth="2"
             />
           )}
 
-          <text x="60" y="54" textAnchor="middle" fill="#3f3f46" fontSize="22" fontWeight="700" fontFamily="monospace">
+          <text x="60" y="54" textAnchor="middle" fill="var(--text-main)" fontSize="22" fontWeight="700" fontFamily="monospace">
             {display !== null ? display : '—'}
           </text>
-          <text x="60" y="67" textAnchor="middle" fill="#71717a" fontSize="8">
+          <text x="60" y="67" textAnchor="middle" fill="var(--text-muted)" fontSize="8">
             {display !== null ? 'horas' : 'toca para editar'}
           </text>
           <text x="60" y="78" textAnchor="middle" fontSize="7.5" fontWeight="600"
-            fill={display !== null ? color : '#3f3f46'}>
+            fill={display !== null ? color : 'var(--text-muted)'}>
             {getSleepLabel(display)}
           </text>
         </svg>
@@ -167,8 +168,10 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
             key={h}
             onClick={() => { setLocalVal(h); onChange(h) }}
             className={clsx(
-              'flex-1 text-[11px] font-mono py-1 rounded-lg transition-colors',
-              display === h ? 'text-black font-bold' : 'text-zinc-600 hover:text-zinc-300 hover:bg-surface-2'
+              'flex-1 text-[11px] font-mono py-1 rounded-lg transition-all duration-200',
+              display === h 
+                ? 'bg-brand-500 text-brand-foreground font-bold shadow-sm' 
+                : 'bg-surface-2 text-muted hover:text-main hover:bg-surface-3'
             )}
             style={{ backgroundColor: display === h ? color : undefined }}
           >

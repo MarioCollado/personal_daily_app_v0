@@ -50,16 +50,16 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
             <Lock className="w-5 h-5 text-violet-400" />
           </div>
           <span className="text-violet-400 font-medium text-xs">Bloqueado</span>
-          <span className="text-zinc-500 text-[10px] mt-1 text-center">Mantén pulsado para abrir</span>
+          <span className="text-muted text-[10px] mt-1 text-center font-medium">Mantén pulsado para abrir</span>
         </div>
       )}
 
       <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <BookOpen className="w-3.5 h-3.5 text-violet-400" />
-          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">Lectura</span>
+          <span className="text-[11px] font-bold text-muted uppercase tracking-widest">Lectura</span>
         </div>
-        {saving && <span className="absolute right-0 text-[10px] text-zinc-600 animate-pulse-dot">guardando</span>}
+        {saving && <span className="absolute right-0 text-[10px] text-muted animate-pulse-dot">guardando</span>}
       </div>
 
       <div className="mb-3 relative">
@@ -74,13 +74,13 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
               onBlur={() => setTimeout(commitBook, 150)}
               onKeyDown={e => e.key === 'Enter' && commitBook()}
               placeholder="Escribe o elige uno..."
-              className="w-full bg-surface-2 border border-surface-border rounded-lg px-2 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-500"
+              className="w-full bg-surface-2 border border-surface-border rounded-lg px-2 py-1.5 text-xs text-main placeholder-muted focus:outline-none focus:border-violet-500"
             />
             {showSuggestions && filtered.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-0.5 bg-surface-2 border border-surface-border rounded-lg overflow-hidden z-10 shadow-xl">
                 {filtered.slice(0, 4).map(s => (
                   <button key={s} onMouseDown={() => { setBookInput(s); onChange({ book_title: s }); setEditingBook(false); setShowSuggestions(false) }}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-surface-3 transition-colors border-b border-surface-border last:border-0 truncate">
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-surface-3 text-main transition-colors border-b border-surface-border last:border-0 truncate">
                     {s}
                   </button>
                 ))}
@@ -89,44 +89,44 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
           </>
         ) : (
           <button onClick={() => { setEditingBook(true); setBookInput(bookTitle || '') }}
-            className={clsx('w-full text-left text-xs rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2 group flex items-center justify-between gap-1',
-              bookTitle ? 'text-white font-medium' : 'text-zinc-600')}>
+            className={clsx('w-full text-left text-xs rounded-lg px-2.5 py-2 transition-colors hover:bg-surface-2 group flex items-center justify-between gap-1',
+              bookTitle ? 'text-main font-bold' : 'text-muted border border-dashed border-surface-border')}>
             <span className="truncate">{bookTitle || 'Añadir libro...'}</span>
-            <ChevronDown className="w-3 h-3 text-zinc-700 flex-shrink-0 opacity-0 group-hover:opacity-100" />
+            <ChevronDown className="w-3 h-3 text-muted flex-shrink-0 opacity-0 group-hover:opacity-100" />
           </button>
         )}
       </div>
 
-      <div className="flex items-center gap-2 mb-3">
-        <button onClick={() => addPages(-5)} className="w-7 h-7 rounded-lg bg-surface-2 hover:bg-surface-3 flex items-center justify-center text-zinc-400 hover:text-white transition-colors touch-manipulation">
-          <Minus className="w-3 h-3" />
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <button onClick={() => addPages(-5)} className="w-8 h-8 rounded-lg bg-surface-2 hover:bg-surface-3 flex items-center justify-center text-muted hover:text-main transition-colors touch-manipulation">
+          <Minus className="w-3.5 h-3.5" />
         </button>
         <div className="flex-1 text-center">
-          <span className="text-2xl font-mono font-bold">{pagesRead ?? 0}</span>
-          <span className="text-xs text-zinc-600 ml-1">pág. hoy</span>
+          <span className="text-2xl font-mono font-bold text-main leading-none">{pagesRead ?? 0}</span>
+          <div className="text-[10px] text-muted font-bold uppercase tracking-tighter mt-1">pág. hoy</div>
         </div>
-        <button onClick={() => addPages(5)} className="w-7 h-7 rounded-lg bg-surface-2 hover:bg-surface-3 flex items-center justify-center text-zinc-400 hover:text-white transition-colors touch-manipulation">
-          <Plus className="w-3 h-3" />
+        <button onClick={() => addPages(5)} className="w-8 h-8 rounded-lg bg-surface-2 hover:bg-surface-3 flex items-center justify-center text-muted hover:text-main transition-colors touch-manipulation">
+          <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      <div className="flex gap-1 mb-3">
+      <div className="flex gap-1.5 mb-4">
         {[1, 10, 25, 50].map(n => (
           <button key={n} onClick={() => addPages(n)}
-            className="flex-1 text-[11px] font-mono py-1 rounded-lg bg-surface-2 hover:bg-violet-500/20 hover:text-violet-300 text-zinc-500 transition-colors touch-manipulation">
+            className="flex-1 text-[11px] font-mono font-bold py-1.5 rounded-lg bg-surface-2 hover:bg-violet-500/20 hover:text-violet-400 text-muted transition-all duration-200 touch-manipulation">
             +{n}
           </button>
         ))}
       </div>
 
       {bookTitle && bookTotalPages && (
-        <div>
-          <div className="flex justify-between text-[10px] text-zinc-600 mb-1">
+        <div className="px-1">
+          <div className="flex justify-between text-[10px] font-bold text-muted mb-1.5 uppercase tracking-tighter">
             <span>{pagesRead ?? 0} / {bookTotalPages} pág.</span>
             <span>{progress ?? 0}%</span>
           </div>
-          <div className="h-1.5 bg-surface-2 rounded-full overflow-hidden">
-            <div className="h-full bg-violet-500 rounded-full transition-all duration-300"
+          <div className="h-1.5 bg-surface-3 rounded-full overflow-hidden">
+            <div className="h-full bg-violet-500 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]"
               style={{ width: `${progress ?? 0}%` }} />
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function ReadingBlock({ bookTitle, pagesRead, bookTotalPages, boo
             const total = prompt('Total de páginas del libro:')
             if (total && !isNaN(Number(total))) onChange({ book_total_pages: Number(total) })
           }}
-          className="text-[10px] text-zinc-700 hover:text-violet-400 transition-colors text-left">
+          className="text-[10px] font-bold uppercase tracking-tighter text-muted hover:text-violet-400 transition-colors text-center w-full mt-2">
           + añadir total páginas
         </button>
       )}

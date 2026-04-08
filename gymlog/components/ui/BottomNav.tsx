@@ -15,7 +15,9 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
+    <>
+      <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-surface-0 via-surface-0/70 to-transparent pointer-events-none z-30" />
+      <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
       <nav className="flex items-center gap-1 p-2 bg-surface-1/80 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl shadow-black/20 pointer-events-auto max-w-fit mx-auto">
         {TABS.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href)
@@ -40,5 +42,6 @@ export default function BottomNav() {
         })}
       </nav>
     </div>
+    </>
   )
 }

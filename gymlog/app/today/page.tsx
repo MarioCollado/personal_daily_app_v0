@@ -12,6 +12,7 @@ import type { Workout, Exercise, Set, UserProfile } from '@/types'
 import ExerciseCard from '@/components/workout/ExerciseCard'
 import AddExerciseModal from '@/components/workout/AddExerciseModal'
 import BottomNav from '@/components/ui/BottomNav'
+import PageHeader from '@/components/ui/PageHeader'
 import RestTimer from '@/components/ui/RestTimer'
 import { useLongPress } from '@/hooks/useLongPress'
 import { useRouter } from 'next/navigation'
@@ -197,7 +198,7 @@ export default function TodayPage() {
       <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-zinc-600 text-sm">Cargando...</p>
+          <p className="text-muted text-sm font-medium">Cargando sesión...</p>
         </div>
       </div>
     )
@@ -206,23 +207,21 @@ export default function TodayPage() {
   return (
     <div className="min-h-screen bg-surface-0 pb-32">
       {/* Header */}
-      <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <PageHeader innerClassName="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Dumbbell className="w-5 h-5 text-brand-500" />
-              <h1 className="font-bold text-base">Entreno de hoy</h1>
+              <Dumbbell className="w-5 h-5 text-brand" />
+              <h1 className="font-bold text-base text-main">Entreno de hoy</h1>
             </div>
-            <p className="text-zinc-500 text-xs capitalize mt-0.5">{formatDate(currentDate)}</p>
+            <p className="text-muted text-xs font-bold capitalize mt-0.5 tracking-tight">{formatDate(currentDate)}</p>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button onClick={handleSignOut} className="text-zinc-600 hover:text-white p-2 rounded-lg hover:bg-surface-2 transition-colors">
+            <button onClick={handleSignOut} className="text-muted hover:text-main p-2 rounded-lg hover:bg-surface-2 transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      </header>
+      </PageHeader>
 
       <main
         className={clsx(
@@ -232,12 +231,12 @@ export default function TodayPage() {
         {...longPress}
       >
         {isLocked && workout && (
-          <div className="absolute inset-0 z-50 bg-surface-0/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 m-2 rounded-2xl">
+          <div className="absolute inset-0 z-20 bg-surface-0/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 m-2 rounded-2xl">
             <div className="w-16 h-16 rounded-full bg-brand-500/20 flex items-center justify-center mb-4">
-              <Lock className="w-8 h-8 text-brand-400" />
+              <Lock className="w-8 h-8 text-brand" />
             </div>
-            <span className="text-brand-400 font-bold text-lg">Entreno Finalizado</span>
-            <span className="text-zinc-500 mt-2 text-sm text-center">Mantén pulsado para desbloquear</span>
+            <span className="text-brand font-bold text-xl">Entreno Finalizado</span>
+            <span className="text-muted mt-2 text-sm text-center font-bold">Mantén pulsado para desbloquear</span>
           </div>
         )}
 
@@ -255,21 +254,21 @@ export default function TodayPage() {
                   placeholder="kg"
                   value={profileInput.weight}
                   onChange={e => setProfileInput(s => ({ ...s, weight: e.target.value }))}
-                  className="w-14 sm:w-16 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
+                  className="w-14 sm:w-16 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
                 />
                 <input
                   type="number"
                   placeholder="cm"
                   value={profileInput.height}
                   onChange={e => setProfileInput(s => ({ ...s, height: e.target.value }))}
-                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
+                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
                 />
                 <input
                   type="number"
                   placeholder="años"
                   value={profileInput.age}
                   onChange={e => setProfileInput(s => ({ ...s, age: e.target.value }))}
-                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-white touch-manipulation"
+                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
                 />
                 <button onClick={saveProfile} className="text-brand-400 p-1.5 hover:bg-brand-500/10 rounded-md">
                   <Check className="w-4 h-4" />
@@ -277,17 +276,17 @@ export default function TodayPage() {
               </div>
             ) : (
               <div onClick={startEditingProfile} className="flex flex-col cursor-pointer touch-manipulation group">
-                <span className="text-xs font-semibold text-white group-hover:text-brand-400 transition-colors">
+                <span className="text-xs font-bold text-main group-hover:text-brand transition-colors">
                   {profile?.weight ? `${profile.weight}kg` : '--kg'} • {profile?.height ? `${profile.height}cm` : '--cm'}
                 </span>
-                <span className="text-[10px] text-zinc-500">
+                <span className="text-[10px] text-muted font-bold tracking-tight">
                   {profile?.age ? `${profile.age} años` : 'Añadir edad'}
                 </span>
               </div>
             )}
           </div>
           {!editingProfile && !isLocked && (
-            <button onClick={startEditingProfile} className="text-zinc-500 hover:text-white p-1.5 rounded-md hover:bg-surface-2 transition-colors touch-manipulation">
+            <button onClick={startEditingProfile} className="text-muted hover:text-main p-1.5 rounded-md hover:bg-surface-2 transition-colors touch-manipulation">
               <Pencil className="w-3.5 h-3.5" />
             </button>
           )}
@@ -296,11 +295,11 @@ export default function TodayPage() {
         {!workout ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-            <div className="w-20 h-20 rounded-2xl bg-surface-2 flex items-center justify-center mb-5">
-              <Dumbbell className="w-10 h-10 text-zinc-600" />
+            <div className="w-20 h-20 rounded-2xl bg-surface-2 flex items-center justify-center mb-5 border border-surface-border shadow-inner">
+              <Dumbbell className="w-10 h-10 text-muted" />
             </div>
-            <h2 className="font-semibold text-xl mb-2">Sin entreno hoy</h2>
-            <p className="text-zinc-500 text-sm mb-6 max-w-xs">Empieza tu sesión de entrenamiento o duplica la última.</p>
+            <h2 className="font-bold text-2xl mb-2 text-main">Sin entreno hoy</h2>
+            <p className="text-muted text-sm mb-6 max-w-xs font-medium">Empieza tu sesión de entrenamiento o duplica la última de tu historial.</p>
             <div className="flex flex-col gap-3 w-full max-w-xs">
               <button onClick={startWorkout} className="btn-primary flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" /> Empezar entreno
@@ -333,8 +332,8 @@ export default function TodayPage() {
                 </>
               ) : (
                 <button onClick={() => setEditingName(true)}
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors group py-1">
-                  <span className="font-medium">{workout.name || 'Sesión sin nombre'}</span>
+                  className="flex items-center gap-2 text-muted hover:text-main text-sm transition-colors group py-1">
+                  <span className="font-bold tracking-tight">{workout.name || 'Sesión sin nombre'}</span>
                   <Pencil className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               )}
@@ -342,23 +341,22 @@ export default function TodayPage() {
 
             {/* Stats bar */}
             {exercises.length > 0 && (
-              <div className="flex gap-4 text-sm bg-surface-1 border border-surface-border rounded-xl px-4 py-3 animate-fade-in">
-                <div className="text-center">
-                  <div className="font-bold text-brand-400">{exercises.length}</div>
-                  <div className="text-zinc-600 text-xs">ejercicios</div>
+              <div className="flex gap-4 text-sm bg-surface-1 border border-surface-border rounded-xl px-4 py-3 animate-fade-in shadow-sm">
+                <div className="text-center flex-1">
+                  <div className="font-mono font-bold text-lg text-brand leading-none mb-1">{exercises.length}</div>
+                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">ejercicios</div>
                 </div>
                 <div className="w-px bg-surface-border" />
-                <div className="text-center">
-                  <div className="font-bold">{exercises.reduce((a, e) => a + (e.sets?.length || 0), 0)}</div>
-                  <div className="text-zinc-600 text-xs">series</div>
+                <div className="text-center flex-1">
+                  <div className="font-mono font-bold text-lg text-main leading-none mb-1">{exercises.reduce((a, e) => a + (e.sets?.length || 0), 0)}</div>
+                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">series</div>
                 </div>
                 <div className="w-px bg-surface-border" />
-                <div className="text-center">
-                  <div className="font-bold">
+                <div className="text-center flex-1">
+                  <div className="font-mono font-bold text-lg text-main leading-none mb-1">
                     {exercises.reduce((a, e) => a + (e.sets || []).reduce((b, s) => b + s.reps * s.weight, 0), 0).toLocaleString()}
-                    <span className="text-zinc-600 text-xs font-normal"> kg</span>
                   </div>
-                  <div className="text-zinc-600 text-xs">volumen</div>
+                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">volumen kg</div>
                 </div>
               </div>
             )}
@@ -378,17 +376,17 @@ export default function TodayPage() {
 
             {/* Add exercise button */}
             <button onClick={() => setShowAddExercise(true)}
-              className="w-full border-2 border-dashed border-surface-border hover:border-brand-500/50 hover:bg-brand-500/5 rounded-2xl py-4 flex items-center justify-center gap-2 text-zinc-500 hover:text-brand-400 transition-all duration-150 touch-manipulation">
-              <Plus className="w-5 h-5" />
-              <span className="font-medium">Añadir ejercicio</span>
+              className="w-full border-2 border-dashed border-surface-border hover:border-brand/40 hover:bg-brand/5 rounded-2xl py-5 flex items-center justify-center gap-2 text-muted hover:text-brand transition-all duration-200 touch-manipulation group">
+              <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <span className="font-bold uppercase tracking-widest text-xs">Añadir ejercicio</span>
             </button>
           </>
         )}
       </main>
 
-      {workout && (
+      {/* {workout && (
         <RestTimer />
-      )}
+      )} */}
 
       {showAddExercise && workout && (
         <AddExerciseModal

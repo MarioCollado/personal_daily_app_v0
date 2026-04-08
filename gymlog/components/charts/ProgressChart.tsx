@@ -16,7 +16,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-surface-2 border border-surface-border rounded-xl px-3 py-2 text-xs shadow-xl">
-        <p className="font-medium text-zinc-300 mb-1">{label}</p>
+        <p className="font-medium text-main mb-1">{label}</p>
         <p className="text-brand-400 font-mono font-bold">{payload[0]?.value} kg</p>
       </div>
     )
@@ -30,32 +30,32 @@ export default function ProgressChart({ data }: Props) {
       <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
         <defs>
           <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+            <stop offset="5%" stopColor="var(--brand)" stopOpacity={0.35} />
+            <stop offset="95%" stopColor="var(--brand)" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" vertical={false} />
         <XAxis
           dataKey="date"
-          tick={{ fill: '#52525b', fontSize: 10 }}
+          tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tick={{ fill: '#52525b', fontSize: 10 }}
+          tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
           axisLine={false}
           tickLine={false}
           domain={['auto', 'auto']}
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#333', strokeWidth: 1 }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--surface-border)', strokeWidth: 1 }} />
         <Area
           type="monotone"
           dataKey="maxWeight"
-          stroke="#22c55e"
+          stroke="var(--brand)"
           strokeWidth={2}
           fill="url(#weightGradient)"
-          dot={{ fill: '#22c55e', r: 3, strokeWidth: 0 }}
-          activeDot={{ r: 5, fill: '#4ade80', strokeWidth: 0 }}
+          dot={{ fill: 'var(--brand)', r: 3, strokeWidth: 0 }}
+          activeDot={{ r: 5, fill: 'var(--brand)', strokeWidth: 0 }}
         />
       </AreaChart>
     </ResponsiveContainer>

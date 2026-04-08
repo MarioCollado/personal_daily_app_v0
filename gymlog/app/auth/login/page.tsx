@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, Loader2, Rocket } from 'lucide-react'
+import { feedback } from '@/styles/components'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -52,14 +53,14 @@ export default function LoginPage() {
           <div className="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-4">
             <Rocket className="w-8 h-8 text-brand-500" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">VITAL</h1>
-          <p className="text-zinc-500 text-sm mt-1">Harder, Better, Faster, Stronger</p>
+          <h1 className="text-2xl font-bold tracking-tight text-main">VITAL</h1>
+          <p className="text-muted text-sm mt-1">Harder, Better, Faster, Stronger</p>
         </div>
 
         <div className="card p-6 space-y-4">
           <div className="space-y-3">
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
               <input
                 type="email"
                 placeholder="Email"
@@ -70,7 +71,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
               <input
                 type="password"
                 placeholder="Contraseña"
@@ -82,8 +83,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {error && <p className="text-red-400 text-sm bg-red-500/10 rounded-lg px-3 py-2">{error}</p>}
-          {message && <p className="text-brand-400 text-sm bg-brand-500/10 rounded-lg px-3 py-2">{message}</p>}
+          {error && <p className={feedback.error}>{error}</p>}
+          {message && <p className={feedback.success}>{message}</p>}
 
           <button onClick={handleSubmit} disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -91,7 +92,7 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <p className="text-center text-sm text-zinc-500 mt-4">
+        <p className="text-center text-sm text-muted mt-4">
           {mode === 'login' ? '¿Sin cuenta?' : '¿Ya tienes cuenta?'}{' '}
           <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-brand-400 hover:text-brand-300 transition-colors">
             {mode === 'login' ? 'Regístrate' : 'Inicia sesión'}

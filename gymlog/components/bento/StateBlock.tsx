@@ -36,9 +36,9 @@ function DotRow({
           className={clsx(
             'flex-1 h-5 sm:h-6 flex-shrink-0 rounded-[4px] sm:rounded-md',
             'transition-all duration-100 active:scale-90',
-            value !== null && i <= value ? 'opacity-100' : 'opacity-20 hover:opacity-50'
+            value !== null && i <= value ? 'opacity-100 shadow-sm' : 'bg-surface-3 opacity-30 hover:opacity-50'
           )}
-          style={{ backgroundColor: value !== null && i <= value ? color : '#3f3f46' }}
+          style={{ backgroundColor: value !== null && i <= value ? color : undefined }}
         />
       ))}
     </div>
@@ -56,13 +56,13 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
       <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <Brain className="w-3.5 h-3.5 text-purple-400" />
-          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">
+          <span className="text-[11px] font-bold text-muted uppercase tracking-widest">
             Estado
           </span>
         </div>
 
         {saving && (
-          <span className="absolute right-0 text-[10px] text-zinc-600 animate-pulse-dot">
+          <span className="absolute right-0 text-[10px] text-muted animate-pulse-dot">
             guardando
           </span>
         )}
@@ -77,14 +77,14 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
 
               <div className="flex items-center gap-1.5 w-20 sm:w-24 flex-shrink-0">
                 <Icon className="w-3 h-3 flex-shrink-0" style={{ color }} />
-                <span className="text-[11px] sm:text-xs text-zinc-500 truncate">
+                <span className="text-[11px] sm:text-xs text-muted font-medium truncate">
                   {label}
                 </span>
               </div>
 
               <DotRow value={val} color={color} max={5} onClick={v => onChange(key, v)} />
 
-              <span className="text-xs font-mono text-zinc-600 w-4 text-right flex-shrink-0">
+              <span className="text-xs font-mono text-muted w-4 text-right flex-shrink-0">
                 {val ?? '—'}
               </span>
             </div>

@@ -5,6 +5,9 @@ import { createClient } from '@/lib/supabase-client'
 import { getWorkoutHistory, getExercisesForWorkout } from '@/lib/db'
 import type { Workout, Exercise } from '@/types'
 import BottomNav from '@/components/ui/BottomNav'
+import PageHeader from '@/components/ui/PageHeader'
+import PageLoader from '@/components/ui/PageLoader'
+import EmptyState from '@/components/ui/EmptyState'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { clsx } from 'clsx'
@@ -22,8 +25,8 @@ function formatDate(iso: string) {
 function daysAgo(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso + 'T00:00:00').getTime()) / 86400000)
   if (diff === 0) return ''
-  if (diff === 1) return 'hace 1 día'
-  return `hace ${diff} días`
+  if (diff === 1) return 'hace 1 dia'
+  return `hace ${diff} dias`
 }
 
 interface WorkoutWithExercises extends Workout {
@@ -51,99 +54,101 @@ export default function HistoryPage() {
 
   async function toggleExpand(workoutId: string) {
     if (expanded === workoutId) { setExpanded(null); return }
-    const w = workouts.find(w => w.id === workoutId)
-    if (!w?.exercises) {
+    const workout = workouts.find(item => item.id === workoutId)
+    if (!workout?.exercises) {
       setLoadingDetail(workoutId)
       const exs = await getExercisesForWorkout(workoutId)
-      setWorkouts(prev => prev.map(w => w.id === workoutId ? { ...w, exercises: exs } : w))
+      setWorkouts(prev => prev.map(item => item.id === workoutId ? { ...item, exercises: exs } : item))
       setLoadingDetail(null)
     }
     setExpanded(workoutId)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
+  if (loading) return <PageLoader />
 
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
-      <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-brand-500" />
-              <h1 className="font-bold text-base">Historial</h1>
-            </div>
-            <p className="text-zinc-500 text-xs mt-0.5">{workouts.length} sesiones registradas</p>
+      <PageHeader innerClassName="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-brand-500" />
+            <h1 className="font-bold text-base text-main">Historial</h1>
           </div>
-          <ThemeToggle />
+          <p className="text-muted text-xs mt-0.5">{workouts.length} sesiones registradas</p>
         </div>
-      </header>
+        <ThemeToggle />
+      </PageHeader>
 
       <main className="max-w-lg mx-auto px-4 pt-4 space-y-2">
         {workouts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Calendar className="w-12 h-12 text-zinc-700 mb-4" />
-            <p className="text-zinc-500">Aún no hay entrenos registrados.</p>
-            <Link href="/today" className="btn-primary mt-4 text-sm">Empezar ahora</Link>
-          </div>
+          <EmptyState
+            icon={<Calendar className="w-8 h-8 text-muted" />}
+            title="Sin historial"
+            description="Aun no hay entrenos registrados."
+            action={<Link href="/today" className="btn-primary text-sm">Empezar ahora</Link>}
+          />
         ) : (
-          workouts.map(w => (
-            <div key={w.id} className="card overflow-hidden animate-fade-in">
+          workouts.map(workout => (
+            <div key={workout.id} className="card overflow-hidden animate-fade-in">
               <button
-                onClick={() => toggleExpand(w.id)}
+                onClick={() => toggleExpand(workout.id)}
                 className="w-full flex items-center gap-3 p-4 text-left touch-manipulation"
               >
                 <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center flex-shrink-0">
-                  <Dumbbell className="w-5 h-5 text-zinc-500" />
+                  <Dumbbell className="w-5 h-5 text-muted" />
                 </div>
+
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold capitalize">{formatDate(w.date)}</div>
-                  <div className="text-zinc-500 text-xs flex items-center gap-2">
-                    <span>{daysAgo(w.date)}</span>
-                    {w.name && <><span>·</span><span className="truncate">{w.name}</span></>}
+                  <div className="font-semibold text-main capitalize">{formatDate(workout.date)}</div>
+                  <div className="text-muted text-xs flex items-center gap-2">
+                    <span>{daysAgo(workout.date)}</span>
+                    {workout.name && <><span>·</span><span className="truncate">{workout.name}</span></>}
                   </div>
                 </div>
-                <ChevronRight className={clsx('w-4 h-4 text-zinc-600 transition-transform flex-shrink-0', expanded === w.id && 'rotate-90')} />
+
+                <ChevronRight
+                  className={clsx(
+                    'w-4 h-4 text-muted transition-transform flex-shrink-0',
+                    expanded === workout.id && 'rotate-90'
+                  )}
+                />
               </button>
 
-              {expanded === w.id && (
+              {expanded === workout.id && (
                 <div className="border-t border-surface-border animate-slide-up">
-                  {loadingDetail === w.id ? (
+                  {loadingDetail === workout.id ? (
                     <div className="p-4 flex justify-center">
                       <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                     </div>
                   ) : (
                     <div className="p-4 space-y-3">
-                      {(w.exercises || []).map(ex => (
-                        <div key={ex.id}>
+                      {(workout.exercises || []).map(exercise => (
+                        <div key={exercise.id}>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium text-sm">{ex.name}</span>
-                            {ex.muscle_group && (
-                              <span className="text-xs text-zinc-600">{ex.muscle_group}</span>
+                            <span className="font-medium text-sm text-main">{exercise.name}</span>
+                            {exercise.muscle_group && (
+                              <span className="text-xs text-muted">{exercise.muscle_group}</span>
                             )}
                           </div>
-                          {(ex.sets || []).length > 0 && (
+
+                          {(exercise.sets || []).length > 0 && (
                             <div className="space-y-0.5">
-                              {(ex.sets || []).map((s, i) => (
-                                <div key={s.id} className="flex items-center gap-3 text-xs text-zinc-500 font-mono">
-                                  <span className="text-zinc-700">#{i + 1}</span>
-                                  <span className="text-white">{s.weight}kg × {s.reps}</span>
-                                  {s.rir != null && <span>@{s.rir} RIR</span>}
+                              {(exercise.sets || []).map((set, index) => (
+                                <div key={set.id} className="flex items-center gap-3 text-xs text-muted font-mono">
+                                  <span className="text-muted/70">#{index + 1}</span>
+                                  <span className="text-main">{set.weight}kg × {set.reps}</span>
+                                  {set.rir != null && <span>@{set.rir} RIR</span>}
                                 </div>
                               ))}
                             </div>
                           )}
+
                           <Link
-                            href={`/exercise/${encodeURIComponent(ex.name)}`}
+                            href={`/exercise/${encodeURIComponent(exercise.name)}`}
                             className="inline-flex items-center gap-1 mt-1 text-xs text-brand-500/70 hover:text-brand-400 transition-colors"
                           >
                             <TrendingUp className="w-3 h-3" />
-                            Ver progresión
+                            Ver progresion
                           </Link>
                         </div>
                       ))}

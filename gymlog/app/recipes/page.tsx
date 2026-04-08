@@ -1,194 +1,248 @@
 'use client'
-import { useState } from 'react'
-import { ChefHat, Sparkles, Plus, X, Clock, Flame, Beef, Search } from 'lucide-react'
-import { clsx } from 'clsx'
+
+import { useEffect, useState } from 'react'
+import { ChefHat, Sparkles } from 'lucide-react'
+import { createClient } from '@/lib/supabase-client'
+import { getTodayWorkout, getUserProfile } from '@/lib/db'
+import { getDailyMetrics, getRecentMetrics } from '@/lib/metrics'
+import type { DailyMetrics } from '@/types'
+import type { AIRecipe, RecipeAIProfile } from '@/lib/recipe-ai'
 import BottomNav from '@/components/ui/BottomNav'
+import PageHeader from '@/components/ui/PageHeader'
+import PageLoader from '@/components/ui/PageLoader'
+import EmptyState from '@/components/ui/EmptyState'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
-import { card, text, btn, recipe, layout, bentoHeader, bentoLabel } from '@/styles/components'
-import type { RecipeMock, IngredientMock } from '@/types'
+import IngredientInput from '@/components/recipes/IngredientInput'
+import RecipeCard from '@/components/recipes/RecipeCard'
+import { btn, card, layout, recipe, text } from '@/styles/components'
+import { clsx } from 'clsx'
+import { useRouter } from 'next/navigation'
 
-const MOCK_RECIPES: RecipeMock[] = [
-  { id: '1', emoji: '🍗', name: 'Pollo con arroz y verduras', calories: 520, prepMinutes: 20, protein: 42, tags: ['Alto en proteína', '20 min'] },
-  { id: '2', emoji: '🥣', name: 'Bowl de avena con plátano', calories: 380, prepMinutes: 5,  protein: 14, tags: ['Desayuno', '5 min'] },
-  { id: '3', emoji: '🥗', name: 'Ensalada mediterránea', calories: 310, prepMinutes: 10, protein: 18, tags: ['Ligero', '10 min'] },
-  { id: '4', emoji: '🍳', name: 'Huevos revueltos con espinacas', calories: 290, prepMinutes: 8,  protein: 22, tags: ['Post-entreno', '8 min'] },
-]
+const DEFAULT_PROFILE: RecipeAIProfile = {
+  user_id: '',
+  weight: null,
+  height: null,
+  age: null,
+  created_at: '',
+  updated_at: '',
+  height_cm: null,
+  gender: 'male',
+}
 
-const MOCK_INGREDIENTS: IngredientMock[] = [
-  { name: 'Arroz integral', amount: '200g', emoji: '🌾' },
-  { name: 'Pechuga de pollo', amount: '150g', emoji: '🍗' },
-  { name: 'Avena', amount: '100g', emoji: '🥣' },
-  { name: 'Huevos', amount: '4 uds', emoji: '🥚' },
-  { name: 'Espinacas', amount: '80g', emoji: '🥬' },
-  { name: 'Plátano', amount: '1 ud', emoji: '🍌' },
-]
-
-function RecipeCard({ r }: { r: RecipeMock }) {
-  return (
-    <div className={card.recipe}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{r.emoji}</span>
-          <h3 className="font-semibold text-sm sm:text-base leading-tight">{r.name}</h3>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-1.5 mt-1">
-        {r.tags.map(tag => (
-          <span key={tag} className={clsx(recipe.tag, recipe.tagTime)}>{tag}</span>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-3 mt-2 pt-2 border-t border-surface-border">
-        <div className="flex items-center gap-1">
-          <Flame className="w-3 h-3 text-orange-400" />
-          <span className="text-xs font-mono text-orange-300">{r.calories} kcal</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Beef className="w-3 h-3 text-brand-400" />
-          <span className="text-xs font-mono text-brand-300">{r.protein}g prot.</span>
-        </div>
-        <div className="flex items-center gap-1 ml-auto">
-          <Clock className="w-3 h-3 text-zinc-500" />
-          <span className="text-xs text-zinc-500">{r.prepMinutes} min</span>
-        </div>
-      </div>
-    </div>
-  )
+function getLocalISODate() {
+  const date = new Date()
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
 export default function RecipesPage() {
-  const [search, setSearch] = useState('')
-  const [activeIngredients, setActiveIngredients] = useState<string[]>([])
+  const [ingredients, setIngredients] = useState<string[]>([])
+  const [aiRecipes, setAiRecipes] = useState<AIRecipe[] | null>(null)
+  const [contextSummary, setContextSummary] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [metrics, setMetrics] = useState<Partial<DailyMetrics> | null>(null)
+  const [hasWorkout, setHasWorkout] = useState(false)
+  const [historyMetrics, setHistoryMetrics] = useState<Partial<DailyMetrics>[]>([])
+  const [profile, setProfile] = useState<RecipeAIProfile>(DEFAULT_PROFILE)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [isMockMode, setIsMockMode] = useState(false)
+  const router = useRouter()
 
-  const filtered = MOCK_RECIPES.filter(r =>
-    r.name.toLowerCase().includes(search.toLowerCase())
-  )
+  useEffect(() => {
+    async function loadContext() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
 
-  function toggleIngredient(name: string) {
-    setActiveIngredients(prev =>
-      prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]
-    )
+      if (!user) {
+        router.push('/auth/login')
+        return
+      }
+
+      const today = getLocalISODate()
+      const [dailyMetrics, workout, recent, userProfile] = await Promise.all([
+        getDailyMetrics(user.id, today),
+        getTodayWorkout(user.id, today),
+        getRecentMetrics(user.id, 3),
+        getUserProfile(user.id).catch(() => null),
+      ])
+
+      setMetrics(dailyMetrics ?? {})
+      setHasWorkout(Boolean(workout))
+      setHistoryMetrics(recent)
+      setProfile({
+        ...(userProfile ?? DEFAULT_PROFILE),
+        user_id: user.id,
+        height_cm: userProfile?.height ?? null,
+        gender: 'male',
+      })
+      setInitialLoading(false)
+    }
+
+    loadContext()
+  }, [router])
+
+  async function handleRecommend() {
+    if (ingredients.length === 0) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ingredients,
+          metrics: metrics ?? {},
+          profile,
+          hasWorkout,
+          workoutType: null,
+          historyMetrics,
+        }),
+      })
+
+      const json = await response.json() as {
+        success: boolean
+        isMock?: boolean
+        error?: string
+        data?: {
+          context_summary: string
+          recipes: AIRecipe[]
+        }
+      }
+
+      if (!json.success || !json.data) {
+        throw new Error(json.error ?? 'Error al generar recetas')
+      }
+
+      setAiRecipes(json.data.recipes)
+      setContextSummary(json.data.context_summary)
+      setIsMockMode(Boolean(json.isMock))
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : 'Error al generar recetas'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  if (initialLoading) {
+    return <PageLoader message="Cargando contexto nutricional..." />
+  }
+
+  const recipesLabel = aiRecipes
+    ? `${aiRecipes.length} recetas ${isMockMode ? '(Preview)' : '(IA)'}`
+    : 'Sin recomendaciones aun'
 
   return (
     <div className={layout.page}>
-      <header className={layout.header}>
-        <div className={layout.headerInner}>
-          <div>
-            <div className="flex items-center gap-2">
-              <ChefHat className="w-5 h-5 text-orange-400" />
-              <h1 className={text.pageTitle}>Recetas</h1>
-            </div>
-            <p className={text.pageSubtitle}>Optimiza tu día según tu energía</p>
+      <PageHeader innerClassName={layout.headerInner}>
+        <div>
+          <div className="flex items-center gap-2">
+            <ChefHat className="w-5 h-5 text-orange-400" />
+            <h1 className={text.pageTitle}>Recetas</h1>
           </div>
-          <ThemeToggle />
+          <p className={text.pageSubtitle}>IA nutricional conectada a tu estado de hoy</p>
         </div>
-      </header>
+        <ThemeToggle />
+      </PageHeader>
 
       <main className={layout.main}>
-
         <div className={recipe.heroBento}>
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0">
               <Sparkles className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <h2 className="font-semibold text-base sm:text-lg">Recomendaciones del día</h2>
-              <p className="text-zinc-500 text-xs sm:text-sm mt-0.5 leading-relaxed">
-                Según tu actividad, energía y objetivos — las recetas ideales para hoy aparecerán aquí.
+              <h2 className="font-semibold text-base sm:text-lg text-main">Recomendaciones del dia</h2>
+              <p className="text-muted text-xs sm:text-sm mt-0.5 leading-relaxed">
+                {contextSummary ?? 'Anade ingredientes y genera recetas ajustadas a tu energia, sueno y contexto del dia.'}
               </p>
               <div className="flex flex-wrap gap-2 mt-3">
-                {['🏋️ Entreno completado', '😴 7h sueño', '⚡ Energía media'].map(tag => (
-                  <span key={tag} className="text-[11px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2.5 py-1 rounded-full">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Buscar receta..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="bg-surface-2 border border-surface-border rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-colors w-full text-sm"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          <div className={card.base + ' p-4'}>
-            <div className={bentoHeader}>
-              <div className={bentoLabel}>
-                <span className="text-base">🧺</span>
-                <span className={text.label}>Ingredientes</span>
-              </div>
-              <button className={clsx(btn.icon, 'text-zinc-600 hover:text-brand-400')}>
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="mt-1">
-              {MOCK_INGREDIENTS.map(ing => (
-                <button
-                  key={ing.name}
-                  onClick={() => toggleIngredient(ing.name)}
-                  className={clsx(
-                    recipe.ingredient,
-                    'w-full text-left transition-colors rounded-lg px-1',
-                    activeIngredients.includes(ing.name) ? 'text-white' : 'text-zinc-400 hover:text-zinc-200'
-                  )}
-                >
-                  <span className="text-lg w-7 text-center flex-shrink-0">{ing.emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium truncate">{ing.name}</div>
-                    <div className="text-[10px] text-zinc-600">{ing.amount}</div>
-                  </div>
-                  {activeIngredients.includes(ing.name) && (
-                    <div className="w-2 h-2 rounded-full bg-brand-500 flex-shrink-0" />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {activeIngredients.length > 0 && (
-              <button
-                onClick={() => setActiveIngredients([])}
-                className="mt-3 w-full text-xs text-zinc-600 hover:text-zinc-400 transition-colors flex items-center justify-center gap-1"
-              >
-                <X className="w-3 h-3" /> Limpiar selección
-              </button>
-            )}
-          </div>
-
-          <div className="md:col-span-2 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className={text.label}>{filtered.length} recetas</span>
-              {activeIngredients.length > 0 && (
-                <span className="text-[11px] text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full">
-                  {activeIngredients.length} ingredientes activos
+                <span className="text-[11px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2.5 py-1 rounded-full">
+                  {hasWorkout ? 'Entreno detectado' : 'Sin entreno registrado'}
                 </span>
-              )}
+                <span className="text-[11px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2.5 py-1 rounded-full">
+                  {metrics?.sleep_hours ? `${metrics.sleep_hours}h sueno` : 'Sueno sin registrar'}
+                </span>
+                <span className="text-[11px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2.5 py-1 rounded-full">
+                  {metrics?.energy ? `Energia ${metrics.energy}/5` : 'Energia sin registrar'}
+                </span>
+              </div>
             </div>
-
-            {filtered.length === 0 ? (
-              <div className={card.base + ' p-8 flex flex-col items-center justify-center text-center gap-3'}>
-                <ChefHat className="w-10 h-10 text-zinc-700" />
-                <p className="text-zinc-500 text-sm">No se encontraron recetas.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filtered.map(r => <RecipeCard key={r.id} r={r} />)}
-              </div>
-            )}
           </div>
         </div>
 
+        <IngredientInput ingredients={ingredients} onChange={setIngredients} />
+
+        <div className={clsx(card.base, 'p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3')}>
+          <div>
+            <p className="text-sm font-semibold text-main">Genera recetas personalizadas</p>
+            <p className="text-xs text-muted mt-1">
+              La IA cruza tus metricas del dia, tu perfil y los ingredientes disponibles.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRecommend}
+            disabled={ingredients.length === 0 || loading}
+            title={ingredients.length === 0 ? 'Anade al menos un ingrediente' : undefined}
+            className={clsx(
+              btn.primary,
+              'sm:min-w-[220px]',
+              (ingredients.length === 0 || loading) && 'opacity-60 cursor-not-allowed'
+            )}
+          >
+            {loading ? 'Generando...' : 'Recomendar recetas'}
+          </button>
+        </div>
+
+        {error ? (
+          <div className="flex items-center justify-between gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
+            <span>{error}</span>
+            <button type="button" onClick={handleRecommend} className="text-red-300 hover:text-red-200 transition-colors">
+              Reintentar
+            </button>
+          </div>
+        ) : null}
+
+        {isMockMode && aiRecipes ? (
+          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5 text-xs text-amber-400">
+            <span>⚡</span>
+            <span>Modo preview — anade tu API key de Anthropic para recomendaciones reales basadas en tus metricas</span>
+          </div>
+        ) : null}
+
+        <div className="flex items-center justify-between">
+          <span className={text.label}>{recipesLabel}</span>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="animate-pulse bg-surface-2 rounded-2xl h-32 border border-surface-border" />
+            ))}
+          </div>
+        ) : aiRecipes ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {aiRecipes.map((recipeItem) => (
+              <RecipeCard
+                key={`${recipeItem.name}-${recipeItem.calories}`}
+                recipe={{
+                  ...recipeItem,
+                  isAI: !isMockMode,
+                  isPreview: isMockMode,
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<ChefHat className="w-8 h-8 text-muted" />}
+            title="Listo para recomendar"
+            description="Anade ingredientes y pulsa el boton para generar recetas ajustadas a tus metricas de hoy."
+          />
+        )}
       </main>
 
       <BottomNav />

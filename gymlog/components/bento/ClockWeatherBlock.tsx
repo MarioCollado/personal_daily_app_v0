@@ -5,11 +5,11 @@ import type { WeatherData } from '@/types'
 
 const CONDITION_ICONS: Record<string, React.ReactNode> = {
   clear: <Sun className="w-5 h-5 text-amber-400" />,
-  clouds: <Cloud className="w-5 h-5 text-zinc-400" />,
+  clouds: <Cloud className="w-5 h-5 text-muted" />,
   rain: <CloudRain className="w-5 h-5 text-blue-400" />,
   drizzle: <CloudRain className="w-5 h-5 text-blue-300" />,
   snow: <CloudSnow className="w-5 h-5 text-blue-200" />,
-  wind: <Wind className="w-5 h-5 text-zinc-300" />,
+  wind: <Wind className="w-5 h-5 text-muted" />,
 }
 
 const CONDITION_ES: Record<string, string> = {
@@ -39,36 +39,71 @@ interface Props {
 
 export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props) {
   const [time, setTime] = useState(new Date())
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [weather, setWeather] = useState<WeatherData | null>(
     cachedTemp && cachedCondition
-      ? { temp: cachedTemp, condition: cachedCondition, icon: cachedCondition, city: 'Llanera' }
+      ? { temp: cachedTemp, condition: cachedCondition, icon: cachedCondition, city: 'Local' }
       : null
   )
-  const [loadingWeather, setLoadingWeather] = useState(!cachedTemp)
+  const [loadingWeather, setLoadingWeather] = useState(true)
 
+  // Clock Update
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
 
+  // Geolocation Detection
   useEffect(() => {
-    if (cachedTemp) return
+    if (!navigator.geolocation) {
+      setLoadingWeather(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude })
+      },
+      () => {
+        // Fallback or handle error
+        setLoadingWeather(false)
+      },
+      { timeout: 10000 }
+    )
+  }, [])
+
+  // Weather Fetch
+  useEffect(() => {
+    if (cachedTemp && !coords) return // already have cached
+
     async function fetchWeather() {
       try {
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=43.4419&longitude=-5.8580&current=temperature_2m,weather_code&timezone=Europe%2FMadrid'
+        const lat = coords?.lat ?? 43.4419
+        const lon = coords?.lon ?? -5.8580
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'auto'
+        
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=${encodeURIComponent(tz)}`
         const res = await fetch(url)
         const json = await res.json()
         const temp = Math.round(json.current.temperature_2m)
         const code = json.current.weather_code as number
         const condition = wmoToCondition(code)
-        setWeather({ temp, condition, icon: condition, city: 'Llanera' })
-      } catch {
+        
+        setWeather({ 
+          temp, 
+          condition, 
+          icon: condition, 
+          city: coords ? 'Cerca de ti' : 'Llanera' 
+        })
+      } catch (err) {
+        console.error('Weather fetch error:', err)
       } finally {
         setLoadingWeather(false)
       }
     }
+
     fetchWeather()
-  }, [cachedTemp])
+  }, [cachedTemp, coords])
 
   const hours = time.getHours().toString().padStart(2, '0')
   const mins = time.getMinutes().toString().padStart(2, '0')
@@ -83,35 +118,35 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
     <div className="bento-card flex flex-col justify-between h-full">
       <div>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-mono font-bold tracking-tight leading-none">
+          <span className="text-3xl font-mono font-bold tracking-tight leading-none text-main">
             {hours}
-            <span className="text-zinc-600 mx-1">:</span>
+            <span className="text-muted/40 mx-0.5">:</span>
             {mins}
           </span>
-          <span className="text-sm font-mono text-zinc-600">{secs}</span>
+          <span className="text-xs font-mono text-muted/60 ml-0.5">{secs}</span>
         </div>
-        <div className="flex items-center gap-1 mt-1">
-          <span className="text-[11px] text-zinc-500 capitalize">{dayName},</span>
-          <span className="text-[11px] text-zinc-500">{dateStr}</span>
+        <div className="flex items-center gap-1 mt-1 text-muted">
+          <span className="text-[11px] font-medium capitalize">{dayName},</span>
+          <span className="text-[11px] font-medium">{dateStr}</span>
         </div>
       </div>
 
       <div className="mt-3">
         {loadingWeather ? (
-          <Loader2 className="w-4 h-4 text-zinc-600 animate-spin" />
+          <Loader2 className="w-4 h-4 text-muted animate-spin" />
         ) : weather ? (
           <div className="flex items-center gap-2">
             {WeatherIcon}
             <div>
-              <span className="text-xl font-mono font-bold">{weather.temp}°</span>
+              <span className="text-xl font-mono font-bold text-main">{weather.temp}°</span>
               <div className="flex items-center gap-1">
-                <MapPin className="w-2.5 h-2.5 text-zinc-600" />
-                <span className="text-[10px] text-zinc-500">{weather.city} · {CONDITION_ES[conditionKey] || weather.condition}</span>
+                <MapPin className="w-2.5 h-2.5 text-muted" />
+                <span className="text-[10px] text-muted font-medium">{weather.city} · {CONDITION_ES[conditionKey] || weather.condition}</span>
               </div>
             </div>
           </div>
         ) : (
-          <span className="text-xs text-zinc-600">Sin clima</span>
+          <span className="text-xs text-muted">Sin clima</span>
         )}
       </div>
     </div>

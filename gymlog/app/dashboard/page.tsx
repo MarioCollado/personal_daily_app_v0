@@ -2,9 +2,9 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { LogOut, RotateCcw, Sparkles, Bell, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
-import { getTodayWorkout, createWorkout, getExercisesForWorkout } from '@/lib/db'
-import { getDailyMetrics, upsertDailyMetrics, getUserBooks } from '@/lib/metrics'
-import type { Workout, Exercise, DailyMetrics } from '@/types'
+import { getTodayWorkout, createWorkout, getExercisesForWorkout, getRecentWorkoutsWithExercises, getUserProfile } from '@/lib/db'
+import { getDailyMetrics, upsertDailyMetrics, getUserBooks, getRecentMetrics } from '@/lib/metrics'
+import type { Workout, Exercise, DailyMetrics, UserProfile, WorkoutWithExercises } from '@/types'
 import SleepBlock from '@/components/bento/SleepBlock'
 import ClockWeatherBlock from '@/components/bento/ClockWeatherBlock'
 import StateBlock from '@/components/bento/StateBlock'
@@ -12,6 +12,8 @@ import ReadingBlock from '@/components/bento/ReadingBlock'
 import WorkoutBlock from '@/components/bento/WorkoutBlock'
 import ScoreBlock from '@/components/bento/ScoreBlock'
 import BottomNav from '@/components/ui/BottomNav'
+import PageHeader from '@/components/ui/PageHeader'
+import PageLoader from '@/components/ui/PageLoader'
 import { useRouter } from 'next/navigation'
 import { getDailyAdvice } from '@/lib/advisor'
 import { useAdvisor } from '@/hooks/useAdvisor'
@@ -22,12 +24,20 @@ function getLocalISODate() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+function mergeMetricIntoHistory(history: DailyMetrics[], metric: DailyMetrics) {
+  const next = history.filter(item => item.date !== metric.date)
+  return [metric, ...next].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7)
+}
+
 export default function DashboardPage() {
   const [currentDate, setCurrentDate] = useState(getLocalISODate)
   const [userId, setUserId] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<DailyMetrics | null>(null)
   const [workout, setWorkout] = useState<Workout | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [recentMetrics, setRecentMetrics] = useState<DailyMetrics[]>([])
+  const [recentWorkouts, setRecentWorkouts] = useState<WorkoutWithExercises[]>([])
   const [books, setBooks] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
@@ -50,18 +60,27 @@ export default function DashboardPage() {
     if (!user) { router.push('/auth/login'); return }
     setUserId(user.id)
 
-    const [m, w, b] = await Promise.all([
+    const [m, w, b, p, metricsHistory, workoutsHistory] = await Promise.all([
       getDailyMetrics(user.id, currentDate),
       getTodayWorkout(user.id, currentDate),
       getUserBooks(user.id),
+      getUserProfile(user.id).catch(() => null),
+      getRecentMetrics(user.id, 7),
+      getRecentWorkoutsWithExercises(user.id, 7),
     ])
 
     setMetrics(m)
     setWorkout(w)
     setBooks(b)
+    setProfile(p)
+    setRecentMetrics(metricsHistory)
+    setRecentWorkouts(workoutsHistory)
 
     if (w) {
-      const exs = await getExercisesForWorkout(w.id)
+      const historicalWorkout = workoutsHistory.find(item => item.id === w.id)
+      const exs = historicalWorkout?.exercises?.length
+        ? historicalWorkout.exercises
+        : await getExercisesForWorkout(w.id)
       setExercises(exs)
     } else {
       setExercises([])
@@ -100,6 +119,7 @@ export default function DashboardPage() {
     try {
       const updated = await upsertDailyMetrics(userId, currentDate, updates as any)
       setMetrics(updated)
+      setRecentMetrics(prev => mergeMetricIntoHistory(prev, updated))
     } finally {
       setSavingFields(prev => {
         const next = new Set(prev)
@@ -143,6 +163,7 @@ export default function DashboardPage() {
       const w = await createWorkout(userId, currentDate)
       setWorkout(w)
       setExercises([])
+      setRecentWorkouts(prev => [{ ...w, exercises: [] }, ...prev.filter(item => item.id !== w.id)].slice(0, 7))
     } finally {
       setStartingWorkout(false)
     }
@@ -164,8 +185,9 @@ export default function DashboardPage() {
 
     setLoading(true)
     try {
-      await upsertDailyMetrics(userId, currentDate, resetData)
-      setMetrics(prev => prev ? { ...prev, ...resetData } : null)
+      const updated = await upsertDailyMetrics(userId, currentDate, resetData)
+      setMetrics(updated)
+      setRecentMetrics(prev => mergeMetricIntoHistory(prev, updated))
     } finally {
       setLoading(false)
     }
@@ -178,21 +200,16 @@ export default function DashboardPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-surface-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    return <PageLoader />
   }
 
   return (
     <div className="min-h-screen bg-surface-0 pb-24">
-      <header className="sticky top-0 bg-surface-0/90 backdrop-blur-md border-b border-surface-border z-20 pt-safe">
-        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between relative">
+      <PageHeader innerClassName="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between relative">
           <div className="flex items-center gap-1">
             <button
               onClick={handleResetMetrics}
-              className="text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+              className="text-muted hover:text-main p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
               title="Reiniciar métricas de hoy"
             >
               <RotateCcw className="w-4 h-4" />
@@ -201,13 +218,13 @@ export default function DashboardPage() {
 
           <div className="relative h-5 w-32 flex items-center justify-center overflow-hidden">
             <span
-              className="absolute font-bold text-sm tracking-widest transition-opacity duration-700"
+              className="absolute font-bold text-sm tracking-widest transition-opacity duration-700 text-main"
               style={{ opacity: showDate ? 0 : 1 }}
             >
               VITAL
             </span>
             <span
-              className="absolute font-bold text-sm tracking-tight capitalize transition-opacity duration-700 whitespace-nowrap"
+              className="absolute font-bold text-sm tracking-tight capitalize transition-opacity duration-700 whitespace-nowrap text-main"
               style={{ opacity: showDate ? 1 : 0 }}
             >
               {new Date(currentDate + 'T12:00:00').toLocaleDateString('es-ES', {
@@ -229,13 +246,12 @@ export default function DashboardPage() {
 
             <button
               onClick={handleSignOut}
-              className="text-zinc-700 hover:text-white p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+              className="text-muted hover:text-main p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
             >
               <LogOut className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      </header>
+      </PageHeader>
 
       <main className="w-full max-w-lg sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-4">
 
@@ -257,7 +273,14 @@ export default function DashboardPage() {
           </div>
 
           <div className="col-span-1 min-h-[140px]">
-            <ScoreBlock metrics={metrics} hasWorkout={!!workout} />
+            <ScoreBlock
+              metrics={metrics}
+              hasWorkout={!!workout}
+              profile={profile}
+              recentMetrics={recentMetrics}
+              recentWorkouts={recentWorkouts}
+              todayExercises={exercises}
+            />
           </div>
 
           <div className="col-span-2 md:col-span-3 xl:col-span-1 min-h-[160px]">
@@ -309,23 +332,23 @@ export default function DashboardPage() {
           >
             <button
               onClick={dismissAdvice}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-1 touch-manipulation"
+              className="absolute top-4 right-4 text-muted hover:text-main transition-colors p-1 touch-manipulation"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-brand-500/15 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-brand-400" />
+                <Sparkles className="w-5 h-5 text-brand" />
               </div>
-              <p className="font-semibold text-white text-sm">Tu Coach Diario</p>
+              <p className="font-bold text-main text-sm">Tu Coach Diario</p>
             </div>
 
-            <p className="text-sm text-zinc-300 leading-relaxed">{advice.text}</p>
+            <p className="text-sm text-main/90 leading-relaxed">{advice.text}</p>
 
             <button
               onClick={dismissAdvice}
-              className="mt-5 w-full py-2.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-zinc-400 hover:text-white text-sm transition-colors touch-manipulation"
+              className="mt-5 w-full py-2.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-muted hover:text-main font-bold text-sm transition-colors touch-manipulation border border-surface-border"
             >
               Entendido
             </button>

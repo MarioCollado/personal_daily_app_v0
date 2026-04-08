@@ -24,6 +24,10 @@ export interface Exercise {
   sets?: Set[]
 }
 
+export interface WorkoutWithExercises extends Workout {
+  exercises: Exercise[]
+}
+
 // is_cardio: true = store distance_km + duration_seconds instead of reps/weight
 export interface Set {
   id: string

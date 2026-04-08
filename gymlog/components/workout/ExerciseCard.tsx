@@ -51,7 +51,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
   const [distance, setDistance] = useState('')
   const [duration, setDuration] = useState('')
 
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
   const [adding, setAdding] = useState(false)
   const [addError, setAddError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -113,7 +113,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
         onClick={() => setExpanded(e => !e)}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold text-base truncate">{exercise.name}</h3>
+            <h3 className="font-semibold text-base truncate text-main">{exercise.name}</h3>
             {exercise.muscle_group && (
               <span className={clsx(
                 'text-xs px-2 py-0.5 rounded-full font-medium',
@@ -124,7 +124,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
             )}
           </div>
 
-          <div className="flex items-center gap-3 mt-0.5 text-zinc-500 text-xs">
+          <div className="flex items-center gap-3 mt-0.5 text-muted text-xs">
             {isCardio ? (
               <>
                 <span>{exercise.sets?.length || 0} registros</span>
@@ -146,15 +146,15 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
               'p-2 rounded-lg transition-colors text-xs',
               confirmDelete
                 ? 'bg-red-500/20 text-red-400'
-                : 'text-zinc-600 hover:text-red-400'
+                : 'text-muted hover:text-red-400'
             )}
           >
             {confirmDelete ? 'Confirmar' : <Trash2 className="w-4 h-4" />}
           </button>
 
           {expanded
-            ? <ChevronUp className="w-4 h-4 text-zinc-500" />
-            : <ChevronDown className="w-4 h-4 text-zinc-500" />}
+            ? <ChevronUp className="w-4 h-4 text-muted" />
+            : <ChevronDown className="w-4 h-4 text-muted" />}
         </div>
       </div>
 
@@ -215,7 +215,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                         onChange={e => setDistance(e.target.value)}
                         className={input.cardio}
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-600">km</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted">km</span>
                     </div>
                   </div>
 
@@ -263,10 +263,10 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                   placeholder={lastSet ? String(lastSet.weight) : 'Kg'}
                   value={weight}
                   onChange={e => setWeight(e.target.value)}
-                  className="h-11 w-full rounded-xl bg-surface-2 text-center text-base font-mono px-3"
+                  className="h-11 w-full rounded-xl bg-surface-2 text-main text-center text-base font-mono px-3 border border-surface-border focus:border-brand-500 outline-none transition-colors"
                 />
 
-                <span className="text-zinc-600 font-bold flex-shrink-0">×</span>
+                <span className="text-muted font-bold flex-shrink-0">×</span>
 
                 <input
                   type="number"
@@ -275,7 +275,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                   value={reps}
                   onChange={e => setReps(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddSet()}
-                  className="h-11 w-full rounded-xl bg-surface-2 text-center text-base font-mono px-3"
+                  className="h-11 w-full rounded-xl bg-surface-2 text-main text-center text-base font-mono px-3 border border-surface-border focus:border-brand-500 outline-none transition-colors"
                 />
 
                 <input
@@ -284,13 +284,13 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                   placeholder="RIR"
                   value={rir}
                   onChange={e => setRir(e.target.value)}
-                  className="h-11 w-16 rounded-xl bg-surface-2 text-center text-sm px-2 flex-shrink-0"
+                  className="h-11 w-16 rounded-xl bg-surface-2 text-main text-center text-sm px-2 flex-shrink-0 border border-surface-border focus:border-brand-500 outline-none transition-colors"
                 />
 
                 <button
                   onClick={handleAddSet}
                   disabled={adding || !reps || !weight}
-                  className="h-11 px-3 rounded-xl bg-white text-black flex items-center justify-center disabled:opacity-40"
+                  className="h-11 px-3 rounded-xl bg-brand-500 text-brand-foreground flex items-center justify-center disabled:opacity-40 hover:bg-brand-600 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>

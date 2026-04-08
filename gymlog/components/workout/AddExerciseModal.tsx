@@ -47,9 +47,9 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-surface-1 border border-surface-border rounded-t-2xl w-full max-w-lg p-5 animate-slide-up" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-lg">Añadir ejercicio</h3>
-          <button onClick={onClose} className="text-zinc-500 hover:text-white p-1 transition-colors"><X className="w-5 h-5" /></button>
+        <div className="flex items-center justify-between mb-5 px-1">
+          <h3 className="font-semibold text-lg text-main">Añadir ejercicio</h3>
+          <button onClick={onClose} className="text-muted hover:text-main p-1 transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="space-y-3">
@@ -67,7 +67,7 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
               <div className="absolute top-full left-0 right-0 mt-1 bg-surface-2 border border-surface-border rounded-xl overflow-hidden z-10 shadow-xl">
                 {filtered.map(s => (
                   <button key={s} onClick={() => { setName(s); setFiltered([]) }}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-surface-3 transition-colors border-b border-surface-border last:border-0">
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-surface-3 text-main transition-colors border-b border-surface-border last:border-0">
                     {s}
                   </button>
                 ))}
@@ -76,11 +76,11 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
           </div>
 
           <div>
-            <p className="text-xs text-zinc-500 mb-2 font-medium">Grupo muscular (opcional)</p>
+            <p className="text-xs text-muted mb-2 font-semibold uppercase tracking-wider">Grupo muscular (opcional)</p>
             <div className="flex flex-wrap gap-2">
               {MUSCLE_GROUPS.map(m => (
                 <button key={m} onClick={() => setMuscleGroup(muscleGroup === m ? '' : m)}
-                  className={clsx('px-3 py-1.5 rounded-full text-sm transition-colors', muscleGroup === m ? 'bg-brand-500 text-black font-medium' : 'bg-surface-3 text-zinc-300 hover:bg-surface-4')}>
+                  className={clsx('px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200', muscleGroup === m ? 'bg-brand-500 text-brand-foreground shadow-sm' : 'bg-surface-3 text-muted hover:bg-surface-4 hover:text-main')}>
                   {m}
                 </button>
               ))}

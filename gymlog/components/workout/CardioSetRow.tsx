@@ -49,7 +49,7 @@ export default function CardioSetRow({ set, index, onDelete }: Props) {
       </span>
       <span className={setRow.value}>{formatDuration(set.duration_seconds)}</span>
       <div className="flex items-center justify-between">
-        <span className="text-sky-400 font-mono text-xs">{pace}</span>
+        <span className="text-sky-500 font-mono text-xs font-bold leading-none">{pace}</span>
         <button onClick={handleDelete} disabled={deleting} className={setRow.deleteBtn}>
           <Trash2 className="w-3.5 h-3.5" />
         </button>

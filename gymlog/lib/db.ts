@@ -1,5 +1,5 @@
 import { createClient } from './supabase-client'
-import type { Workout, Exercise, Set, UserProfile } from '../types'
+import type { Workout, Exercise, Set, UserProfile, WorkoutWithExercises } from '../types'
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const supabase = createClient()
@@ -67,6 +67,47 @@ export async function getWorkoutHistory(userId: string, limit = 20): Promise<Wor
     .order('date', { ascending: false })
     .limit(limit)
   return data || []
+}
+
+export async function getRecentWorkoutsWithExercises(userId: string, days = 7): Promise<WorkoutWithExercises[]> {
+  const supabase = createClient()
+  const since = new Date(Date.now() - days * 86400000).toISOString().split('T')[0]
+
+  const { data: workouts } = await supabase
+    .from('workouts')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('date', since)
+    .order('date', { ascending: false })
+
+  if (!workouts?.length) return []
+
+  const workoutIds = workouts.map(workout => workout.id)
+  const { data: exercises } = await supabase
+    .from('exercises')
+    .select('*, sets(*)')
+    .in('workout_id', workoutIds)
+    .order('created_at', { ascending: true })
+
+  const groupedExercises = new Map<string, Exercise[]>()
+
+  for (const exercise of exercises || []) {
+    const normalizedExercise: Exercise = {
+      ...exercise,
+      sets: (exercise.sets || []).sort((a: Set, b: Set) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      ),
+    }
+
+    const bucket = groupedExercises.get(exercise.workout_id) || []
+    bucket.push(normalizedExercise)
+    groupedExercises.set(exercise.workout_id, bucket)
+  }
+
+  return workouts.map(workout => ({
+    ...workout,
+    exercises: groupedExercises.get(workout.id) || [],
+  }))
 }
 
 export async function duplicateWorkout(sourceWorkoutId: string, userId: string, targetDate: string) {

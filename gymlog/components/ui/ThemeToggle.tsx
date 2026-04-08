@@ -10,7 +10,7 @@ const THEME_ICONS: Record<ThemePeriod, React.ReactNode> = {
   midday: <Sun className="w-4 h-4 text-amber-400" />,
   afternoon: <Sun className="w-4 h-4 text-orange-400" />,
   night: <Sparkles className="w-4 h-4 text-amber-500" />,
-  sober: <ZapOff className="w-4 h-4 text-zinc-500" />,
+  sober: <ZapOff className="w-4 h-4 text-muted" />,
 }
 
 const THEME_LABELS: Record<ThemePeriod, string> = {
@@ -42,10 +42,10 @@ export function ThemeToggle() {
         {isSober ? 'Sobrio' : THEME_LABELS[theme]}
       </span>
       
-      <div className="flex items-center gap-1 ml-1 pl-2 border-l border-current/10">
+      <div className="flex items-center gap-1 ml-1 pl-2 border-l border-current/20">
         <div className={clsx(
           "w-1.5 h-1.5 rounded-full transition-all duration-500",
-          isSober ? "bg-zinc-600" : "bg-brand animate-pulse-dot"
+          isSober ? "bg-muted shadow-[0_0_8px_rgba(113,113,122,0.3)]" : "bg-brand animate-pulse-dot shadow-[0_0_8px_var(--brand)]"
         )} />
       </div>
     </button>
