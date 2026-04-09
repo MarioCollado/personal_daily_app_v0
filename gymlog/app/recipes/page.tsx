@@ -154,19 +154,19 @@ export default function RecipesPage() {
               <Sparkles className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <h2 className="font-semibold text-base sm:text-lg text-main">Recomendaciones del dia</h2>
+              <h2 className="font-semibold text-base sm:text-lg text-main">Recomendaciones del día</h2>
               <p className="text-muted text-xs sm:text-sm mt-0.5 leading-relaxed">
-                {contextSummary ?? 'Anade ingredientes y genera recetas ajustadas a tu energia, sueno y contexto del dia.'}
+                {contextSummary ?? 'Añade ingredientes y genera recetas ajustadas a tu energía, sueño y contexto del día.'}
               </p>
               <div className="flex flex-wrap gap-2 mt-3">
                 <span className="text-[11px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2.5 py-1 rounded-full">
                   {hasWorkout ? 'Entreno detectado' : 'Sin entreno registrado'}
                 </span>
                 <span className="text-[11px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2.5 py-1 rounded-full">
-                  {metrics?.sleep_hours ? `${metrics.sleep_hours}h sueno` : 'Sueno sin registrar'}
+                  {metrics?.sleep_hours ? `${metrics.sleep_hours}h sueño` : 'Sueño sin registrar'}
                 </span>
                 <span className="text-[11px] bg-orange-500/10 text-orange-300 border border-orange-500/20 px-2.5 py-1 rounded-full">
-                  {metrics?.energy ? `Energia ${metrics.energy}/5` : 'Energia sin registrar'}
+                  {metrics?.energy ? `Energía ${metrics.energy}/5` : 'Energía sin registrar'}
                 </span>
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function RecipesPage() {
           <div>
             <p className="text-sm font-semibold text-main">Genera recetas personalizadas</p>
             <p className="text-xs text-muted mt-1">
-              La IA cruza tus metricas del dia, tu perfil y los ingredientes disponibles.
+              La IA cruza tus métricas del día, tu perfil y los ingredientes disponibles.
             </p>
           </div>
           <button
