@@ -4,8 +4,10 @@ import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, Loader2, Rocket } from 'lucide-react'
 import { feedback } from '@/styles/components'
+import { useI18n } from '@/contexts/I18nContext'
 
 export default function LoginPage() {
+  const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,11 +35,10 @@ export default function LoginPage() {
           options: { emailRedirectTo: redirectTo },
         })
         if (error) throw error
-        // Supabase devuelve identities vacío si el email ya está registrado
         if (data.user && data.user.identities?.length === 0) {
-          throw new Error('Este email ya tiene una cuenta. Inicia sesión.')
+          throw new Error(t('auth.already_registered'))
         }
-        setMessage('Revisa tu email para confirmar la cuenta.')
+        setMessage(t('auth.check_email'))
       }
     } catch (e: any) {
       setError(e.message)
@@ -54,7 +55,7 @@ export default function LoginPage() {
             <Rocket className="w-8 h-8 text-brand-500" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-main">VITAL</h1>
-          <p className="text-muted text-sm mt-1">Harder, Better, Faster, Stronger</p>
+          <p className="text-muted text-sm mt-1">{t('auth.subtitle')}</p>
         </div>
 
         <div className="card p-6 space-y-4">
@@ -63,7 +64,7 @@ export default function LoginPage() {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={t('auth.email')}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="input-field pl-10"
@@ -74,7 +75,7 @@ export default function LoginPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
               <input
                 type="password"
-                placeholder="Contraseña"
+                placeholder={t('auth.password')}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="input-field pl-10"
@@ -88,14 +89,14 @@ export default function LoginPage() {
 
           <button onClick={handleSubmit} disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {mode === 'login' ? 'Entrar' : 'Crear cuenta'}
+            {mode === 'login' ? t('auth.enter') : t('auth.signup')}
           </button>
         </div>
 
         <p className="text-center text-sm text-muted mt-4">
-          {mode === 'login' ? '¿Sin cuenta?' : '¿Ya tienes cuenta?'}{' '}
+          {mode === 'login' ? t('auth.no_account') : t('auth.already_account')}{' '}
           <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-brand-400 hover:text-brand-300 transition-colors">
-            {mode === 'login' ? 'Regístrate' : 'Inicia sesión'}
+            {mode === 'login' ? t('auth.signup_action') : t('auth.login_action')}
           </button>
         </p>
       </div>

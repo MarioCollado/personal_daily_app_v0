@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Moon } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useI18n } from '@/contexts/I18nContext'
 
 interface Props {
   value: number | null
@@ -17,19 +18,10 @@ const TOTAL_DEG = 240
 function getSleepColor(h: number | null): string {
   if (h === null) return 'var(--text-muted)'
   if (h < 5) return '#ef4444' // Red
-  if (h < 6.5) return '#f97316' // Orange
-  if (h < 7.5) return '#eab308' // Yellow
-  if (h <= 9) return 'var(--brand)' // Brand Green
-  return '#3b82f6' // Blue
-}
-
-function getSleepLabel(h: number | null): string {
-  if (h === null) return '—'
-  if (h < 5) return 'Poco'
-  if (h < 6.5) return 'Bien'
-  if (h < 7.5) return 'Óptimo'
-  if (h <= 9) return 'Mucho'
-  return 'Demasiado'
+  if (h < 6) return '#f97316' // Orange
+  if (h < 7) return '#eab308' // Yellow
+  if (h <= 8.5) return '#22c55e' // Green (7-8.5h)
+  return '#3b82f6' // Blue (>8.5h)
 }
 
 const CX = 60, CY = 60, R = 46
@@ -50,14 +42,23 @@ function getThumbPoint(fraction: number) {
 }
 
 export default function SleepBlock({ value, onChange, saving }: Props) {
+  const { t } = useI18n()
   const [dragging, setDragging] = useState(false)
   const [localVal, setLocalVal] = useState<number | null>(value)
   const svgRef = useRef<SVGSVGElement>(null)
 
+  const getSleepLabel = (h: number | null): string => {
+    if (h === null) return '—'
+    if (h < 5) return t('dashboard.sleep_block.labels.poor')
+    if (h < 6) return t('dashboard.sleep_block.labels.good')
+    if (h < 7) return t('dashboard.sleep_block.labels.adequate')
+    if (h <= 8.5) return t('dashboard.sleep_block.labels.optimal')
+    return t('dashboard.sleep_block.labels.excessive')
+  }
+
   const handleInteract = useCallback((clientX: number, clientY: number) => {
     if (!svgRef.current) return
     const rect = svgRef.current.getBoundingClientRect()
-    // Map to SVG coordinate space (viewBox 0 0 120 120)
     const scaleX = 120 / rect.width
     const scaleY = 120 / rect.height
     const svgX = (clientX - rect.left) * scaleX
@@ -98,9 +99,9 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
       <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
         <div className="flex items-center gap-1.5">
           <Moon className="w-3.5 h-3.5 text-blue-400" />
-          <span className="text-[11px] font-bold text-muted uppercase tracking-widest">Sueño</span>
+          <span className="text-[11px] font-bold text-muted uppercase tracking-widest">{t('dashboard.sleep_block.title')}</span>
         </div>
-        {saving && <span className="absolute right-0 text-[10px] text-muted animate-pulse-dot">guardando</span>}
+        {saving && <span className="absolute right-0 text-[10px] text-muted animate-pulse-dot">{t('dashboard.sleep_block.saving')}</span>}
       </div>
 
       <div className="flex-1 flex items-center justify-center">
@@ -153,7 +154,7 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
             {display !== null ? display : '—'}
           </text>
           <text x="60" y="67" textAnchor="middle" fill="var(--text-muted)" fontSize="8">
-            {display !== null ? 'horas' : 'toca para editar'}
+            {display !== null ? t('dashboard.sleep_block.hours_unit') : t('dashboard.sleep_block.tap_to_edit')}
           </text>
           <text x="60" y="78" textAnchor="middle" fontSize="7.5" fontWeight="600"
             fill={display !== null ? color : 'var(--text-muted)'}>

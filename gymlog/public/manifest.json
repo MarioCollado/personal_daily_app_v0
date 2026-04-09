@@ -2,7 +2,7 @@
   "name": "GymLog",
   "short_name": "GymLog",
   "description": "Tu diario de entrenamiento minimalista",
-  "start_url": "/today",
+  "start_url": "/dashboard",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0a0a",
@@ -30,7 +30,7 @@
   "shortcuts": [
     {
       "name": "Entreno de hoy",
-      "url": "/today",
+      "url": "/dashboard",
       "icons": [
         {
           "src": "/icons/icon-192.png",

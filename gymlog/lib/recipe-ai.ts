@@ -143,7 +143,7 @@ export function interpretMetrics(
   const sleepHours = metrics?.sleep_hours ?? 7
   const energy = metrics?.energy ?? 3
   const stress = metrics?.stress ?? 3
-  const freeTime = metrics?.free_time ?? 3
+  const phoneUsage = metrics?.phone_usage ?? 3
   const recentWindow = historyMetrics.slice(0, 3)
   const sleepDebt = Number(
     recentWindow
@@ -171,9 +171,9 @@ export function interpretMetrics(
   }
 
   const timeAvailable: TimeAvailable =
-    freeTime <= 1 ? 'none'
-      : freeTime === 2 ? 'minimal'
-        : freeTime === 3 ? 'moderate'
+    phoneUsage <= 1 ? 'none'
+      : phoneUsage === 2 ? 'minimal'
+        : phoneUsage === 3 ? 'moderate'
           : 'ample'
 
   const isPostWorkout = hasWorkout

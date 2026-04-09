@@ -1,0 +1,244 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "daysAgo": "hace {count} días",
+    "dayAgo": "hace 1 día"
+  },
+  "nav": {
+    "dashboard": "Inicio",
+    "today": "Entreno",
+    "history": "Historial",
+    "profile": "Perfil",
+    "recipes": "Recetas"
+  },
+  "dashboard": {
+    "greeting": "Hola",
+    "vitality": {
+      "title": "Vitalidad",
+      "hints": {
+        "low_confidence": "Estimación suave: falta algo de historial o perfil.",
+        "rest_day": "Buen día de descarga: la recuperación está empujando el score.",
+        "fatigue": "Fatiga acumulada detectada: conviene bajar carga o priorizar descanso.",
+        "overload": "La carga de hoy supera tu recuperación reciente.",
+        "balanced": "Buen equilibrio entre carga y recuperación.",
+        "stable": "Día estable: el score refleja consistencia más que picos."
+      }
+    },
+    "readiness": "Estado de recuperación",
+    "motivation": "Nivel de motivación",
+    "stress": "Nivel de estrés",
+    "sleep": "Calidad de sueño",
+    "sleep_block": {
+      "title": "Sueño",
+      "hours_unit": "horas",
+      "tap_to_edit": "toca para editar",
+      "saving": "guardando",
+      "labels": {
+        "poor": "Poco",
+        "good": "Bien",
+        "adequate": "Adecuado",
+        "optimal": "Óptimo",
+        "excessive": "Mucho"
+      }
+    },
+    "workout_block": {
+      "title": "Entreno",
+      "no_workout": "Sin entreno hoy",
+      "creating": "Creando...",
+      "start": "Empezar",
+      "locked": "Bloqueado",
+      "locked_desc": "Mantén pulsado para abrir",
+      "exercises_unit": "ejerc.",
+      "volume_unit": "vol. kg",
+      "more_count": "+{count} más",
+      "add_exercises": "Añadir ejercicios",
+      "continue_workout": "Continuar entreno",
+      "progress": {
+        "equal": "igual",
+        "increase": "+{delta} kg",
+        "decrease": "{delta} kg"
+      }
+    },
+    "state_block": {
+      "title": "Estado",
+      "saving": "guardando",
+      "metrics": {
+        "energy": "Energía",
+        "stress": "Estrés",
+        "motivation": "Motivación",
+        "phone_usage": "Móvil"
+      }
+    },
+    "reading_block": {
+      "title": "Lectura",
+      "saving": "guardando",
+      "locked": "Bloqueado",
+      "locked_desc": "Mantén pulsado para abrir",
+      "placeholder": "Añadir libro...",
+      "input_placeholder": "Escribe o elige uno...",
+      "pages_today": "pág. hoy",
+      "total_pages": "{current} / {total} pág. totales",
+      "add_total": "+ añadir total páginas",
+      "prompt_total": "Total de páginas del libro:"
+    },
+    "weather": {
+      "near_you": "Cerca de ti",
+      "no_data": "Sin clima",
+      "get_weather": "Ver clima",
+      "updating": "Obteniendo...",
+      "refresh": "Actualizar ubicación",
+      "conditions": {
+        "clear": "Despejado",
+        "clouds": "Nublado",
+        "rain": "Lluvia",
+        "drizzle": "Orbayu",
+        "snow": "Nieve",
+        "thunderstorm": "Tormenta",
+        "mist": "Niebla",
+        "fog": "Niebla",
+        "wind": "Viento"
+      }
+    },
+    "reset_confirm": "¿Estás seguro de que quieres reiniciar las métricas y los hábitos de hoy?",
+    "reset_title": "Reiniciar métricas de hoy",
+    "coach_title": "Tu Coach Diario",
+    "coach_dismiss": "Entendido",
+    "energy": "Nivel de energía",
+    "phone": "Uso del móvil",
+    "themes": {
+      "morning": "Mañana",
+      "midday": "Mediodía",
+      "afternoon": "Tarde",
+      "night": "Noche Premium",
+      "sober": "Sobrio",
+      "auto_mode": "Cambiar a modo Automático",
+      "sober_mode": "Cambiar a modo Sobrio"
+    }
+  },
+  "workout": {
+    "title": "Entrenamiento",
+    "no_workout": "Sin entrenamiento",
+    "start": "Empezar entrenamiento",
+    "exercises": "{count} ejercicios",
+    "locked": "Entrenamiento bloqueado",
+    "status": {
+      "none": "Hoy toca descanso",
+      "active": "Entrenamiento en curso",
+      "finished": "Entrenamiento finalizado"
+    },
+    "exercise_card": {
+      "confirm": "Confirmar",
+      "sets_unit": "series",
+      "records_unit": "registros",
+      "total_km": "{count} km total",
+      "volume_kg_short": "{count} kg vol.",
+      "distance": "Distancia",
+      "time": "Tiempo",
+      "pace": "Ritmo medio",
+      "register": "Registrar",
+      "weight_placeholder": "Kg",
+      "reps_placeholder": "Reps",
+      "rir_placeholder": "RIR",
+      "saving": "Guardando..."
+    },
+    "modal": {
+      "title": "Añadir ejercicio",
+      "placeholder": "Nombre del ejercicio",
+      "optional": "Grupo muscular (opcional)",
+      "adding": "Añadiendo...",
+      "add_button": "Añadir ejercicio"
+    },
+    "muscle_groups": {
+      "chest": "Pecho",
+      "back": "Espalda",
+      "legs": "Piernas",
+      "shoulders": "Hombros",
+      "biceps": "Bíceps",
+      "triceps": "Tríceps",
+      "core": "Core",
+      "glutes": "Glúteos",
+      "cardio": "Cardio"
+    }
+  },
+  "advisor": {
+    "extreme_rest": "Batería en valores críticos. Cero exigencias hoy, tu único objetivo es sobrevivir y dormir pronto.",
+    "high_stress": "Día asfixiante de estrés y mucho tiempo de pantalla. Apaga el móvil 10 minutos y simplemente respira.",
+    "go_workout": "Tienes energía y estás usando mucho el móvil. No hay excusa, es el momento perfecto para arrancar el entreno.",
+    "low_motivation": "Hoy la mente pone frenos. No lo pienses: ponte las zapatillas solo por 5 minutos. Si luego quieres parar, para.",
+    "praise_tired": "Entrenamiento liquidado a pesar del cansancio. Gran disciplina. Cena bien y prioriza irte a la cama.",
+    "praise_perfect": "Cuerpo entrenado, estrés bajo y avance intelectual. Día redondo, aprovéchalo y mantén el ritmo.",
+    "read_prompt": "Mucho tiempo de móvil y aún no le has dado a la mente. Tira el móvil a otra habitación y lee 15 minutos.",
+    "general_active": "Mucho uso de pantalla hoy. Tómate un respiro visual y dedícate al menos 30 minutos a moverte."
+  },
+  "profile": {
+    "weight_placeholder": "kg",
+    "height_placeholder": "cm",
+    "age_placeholder": "años",
+    "add_age": "Añadir edad",
+    "years": "{count} años"
+  },
+  "today_page": {
+    "title": "Entreno de hoy",
+    "loading": "Cargando sesión...",
+    "finalized": "Entreno Finalizado",
+    "unlock_hint": "Mantén pulsado para desbloquear",
+    "empty_title": "Sin entreno hoy",
+    "empty_desc": "Empieza tu sesión de entrenamiento o duplica la última de tu historial.",
+    "start_workout": "Empezar entreno",
+    "copy_last": "Copiar {date}",
+    "duplicating": "Duplicando...",
+    "workout_placeholder": "Nombre del entreno...",
+    "workout_no_name": "Sesión sin nombre",
+    "stats": {
+      "exercises": "ejercicios",
+      "sets": "series",
+      "volume": "volumen kg"
+    },
+    "add_exercise": "Añadir ejercicio"
+  },
+  "history": {
+    "title": "Historial",
+    "sessions": "{count} sesiones registradas",
+    "no_history": "Sin historial",
+    "no_history_desc": "Aún no hay entrenos registrados.",
+    "start_now": "Empezar ahora",
+    "last": "Última",
+    "volume": "Vol",
+    "max": "Máx",
+    "view_progression": "Ver progresión",
+    "metrics": {
+      "weight": "PESO",
+      "reps": "REPS",
+      "max_weight": "Peso máximo",
+      "max_reps": "Repeticiones máximas"
+    }
+  },
+  "exercise": {
+    "no_data": "Sin datos",
+    "no_data_desc": "No hay historial para este ejercicio.",
+    "best": "Mejor marca",
+    "sessions": "Sesiones",
+    "sessions_count": "{count} sesiones",
+    "progress": "Progreso",
+    "last": "Última"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "signup": "Crear cuenta",
+    "enter": "Entrar",
+    "email": "Email",
+    "password": "Contraseña",
+    "no_account": "¿Sin cuenta?",
+    "already_account": "¿Ya tienes cuenta?",
+    "signup_action": "Regístrate",
+    "login_action": "Inicia sesión",
+    "check_email": "Revisa tu email para confirmar la cuenta.",
+    "already_registered": "Este email ya tiene una cuenta. Inicia sesión.",
+    "subtitle": "Harder, Better, Faster, Stronger"
+  }
+}

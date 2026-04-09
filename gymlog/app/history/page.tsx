@@ -12,33 +12,40 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { clsx } from 'clsx'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
-
-function formatDate(iso: string) {
-  const d = new Date(iso + 'T00:00:00')
-  const today = new Date().toISOString().split('T')[0]
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-  if (iso === today) return 'Hoy'
-  if (iso === yesterday) return 'Ayer'
-  return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })
-}
-
-function daysAgo(iso: string) {
-  const diff = Math.floor((Date.now() - new Date(iso + 'T00:00:00').getTime()) / 86400000)
-  if (diff === 0) return ''
-  if (diff === 1) return 'hace 1 dia'
-  return `hace ${diff} dias`
-}
+import { LanguageToggle } from '@/components/ui/LanguageToggle'
+import { useI18n } from '@/contexts/I18nContext'
 
 interface WorkoutWithExercises extends Workout {
   exercises?: Exercise[]
 }
 
 export default function HistoryPage() {
+  const { t, language } = useI18n()
   const [workouts, setWorkouts] = useState<WorkoutWithExercises[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [loadingDetail, setLoadingDetail] = useState<string | null>(null)
   const router = useRouter()
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso + 'T12:00:00')
+    const today = new Date().toISOString().split('T')[0]
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    if (iso === today) return t('common.today')
+    if (iso === yesterday) return t('common.yesterday')
+    return d.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' })
+  }
+
+  const daysAgoStr = (iso: string) => {
+    const d1 = new Date(iso + 'T00:00:00')
+    const d2 = new Date()
+    d2.setHours(0, 0, 0, 0)
+    const diff = Math.floor((d2.getTime() - d1.getTime()) / 86400000)
+    
+    if (diff === 0) return ''
+    if (diff === 1) return t('common.dayAgo')
+    return t('common.daysAgo', { count: diff })
+  }
 
   useEffect(() => {
     async function load() {
@@ -72,20 +79,23 @@ export default function HistoryPage() {
         <div>
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-brand-500" />
-            <h1 className="font-bold text-base text-main">Historial</h1>
+            <h1 className="font-bold text-base text-main">{t('history.title')}</h1>
           </div>
-          <p className="text-muted text-xs mt-0.5">{workouts.length} sesiones registradas</p>
+          <p className="text-muted text-xs mt-0.5">{t('history.sessions', { count: workouts.length })}</p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
       </PageHeader>
 
       <main className="max-w-lg mx-auto px-4 pt-4 space-y-2">
         {workouts.length === 0 ? (
           <EmptyState
             icon={<Calendar className="w-8 h-8 text-muted" />}
-            title="Sin historial"
-            description="Aun no hay entrenos registrados."
-            action={<Link href="/today" className="btn-primary text-sm">Empezar ahora</Link>}
+            title={t('history.no_history')}
+            description={t('history.no_history_desc')}
+            action={<Link href="/today" className="btn-primary text-sm">{t('history.start_now')}</Link>}
           />
         ) : (
           workouts.map(workout => (
@@ -101,7 +111,7 @@ export default function HistoryPage() {
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-main capitalize">{formatDate(workout.date)}</div>
                   <div className="text-muted text-xs flex items-center gap-2">
-                    <span>{daysAgo(workout.date)}</span>
+                    <span>{daysAgoStr(workout.date)}</span>
                     {workout.name && <><span>·</span><span className="truncate">{workout.name}</span></>}
                   </div>
                 </div>
@@ -148,7 +158,7 @@ export default function HistoryPage() {
                             className="inline-flex items-center gap-1 mt-1 text-xs text-brand-500/70 hover:text-brand-400 transition-colors"
                           >
                             <TrendingUp className="w-3 h-3" />
-                            Ver progresion
+                            {t('history.view_progression')}
                           </Link>
                         </div>
                       ))}

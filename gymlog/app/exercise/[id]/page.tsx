@@ -12,6 +12,8 @@ import ProgressChart from '@/components/charts/ProgressChart'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { LanguageToggle } from '@/components/ui/LanguageToggle'
+import { useI18n } from '@/contexts/I18nContext'
 
 interface Session {
   date: string
@@ -23,17 +25,20 @@ interface Session {
   }>
 }
 
-function formatDate(iso: string) {
-  const d = new Date(iso + 'T00:00:00')
-  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-}
-
 export default function ExercisePage() {
   const params = useParams()
   const exerciseName = decodeURIComponent(params.id as string)
+  const router = useRouter()
+  const { t, language } = useI18n()
+  
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const [metric, setMetric] = useState<'maxWeight' | 'maxReps'>('maxWeight')
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso + 'T12:00:00')
+    return d.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })
+  }
 
   useEffect(() => {
     async function load() {
@@ -50,6 +55,7 @@ export default function ExercisePage() {
   const chartData = sessions.map(session => ({
     date: formatDate(session.date),
     maxWeight: Math.max(...session.sets.map(set => set.weight), 0),
+    maxReps: Math.max(...session.sets.map(set => set.reps), 0),
     totalVolume: session.sets.reduce((sum, set) => sum + set.reps * set.weight, 0),
     sets: session.sets.length,
   })).reverse()
@@ -78,28 +84,31 @@ export default function ExercisePage() {
           </Link>
           <div>
             <h1 className="font-bold text-base truncate text-main">{exerciseName}</h1>
-            <p className="text-muted text-xs">{sessions.length} sesiones</p>
+            <p className="text-muted text-xs">{t('exercise.sessions_count', { count: sessions.length })}</p>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
       </PageHeader>
 
       <main className="max-w-lg mx-auto px-4 pt-4 space-y-4">
         {sessions.length === 0 ? (
           <EmptyState
             icon={<TrendingUp className="w-8 h-8 text-muted" />}
-            title="Sin datos"
-            description="No hay historial para este ejercicio."
+            title={t('exercise.no_data')}
+            description={t('exercise.no_data_desc')}
           />
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3">
               <StatTile
                 value={<>{best}<span className="text-sm text-muted font-normal">kg</span></>}
-                label="Mejor marca"
+                label={t('exercise.best')}
                 valueClassName="text-brand-400"
               />
-              <StatTile value={sessions.length} label="Sesiones" />
+              <StatTile value={sessions.length} label={t('exercise.sessions')} />
               <StatTile
                 value={
                   <>
@@ -107,17 +116,43 @@ export default function ExercisePage() {
                     {delta != null && <span className="text-sm text-muted font-normal">kg</span>}
                   </>
                 }
-                label="Progreso"
+                label={t('exercise.progress')}
                 valueClassName={delta == null ? 'text-muted' : delta > 0 ? 'text-brand-400' : delta < 0 ? 'text-red-400' : 'text-main'}
               />
             </div>
 
             {chartData.length >= 2 && (
               <div className="card p-4">
-                <h3 className="text-sm font-semibold text-muted mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-brand-500" /> Peso maximo por sesion
-                </h3>
-                <ProgressChart data={chartData} />
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-muted flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-brand-500" /> 
+                    {metric === 'maxWeight' ? t('history.metrics.max_weight') : t('history.metrics.max_reps')}
+                  </h3>
+                  
+                  <div className="flex bg-surface-2 p-0.5 rounded-lg border border-surface-border">
+                    <button
+                      onClick={() => setMetric('maxWeight')}
+                      className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${
+                        metric === 'maxWeight' ? 'bg-surface-3 text-main shadow-sm' : 'text-muted hover:text-main'
+                      }`}
+                    >
+                      {t('history.metrics.weight')}
+                    </button>
+                    <button
+                      onClick={() => setMetric('maxReps')}
+                      className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${
+                        metric === 'maxReps' ? 'bg-surface-3 text-main shadow-sm' : 'text-muted hover:text-main'
+                      }`}
+                    >
+                      {t('history.metrics.reps')}
+                    </button>
+                  </div>
+                </div>
+                <ProgressChart 
+                   data={chartData} 
+                   dataKey={metric} 
+                   unit={metric === 'maxWeight' ? 'kg' : 'reps'} 
+                />
               </div>
             )}
 
@@ -127,7 +162,7 @@ export default function ExercisePage() {
                   <div className="flex items-center justify-between mb-3">
                     <span className="font-medium text-sm capitalize text-main">{formatDate(session.date)}</span>
                     {index === 0 && (
-                      <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">Ultima</span>
+                      <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">{t('exercise.last')}</span>
                     )}
                   </div>
 
@@ -144,8 +179,8 @@ export default function ExercisePage() {
                   </div>
 
                   <div className="mt-2 pt-2 border-t border-surface-border flex items-center gap-4 text-xs text-muted">
-                    <span>Vol: {session.sets.reduce((sum, set) => sum + set.reps * set.weight, 0).toLocaleString()} kg</span>
-                    <span>Max: {Math.max(...session.sets.map(set => set.weight))} kg</span>
+                    <span>{t('history.volume')}: {session.sets.reduce((sum, set) => sum + set.reps * set.weight, 0).toLocaleString()} kg</span>
+                    <span>{t('history.max')}: {Math.max(...session.sets.map(set => set.weight))} kg</span>
                   </div>
                 </div>
               ))}

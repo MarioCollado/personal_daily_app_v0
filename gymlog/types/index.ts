@@ -53,7 +53,7 @@ export interface DailyMetrics {
   book_title: string | null
   pages_read: number | null
   book_total_pages: number | null
-  free_time: number | null   // 1-5: cuánto tiempo libre tuviste hoy
+  phone_usage: number | null   // 1-5: nivel de uso del móvil hoy (mayor = peor)
   reading_locked: boolean | null
   workout_locked: boolean | null
   weather_temp: number | null

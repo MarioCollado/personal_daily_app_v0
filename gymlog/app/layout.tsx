@@ -25,13 +25,17 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
+import { I18nProvider } from '@/contexts/I18nContext'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" className="dark">
       <body className="bg-surface-0 text-main antialiased font-sans">
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </I18nProvider>
         <Analytics />
       </body>
     </html>

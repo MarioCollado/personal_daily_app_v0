@@ -1,23 +1,17 @@
 'use client'
 import { Zap, Brain, Flame, Smartphone } from 'lucide-react'
 import { clsx } from 'clsx'
-import { card, text } from '@/styles/components'
+import { card } from '@/styles/components'
+import { useI18n } from '@/contexts/I18nContext'
 
 interface Props {
   energy: number | null
   stress: number | null
   motivation: number | null
-  freeTime: number | null
-  onChange: (field: 'energy' | 'stress' | 'motivation' | 'free_time', value: number) => void
+  phoneUsage: number | null
+  onChange: (field: 'energy' | 'stress' | 'motivation' | 'phone_usage', value: number) => void
   saving?: boolean
 }
-
-const METRICS = [
-  { key: 'energy' as const, label: 'Energía', Icon: Zap, color: '#f59e0b' },
-  { key: 'stress' as const, label: 'Estrés', Icon: Brain, color: '#ef4444' },
-  { key: 'motivation' as const, label: 'Motivación', Icon: Flame, color: '#22c55e' },
-  { key: 'free_time' as const, label: 'Móvil', Icon: Smartphone, color: '#ef4444' },
-]
 
 function DotRow({
   value, color, onClick, max = 5,
@@ -45,9 +39,18 @@ function DotRow({
   )
 }
 
-export default function StateBlock({ energy, stress, motivation, freeTime, onChange, saving }: Props) {
+export default function StateBlock({ energy, stress, motivation, phoneUsage, onChange, saving }: Props) {
+  const { t } = useI18n()
+  
+  const METRICS = [
+    { key: 'energy' as const, label: t('dashboard.state_block.metrics.energy'), Icon: Zap, color: '#f59e0b' },
+    { key: 'stress' as const, label: t('dashboard.state_block.metrics.stress'), Icon: Brain, color: '#ef4444' },
+    { key: 'motivation' as const, label: t('dashboard.state_block.metrics.motivation'), Icon: Flame, color: '#22c55e' },
+    { key: 'phone_usage' as const, label: t('dashboard.state_block.metrics.phone_usage'), Icon: Smartphone, color: '#ef4444' },
+  ]
+
   const values: Record<string, number | null> = {
-    energy, stress, motivation, free_time: freeTime,
+    energy, stress, motivation, phone_usage: phoneUsage,
   }
 
   return (
@@ -57,13 +60,13 @@ export default function StateBlock({ energy, stress, motivation, freeTime, onCha
         <div className="flex items-center gap-1.5">
           <Brain className="w-3.5 h-3.5 text-purple-400" />
           <span className="text-[11px] font-bold text-muted uppercase tracking-widest">
-            Estado
+            {t('dashboard.state_block.title')}
           </span>
         </div>
 
         {saving && (
           <span className="absolute right-0 text-[10px] text-muted animate-pulse-dot">
-            guardando
+            {t('dashboard.state_block.saving')}
           </span>
         )}
       </div>

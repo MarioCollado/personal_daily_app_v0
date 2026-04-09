@@ -34,11 +34,25 @@ export async function getBookHistory(userId: string, bookTitle: string) {
   const supabase = createClient()
   const { data } = await supabase
     .from('daily_metrics')
-    .select('date, pages_read, book_title')
+    .select('date, pages_read, book_title, book_total_pages')
     .eq('user_id', userId)
     .eq('book_title', bookTitle)
     .order('date', { ascending: true })
   return data || []
+}
+
+export async function getBookStats(userId: string, bookTitle: string) {
+  const history = await getBookHistory(userId, bookTitle)
+  if (!history.length) return { totalRead: 0, bookTotalPages: null }
+
+  const totalRead = history.reduce((sum, item) => sum + (item.pages_read || 0), 0)
+  // Cogemos el total de páginas de la entrada más reciente que lo tenga
+  const mostRecentTotal = history
+    .slice()
+    .reverse()
+    .find(item => item.book_total_pages != null)?.book_total_pages || null
+
+  return { totalRead, bookTotalPages: mostRecentTotal }
 }
 
 export async function getUserBooks(userId: string): Promise<string[]> {

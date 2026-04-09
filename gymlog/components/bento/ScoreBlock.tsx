@@ -4,6 +4,7 @@ import { card } from '@/styles/components'
 import { Flame } from 'lucide-react'
 import { clsx } from 'clsx'
 import { computeVitalityScore } from '@/lib/vitality'
+import { useI18n } from '@/contexts/I18nContext'
 
 import type { DailyMetrics, Exercise, UserProfile, WorkoutWithExercises } from '@/types'
 
@@ -24,6 +25,7 @@ export default function ScoreBlock({
   recentWorkouts,
   todayExercises,
 }: Props) {
+  const { t } = useI18n()
   const result = computeVitalityScore({
     profile,
     metrics,
@@ -44,7 +46,7 @@ export default function ScoreBlock({
     metrics?.energy != null,
     (metrics?.pages_read ?? 0) > 0,
     hasWorkout,
-    metrics?.free_time != null,
+    metrics?.phone_usage != null,
   ].filter(Boolean).length
 
   const total = 5
@@ -78,7 +80,7 @@ export default function ScoreBlock({
         <div className="flex items-center gap-1.5">
           <Flame className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-[11px] font-bold text-muted uppercase tracking-widest">
-            Vitalidad
+            {t('dashboard.vitality.title')}
           </span>
         </div>
 
@@ -127,14 +129,8 @@ export default function ScoreBlock({
       </div>
 
       <div className={clsx('text-[10px] text-center mt-1 font-medium min-h-[28px]', lowConfidence ? 'text-yellow-300' : 'text-muted')}>
-        {result.hint}
+        {t(`dashboard.vitality.hints.${result.hint}`)}
       </div>
-
-      {/* <div className="mt-1 flex items-center justify-center gap-2 text-[10px] text-muted/70 font-medium">
-        <span>Esfuerzo: {result.breakdown.effort}</span>
-        <span>Recuperación: {result.breakdown.recovery}</span>
-        <span>Fatiga: {result.breakdown.fatiguePenalty}</span>
-      </div> */}
     </div>
   )
 }

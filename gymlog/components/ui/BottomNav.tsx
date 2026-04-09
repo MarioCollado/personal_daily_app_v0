@@ -3,16 +3,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Dumbbell, Clock, ChefHat } from 'lucide-react'
 import { clsx } from 'clsx'
-
-const TABS = [
-  { href: '/dashboard', label: 'Hoy',      Icon: LayoutDashboard },
-  { href: '/today',     label: 'Entreno',  Icon: Dumbbell        },
-  { href: '/history',   label: 'Historial', Icon: Clock          },
-  { href: '/recipes',   label: 'Recetas',  Icon: ChefHat         },
-]
+import { useI18n } from '@/contexts/I18nContext'
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const { t } = useI18n()
+
+  const TABS = [
+    { href: '/dashboard', label: t('nav.dashboard'), Icon: LayoutDashboard },
+    { href: '/today',     label: t('nav.today'),     Icon: Dumbbell        },
+    { href: '/history',   label: t('nav.history'),   Icon: Clock           },
+    { href: '/recipes',   label: t('nav.recipes'),   Icon: ChefHat          },
+  ]
 
   return (
     <>

@@ -1,0 +1,244 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{count} days ago",
+    "dayAgo": "1 day ago"
+  },
+  "nav": {
+    "dashboard": "Home",
+    "today": "Workout",
+    "history": "History",
+    "profile": "Profile",
+    "recipes": "Recipes"
+  },
+  "dashboard": {
+    "greeting": "Hello",
+    "vitality": {
+      "title": "Vitality",
+      "hints": {
+        "low_confidence": "Soft estimation: missing history or profile data.",
+        "rest_day": "Good recovery day: recovery is driving the score.",
+        "fatigue": "Accumulated fatigue detected: consider lowering load or prioritizing rest.",
+        "overload": "Today's load exceeds your recent recovery.",
+        "balanced": "Good balance between load and recovery.",
+        "stable": "Stable day: score reflects consistency rather than peaks."
+      }
+    },
+    "readiness": "Readiness",
+    "motivation": "Motivation",
+    "stress": "Stress Level",
+    "sleep": "Sleep Quality",
+    "sleep_block": {
+      "title": "Sleep",
+      "hours_unit": "hours",
+      "tap_to_edit": "tap to edit",
+      "saving": "saving",
+      "labels": {
+        "poor": "Poor",
+        "good": "Good",
+        "adequate": "Adequate",
+        "optimal": "Optimal",
+        "excessive": "Excessive"
+      }
+    },
+    "workout_block": {
+      "title": "Workout",
+      "no_workout": "No workout today",
+      "creating": "Creating...",
+      "start": "Start",
+      "locked": "Locked",
+      "locked_desc": "Long press to unlock",
+      "exercises_unit": "exs.",
+      "volume_unit": "vol. kg",
+      "more_count": "+{count} more",
+      "add_exercises": "Add exercises",
+      "continue_workout": "Continue workout",
+      "progress": {
+        "equal": "equal",
+        "increase": "+{delta} kg",
+        "decrease": "{delta} kg"
+      }
+    },
+    "state_block": {
+      "title": "State",
+      "saving": "saving",
+      "metrics": {
+        "energy": "Energy",
+        "stress": "Stress",
+        "motivation": "Motivation",
+        "phone_usage": "Mobile"
+      }
+    },
+    "reading_block": {
+      "title": "Reading",
+      "saving": "saving",
+      "locked": "Locked",
+      "locked_desc": "Long press to unlock",
+      "placeholder": "Add book...",
+      "input_placeholder": "Type or choose one...",
+      "pages_today": "pages today",
+      "total_pages": "{current} / {total} total pages",
+      "add_total": "+ add total pages",
+      "prompt_total": "Total book pages:"
+    },
+    "weather": {
+      "near_you": "Near you",
+      "no_data": "No weather",
+      "get_weather": "Check weather",
+      "updating": "Updating...",
+      "refresh": "Update location",
+      "conditions": {
+        "clear": "Clear",
+        "clouds": "Cloudy",
+        "rain": "Rain",
+        "drizzle": "Drizzle",
+        "snow": "Snow",
+        "thunderstorm": "Thunderstorm",
+        "mist": "Mist",
+        "fog": "Fog",
+        "wind": "Wind"
+      }
+    },
+    "reset_confirm": "Are you sure you want to reset today's metrics and habits?",
+    "reset_title": "Reset today's metrics",
+    "coach_title": "Your Daily Coach",
+    "coach_dismiss": "Understood",
+    "energy": "Energy levels",
+    "phone": "Phone usage",
+    "themes": {
+      "morning": "Morning",
+      "midday": "Midday",
+      "afternoon": "Afternoon",
+      "night": "Premium Night",
+      "sober": "Sober",
+      "auto_mode": "Switch to Auto mode",
+      "sober_mode": "Switch to Sober mode"
+    }
+  },
+  "workout": {
+    "title": "Workout",
+    "no_workout": "No workout",
+    "start": "Start workout",
+    "exercises": "{count} exercises",
+    "locked": "Workout locked",
+    "status": {
+      "none": "Today is rest day",
+      "active": "Workout in progress",
+      "finished": "Workout finished"
+    },
+    "exercise_card": {
+      "confirm": "Confirm",
+      "sets_unit": "sets",
+      "records_unit": "records",
+      "total_km": "{count} km total",
+      "volume_kg_short": "{count} kg vol.",
+      "distance": "Distance",
+      "time": "Time",
+      "pace": "Avg Pace",
+      "register": "Register",
+      "weight_placeholder": "Kg",
+      "reps_placeholder": "Reps",
+      "rir_placeholder": "RIR",
+      "saving": "Saving..."
+    },
+    "modal": {
+      "title": "Add exercise",
+      "placeholder": "Exercise name",
+      "optional": "Muscle group (optional)",
+      "adding": "Adding...",
+      "add_button": "Add exercise"
+    },
+    "muscle_groups": {
+      "chest": "Chest",
+      "back": "Back",
+      "legs": "Legs",
+      "shoulders": "Shoulders",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "core": "Core",
+      "glutes": "Glutes",
+      "cardio": "Cardio"
+    }
+  },
+  "advisor": {
+    "extreme_rest": "Critical battery levels. Zero demands today, your only goal is to survive and sleep early.",
+    "high_stress": "Suffocating day of stress and too much screen time. Turn off your phone for 10 minutes and just breathe.",
+    "go_workout": "You have energy and you're using your phone a lot. No excuses, it's the perfect time to start your workout.",
+    "low_motivation": "Today the mind is putting on the brakes. Don't think: just put on your sneakers for 5 minutes. If you want to stop then, stop.",
+    "praise_tired": "Workout finished despite being tired. Great discipline. Eat well and prioritize getting to bed.",
+    "praise_perfect": "Trained body, low stress, and intellectual progress. Perfect day, enjoy it and keep up the pace.",
+    "read_prompt": "Too much phone time and you haven't stimulated the mind yet. Throw the phone in another room and read for 15 minutes.",
+    "general_active": "Too much screen use today. Take a visual break and spend at least 30 minutes moving."
+  },
+  "profile": {
+    "weight_placeholder": "kg",
+    "height_placeholder": "cm",
+    "age_placeholder": "years",
+    "add_age": "Add age",
+    "years": "{count} years"
+  },
+  "today_page": {
+    "title": "Today's Workout",
+    "loading": "Loading session...",
+    "finalized": "Workout Finalized",
+    "unlock_hint": "Long press to unlock",
+    "empty_title": "No workout today",
+    "empty_desc": "Start your training session or duplicate the last one from your history.",
+    "start_workout": "Start workout",
+    "copy_last": "Copy {date}",
+    "duplicating": "Duplicating...",
+    "workout_placeholder": "Workout name...",
+    "workout_no_name": "Unnamed session",
+    "stats": {
+      "exercises": "exercises",
+      "sets": "sets",
+      "volume": "volume kg"
+    },
+    "add_exercise": "Add exercise"
+  },
+  "history": {
+    "title": "History",
+    "sessions": "{count} sessions recorded",
+    "no_history": "No history",
+    "no_history_desc": "No workouts recorded yet.",
+    "start_now": "Start now",
+    "last": "Last",
+    "volume": "Vol",
+    "max": "Max",
+    "view_progression": "View progression",
+    "metrics": {
+      "weight": "WEIGHT",
+      "reps": "REPS",
+      "max_weight": "Max Weight",
+      "max_reps": "Max Reps"
+    }
+  },
+  "exercise": {
+    "no_data": "No data",
+    "no_data_desc": "No history for this exercise.",
+    "best": "Personal Best",
+    "sessions": "Sessions",
+    "sessions_count": "{count} sessions",
+    "progress": "Progress",
+    "last": "Last"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "enter": "Enter",
+    "email": "Email",
+    "password": "Password",
+    "no_account": "Don't have an account?",
+    "already_account": "Already have an account?",
+    "signup_action": "Sign Up",
+    "login_action": "Log In",
+    "check_email": "Check your email to confirm your account.",
+    "already_registered": "This email already has an account. Log in.",
+    "subtitle": "Harder, Better, Faster, Stronger"
+  }
+}

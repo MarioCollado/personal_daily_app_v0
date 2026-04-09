@@ -47,6 +47,12 @@ export function getAgeFactor(age: number | null | undefined) {
   return 1 + 0.22 * sigmoid((age - 42) / 10)
 }
 
+function getReadingEffect(pages: number | null | undefined) {
+  if (!pages || pages <= 0) return 0
+  // Diminishing returns using sqrt, capped at 50 pages
+  return clamp(Math.sqrt(pages) / Math.sqrt(50), 0, 1)
+}
+
 function getAgeFatigueThreshold(age: number | null | undefined) {
   const ageFactor = getAgeFactor(age)
   return clamp(1.15 - (ageFactor - 1) * 0.7, 0.85, 1.15)
@@ -92,7 +98,7 @@ function getWorkoutLoad(exercises: Exercise[], weight: number | null | undefined
   return clamp(combined, 0, 100)
 }
 
-function getMetricReadiness(metrics: DailyMetrics | null) {
+function getMetricReadiness(metrics: DailyMetrics | null, workoutLoad: number = 0) {
   if (!metrics) return 0.5
 
   const sleepScore = (() => {
@@ -102,16 +108,38 @@ function getMetricReadiness(metrics: DailyMetrics | null) {
   })()
 
   const energyScore = normalize(metrics.energy, 1, 5)
-  const motivationScore = normalize(metrics.motivation, 1, 5)
   const normalizedStress = normalize(metrics.stress, 1, 5)
-  const stressScore = normalizedStress == null ? null : 1 - normalizedStress
-  const freeTimeScore = normalize(metrics.free_time, 1, 5)
+  
+  const readingEffect = getReadingEffect(metrics.pages_read)
+  // El entrenamiento también ayuda mentalmente (hasta 60 de carga para el máximo efecto mental)
+  const workoutEffect = clamp(workoutLoad / 60, 0, 1)
 
-  return average([sleepScore, energyScore, motivationScore, stressScore, freeTimeScore]) ?? 0.5
+  // Motivación: El entrenamiento da un impulso de hasta +0.15 (15%)
+  const baseMotivation = normalize(metrics.motivation, 1, 5) ?? 0.5
+  const motivationScore = clamp(baseMotivation + workoutEffect * 0.15, 0, 1)
+
+  // Mitigación de Estrés: Lectura (hasta 50%) + Entrenamiento (hasta 30%)
+  const readingMitigator = readingEffect * 0.5
+  const workoutMitigator = workoutEffect * 0.3
+  const totalMitigator = clamp(readingMitigator + workoutMitigator, 0, 0.75) // Máximo 75% de mitigación total
+  
+  const stressMitigator = 1 - totalMitigator
+  const stressScore = normalizedStress == null ? null : 1 - (normalizedStress * stressMitigator)
+  
+  const phoneScore = (() => {
+    if (metrics.phone_usage == null) return null
+    const val = metrics.phone_usage
+    // Penalización exponencial: 1:0.1, 2:0.2, 3:0.35, 4:0.7, 5:1.0
+    const penalties = [0.1, 0.2, 0.35, 0.7, 1.0]
+    const penalty = penalties[Math.floor(clamp(val, 1, 5)) - 1]
+    return 1 - penalty
+  })()
+
+  return average([sleepScore, energyScore, motivationScore, stressScore, phoneScore]) ?? 0.5
 }
 
-export function getRecoveryScore(metrics: DailyMetrics | null) {
-  const readiness = getMetricReadiness(metrics)
+export function getRecoveryScore(metrics: DailyMetrics | null, workoutLoad: number = 0) {
+  const readiness = getMetricReadiness(metrics, workoutLoad)
   return clamp(25 + readiness * 45, 20, 70)
 }
 
@@ -173,7 +201,12 @@ function getHeavyDayStreak(recentWorkouts: WorkoutWithExercises[], weight: numbe
 function getRecoveryCoherencePenalty(metrics: DailyMetrics | null, effort: number) {
   if (!metrics) return 0
 
-  const stressPenalty = metrics.stress != null && metrics.stress >= 4 ? 4 + (metrics.stress - 4) * 2.5 : 0
+  const readingEffect = getReadingEffect(metrics.pages_read)
+  const stressMitigator = 1 - readingEffect * 0.5
+
+  const baseStressPenalty = metrics.stress != null && metrics.stress >= 4 ? 4 + (metrics.stress - 4) * 2.5 : 0
+  const stressPenalty = baseStressPenalty * stressMitigator
+
   const sleepPenalty = metrics.sleep_hours != null && metrics.sleep_hours < 6 ? (6 - metrics.sleep_hours) * 3.2 : 0
   const mismatch = effort > 55 ? (stressPenalty + sleepPenalty) * 0.65 : 0
 
@@ -208,38 +241,44 @@ function getConfidence(input: VitalityInput) {
   if (input.recentWorkouts.length >= 3) points += 0.15
   return clamp(points, 0.35, 1)
 }
-
-function getHint(breakdown: VitalityBreakdown, hasWorkout: boolean) {
+function getHint(breakdown: VitalityBreakdown, hasWorkout: boolean): string {
   if (breakdown.confidence < 0.55) {
-    return 'Estimacion suave: falta algo de historial o perfil.'
+    return 'low_confidence'
   }
 
   if (!hasWorkout && breakdown.recovery >= 52) {
-    return 'Buen dia de descarga: la recuperacion esta empujando el score.'
+    return 'rest_day'
   }
 
   if (breakdown.fatiguePenalty >= 14) {
-    return 'Fatiga acumulada detectada: conviene bajar carga o priorizar descanso.'
+    return 'fatigue'
   }
 
   if (breakdown.balanceModifier < 0.9) {
-    return 'La carga de hoy supera tu recuperacion reciente.'
+    return 'overload'
   }
 
   if (breakdown.balanceModifier > 1.08) {
-    return 'Buen equilibrio entre carga y recuperacion.'
+    return 'balanced'
   }
 
-  return 'Dia estable: el score refleja consistencia mas que picos.'
+  return 'stable'
 }
 
 export function computeVitalityScore(input: VitalityInput): VitalityResult {
   const ageFactor = getAgeFactor(input.profile?.age)
-  const readiness = getMetricReadiness(input.metrics)
+  
+  const todayLoad = input.hasWorkout
+    ? getWorkoutLoad(input.todayExercises, input.profile?.weight)
+    : 0
+
+  const readiness = getMetricReadiness(input.metrics, todayLoad)
+  
   const effort = input.hasWorkout
     ? getIntensityScore(input.todayExercises, input.profile, input.recentWorkouts)
     : clamp(10 + readiness * 14, 10, 24)
-  const recovery = getRecoveryScore(input.metrics)
+
+  const recovery = getRecoveryScore(input.metrics, todayLoad)
   const balanceModifier = getBalanceModifier(effort, recovery)
   const fatiguePenalty = getFatiguePenalty(
     input.recentMetrics,

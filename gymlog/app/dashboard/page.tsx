@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { LogOut, RotateCcw, Sparkles, Bell, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import { getTodayWorkout, createWorkout, getExercisesForWorkout, getRecentWorkoutsWithExercises, getUserProfile } from '@/lib/db'
-import { getDailyMetrics, upsertDailyMetrics, getUserBooks, getRecentMetrics } from '@/lib/metrics'
+import { getDailyMetrics, upsertDailyMetrics, getUserBooks, getRecentMetrics, getBookStats } from '@/lib/metrics'
 import type { Workout, Exercise, DailyMetrics, UserProfile, WorkoutWithExercises } from '@/types'
 import SleepBlock from '@/components/bento/SleepBlock'
 import ClockWeatherBlock from '@/components/bento/ClockWeatherBlock'
@@ -18,6 +18,8 @@ import { useRouter } from 'next/navigation'
 import { getDailyAdvice } from '@/lib/advisor'
 import { useAdvisor } from '@/hooks/useAdvisor'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { LanguageToggle } from '@/components/ui/LanguageToggle'
+import { useI18n } from '@/contexts/I18nContext'
 
 function getLocalISODate() {
   const d = new Date()
@@ -30,6 +32,7 @@ function mergeMetricIntoHistory(history: DailyMetrics[], metric: DailyMetrics) {
 }
 
 export default function DashboardPage() {
+  const { t, language } = useI18n()
   const [currentDate, setCurrentDate] = useState(getLocalISODate)
   const [userId, setUserId] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<DailyMetrics | null>(null)
@@ -39,6 +42,7 @@ export default function DashboardPage() {
   const [recentMetrics, setRecentMetrics] = useState<DailyMetrics[]>([])
   const [recentWorkouts, setRecentWorkouts] = useState<WorkoutWithExercises[]>([])
   const [books, setBooks] = useState<string[]>([])
+  const [bookStats, setBookStats] = useState<{ totalRead: number; bookTotalPages: number | null }>({ totalRead: 0, bookTotalPages: null })
   const [loading, setLoading] = useState(true)
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
   const [startingWorkout, setStartingWorkout] = useState(false)
@@ -75,6 +79,13 @@ export default function DashboardPage() {
     setProfile(p)
     setRecentMetrics(metricsHistory)
     setRecentWorkouts(workoutsHistory)
+
+    if (m?.book_title) {
+      const stats = await getBookStats(user.id, m.book_title)
+      setBookStats(stats)
+    } else {
+      setBookStats({ totalRead: 0, bookTotalPages: null })
+    }
 
     if (w) {
       const historicalWorkout = workoutsHistory.find(item => item.id === w.id)
@@ -137,16 +148,27 @@ export default function DashboardPage() {
     }, 600)
   }
 
-  function handleStateChange(field: 'energy' | 'stress' | 'motivation' | 'free_time', value: number) {
+  function handleStateChange(field: 'energy' | 'stress' | 'motivation' | 'phone_usage', value: number) {
     setMetrics(m => m ? { ...m, [field]: value } : { [field]: value } as any)
     saveMetrics({ [field]: value }, [field])
   }
 
-  function handleReadingChange(updates: { book_title?: string; pages_read?: number; book_total_pages?: number }) {
+  async function handleReadingChange(updates: { book_title?: string; pages_read?: number; book_total_pages?: number }) {
+    const curTitle = updates.book_title || metrics?.book_title
     setMetrics(m => m ? { ...m, ...updates } : { ...updates } as any)
     saveMetrics(updates as any, Object.keys(updates))
+    
     if (updates.book_title && !books.includes(updates.book_title)) {
       setBooks(b => [...b, updates.book_title!].sort())
+    }
+
+    if (curTitle) {
+      const stats = await getBookStats(userId!, curTitle)
+      setBookStats(stats)
+      // Si hoy no tenemos el total pero la historia sí, lo actualizamos localmente para el componente
+      if (stats.bookTotalPages && !metrics?.book_total_pages && !updates.book_total_pages) {
+        setMetrics(m => m ? { ...m, book_total_pages: stats.bookTotalPages } : m)
+      }
     }
   }
 
@@ -171,14 +193,14 @@ export default function DashboardPage() {
 
   async function handleResetMetrics() {
     if (!userId) return
-    if (!confirm('¿Estás seguro de que quieres reiniciar las métricas y los hábitos de hoy?')) return
+    if (!confirm(t('dashboard.reset_confirm'))) return
 
     const resetData = {
       sleep_hours: null,
       energy: null,
       stress: null,
       motivation: null,
-      free_time: null,
+      phone_usage: null,
       book_title: null,
       pages_read: null
     }
@@ -210,7 +232,7 @@ export default function DashboardPage() {
             <button
               onClick={handleResetMetrics}
               className="text-muted hover:text-main p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
-              title="Reiniciar métricas de hoy"
+              title={t('dashboard.reset_title')}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -227,7 +249,7 @@ export default function DashboardPage() {
               className="absolute font-bold text-sm tracking-tight capitalize transition-opacity duration-700 whitespace-nowrap text-main"
               style={{ opacity: showDate ? 1 : 0 }}
             >
-              {new Date(currentDate + 'T12:00:00').toLocaleDateString('es-ES', {
+              {new Date(currentDate + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
                 day: 'numeric',
                 month: 'numeric',
                 year: '2-digit'
@@ -236,6 +258,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <LanguageToggle />
             <ThemeToggle />
 
             {advice && isDismissed && (
@@ -288,20 +311,21 @@ export default function DashboardPage() {
               energy={metrics?.energy ?? null}
               stress={metrics?.stress ?? null}
               motivation={metrics?.motivation ?? null}
-              freeTime={metrics?.free_time ?? null}
+              phoneUsage={metrics?.phone_usage ?? null}
               onChange={handleStateChange}
-              saving={savingFields.has('energy') || savingFields.has('stress') || savingFields.has('motivation')}
+              saving={savingFields.has('energy') || savingFields.has('stress') || savingFields.has('motivation') || savingFields.has('phone_usage')}
             />
           </div>
 
           <div className="col-span-1 min-h-[220px]">
             <ReadingBlock
               bookTitle={metrics?.book_title ?? null}
-              pagesRead={metrics?.pages_read ?? null}
-              bookTotalPages={metrics?.book_total_pages ?? null}
+              pagesRead={metrics?.pages_read ?? 0}
+              bookTotalPages={metrics?.book_total_pages ?? bookStats.bookTotalPages}
+              accumulatedPages={bookStats.totalRead + (metrics?.pages_read ?? 0)}
               bookSuggestions={books}
               onChange={handleReadingChange}
-              saving={savingFields.has('book_title') || savingFields.has('pages_read')}
+              saving={savingFields.has('book_title') || savingFields.has('pages_read') || savingFields.has('book_total_pages')}
               isLocked={metrics?.reading_locked ?? false}
               onToggleLock={() => handleToggleLock('reading_locked')}
             />
@@ -341,16 +365,16 @@ export default function DashboardPage() {
               <div className="w-10 h-10 rounded-full bg-brand-500/15 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-5 h-5 text-brand" />
               </div>
-              <p className="font-bold text-main text-sm">Tu Coach Diario</p>
+              <p className="font-bold text-main text-sm">{t('dashboard.coach_title')}</p>
             </div>
 
-            <p className="text-sm text-main/90 leading-relaxed">{advice.text}</p>
+            <p className="text-sm text-main/90 leading-relaxed">{t(`dashboard.advisor.${advice.id}`)}</p>
 
             <button
               onClick={dismissAdvice}
               className="mt-5 w-full py-2.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-muted hover:text-main font-bold text-sm transition-colors touch-manipulation border border-surface-border"
             >
-              Entendido
+              {t('dashboard.coach_dismiss')}
             </button>
           </div>
         </div>

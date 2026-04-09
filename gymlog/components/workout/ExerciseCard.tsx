@@ -8,6 +8,7 @@ import { card, btn, input, setRow, text, cardio } from '@/styles/components'
 import SetRow from './SetRow'
 import CardioSetRow from './CardioSetRow'
 import type { Exercise, Set } from '@/types'
+import { useI18n } from '@/contexts/I18nContext'
 
 interface Props {
   exercise: Exercise
@@ -21,7 +22,6 @@ const IS_CARDIO = (mg: string | null) => mg?.toLowerCase() === 'cardio'
 function parseTime(val: string): number | null {
   const trimmed = val.trim()
   if (!trimmed) return null
-  // Plain number → treat as minutes (e.g. "30" → 1800 sec)
   if (!trimmed.includes(':')) {
     const mins = parseFloat(trimmed)
     return isNaN(mins) ? null : Math.round(mins * 60)
@@ -42,6 +42,7 @@ function calcPace(durationSec: number, distKm: number): string | null {
 }
 
 export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDeleted }: Props) {
+  const { t } = useI18n()
   const isCardio = IS_CARDIO(exercise.muscle_group)
 
   const [reps, setReps] = useState('')
@@ -82,7 +83,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
         setDistance('')
         setDuration('')
       } catch (e: any) {
-        setAddError(e?.message || 'Error al guardar el registro. Revisa la base de datos.')
+        setAddError(e?.message || 'Error.')
       } finally { setAdding(false) }
     } else {
       const r = parseInt(reps)
@@ -96,7 +97,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
         setWeight('')
         setRir('')
       } catch (e: any) {
-        setAddError(e?.message || 'Error al guardar la serie.')
+        setAddError(e?.message || 'Error.')
       } finally { setAdding(false) }
     }
   }
@@ -127,13 +128,13 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
           <div className="flex items-center gap-3 mt-0.5 text-muted text-xs">
             {isCardio ? (
               <>
-                <span>{exercise.sets?.length || 0} registros</span>
-                {(totalDist ?? 0) > 0 && <span>{totalDist?.toFixed(1)} km total</span>}
+                <span>{t('workout.exercise_card.records_unit', { count: exercise.sets?.length || 0 })}</span>
+                {(totalDist ?? 0) > 0 && <span>{t('workout.exercise_card.total_km', { count: (totalDist ?? 0).toFixed(1) })}</span>}
               </>
             ) : (
               <>
-                <span>{exercise.sets?.length || 0} series</span>
-                {(totalVolume ?? 0) > 0 && <span>{totalVolume?.toLocaleString()} kg vol.</span>}
+                <span>{t('workout.exercise_card.sets_unit', { count: exercise.sets?.length || 0 })}</span>
+                {(totalVolume ?? 0) > 0 && <span>{t('workout.exercise_card.volume_kg_short', { count: (totalVolume ?? 0).toLocaleString() })}</span>}
               </>
             )}
           </div>
@@ -149,7 +150,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                 : 'text-muted hover:text-red-400'
             )}
           >
-            {confirmDelete ? 'Confirmar' : <Trash2 className="w-4 h-4" />}
+            {confirmDelete ? t('workout.exercise_card.confirm') : <Trash2 className="w-4 h-4" />}
           </button>
 
           {expanded
@@ -205,7 +206,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className={text.label + ' block mb-1'}>Distancia</label>
+                    <label className={text.label + ' block mb-1'}>{t('workout.exercise_card.distance')}</label>
                     <div className="relative">
                       <input
                         type="number"
@@ -220,7 +221,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                   </div>
 
                   <div>
-                    <label className={text.label + ' block mb-1'}>Tiempo</label>
+                    <label className={text.label + ' block mb-1'}>{t('workout.exercise_card.time')}</label>
                     <input
                       type="text"
                       placeholder="mm:ss o minutos"
@@ -235,7 +236,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                 <div className={clsx(cardio.paceDisplay, livePace ? 'opacity-100' : 'opacity-30')}>
                   <Timer className="w-4 h-4 text-sky-400" />
                   <div>
-                    <div className={cardio.paceLabel}>Ritmo medio</div>
+                    <div className={cardio.paceLabel}>{t('workout.exercise_card.pace')}</div>
                     <span className={cardio.paceValue}>{livePace ?? '—'}</span>
                   </div>
                 </div>
@@ -246,7 +247,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                   className={clsx(btn.primary, 'w-full flex items-center justify-center gap-2 disabled:opacity-40')}
                 >
                   <Plus className="w-4 h-4" />
-                  {adding ? 'Guardando...' : 'Registrar'}
+                  {adding ? t('workout.exercise_card.saving') : t('workout.exercise_card.register')}
                 </button>
 
                 {addError && (
@@ -260,7 +261,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                 <input
                   type="number"
                   inputMode="decimal"
-                  placeholder={lastSet ? String(lastSet.weight) : 'Kg'}
+                  placeholder={lastSet ? String(lastSet.weight) : t('workout.exercise_card.weight_placeholder')}
                   value={weight}
                   onChange={e => setWeight(e.target.value)}
                   className="h-11 w-full rounded-xl bg-surface-2 text-main text-center text-base font-mono px-3 border border-surface-border focus:border-brand-500 outline-none transition-colors"
@@ -271,7 +272,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                 <input
                   type="number"
                   inputMode="numeric"
-                  placeholder={lastSet ? String(lastSet.reps) : 'Reps'}
+                  placeholder={lastSet ? String(lastSet.reps) : t('workout.exercise_card.reps_placeholder')}
                   value={reps}
                   onChange={e => setReps(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddSet()}
@@ -281,7 +282,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                 <input
                   type="number"
                   inputMode="numeric"
-                  placeholder="RIR"
+                  placeholder={t('workout.exercise_card.rir_placeholder')}
                   value={rir}
                   onChange={e => setRir(e.target.value)}
                   className="h-11 w-16 rounded-xl bg-surface-2 text-main text-center text-sm px-2 flex-shrink-0 border border-surface-border focus:border-brand-500 outline-none transition-colors"

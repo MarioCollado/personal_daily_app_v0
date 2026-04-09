@@ -1,9 +1,10 @@
 'use client'
 import React from 'react'
-import { Sun, Moon, Sparkles, ZapOff } from 'lucide-react'
+import { Sun, Sparkles, ZapOff } from 'lucide-react'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { clsx } from 'clsx'
 import { ThemePeriod } from '@/styles/themes'
+import { useI18n } from '@/contexts/I18nContext'
 
 const THEME_ICONS: Record<ThemePeriod, React.ReactNode> = {
   morning: <Sun className="w-4 h-4 text-emerald-400" />,
@@ -13,16 +14,17 @@ const THEME_ICONS: Record<ThemePeriod, React.ReactNode> = {
   sober: <ZapOff className="w-4 h-4 text-muted" />,
 }
 
-const THEME_LABELS: Record<ThemePeriod, string> = {
-  morning: 'Mañana',
-  midday: 'Mediodía',
-  afternoon: 'Tarde',
-  night: 'Noche Premium',
-  sober: 'Sobrio',
-}
-
 export function ThemeToggle() {
   const { theme, isSober, toggleSober } = useTheme()
+  const { t } = useI18n()
+
+  const labels: Record<ThemePeriod, string> = {
+    morning: t('dashboard.themes.morning'),
+    midday: t('dashboard.themes.midday'),
+    afternoon: t('dashboard.themes.afternoon'),
+    night: t('dashboard.themes.night'),
+    sober: t('dashboard.themes.sober'),
+  }
 
   return (
     <button
@@ -33,13 +35,13 @@ export function ThemeToggle() {
           ? 'bg-surface-2 border-surface-border text-muted' 
           : 'bg-brand/10 border-brand/20 text-brand'
       )}
-      title={isSober ? 'Cambiar a modo Automático' : 'Cambiar a modo Sobrio'}
+      title={isSober ? t('dashboard.themes.auto_mode') : t('dashboard.themes.sober_mode')}
     >
       <div className="flex items-center justify-center">
         {THEME_ICONS[theme]}
       </div>
       <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:block">
-        {isSober ? 'Sobrio' : THEME_LABELS[theme]}
+        {isSober ? t('dashboard.themes.sober') : labels[theme]}
       </span>
       
       <div className="flex items-center gap-1 ml-1 pl-2 border-l border-current/20">

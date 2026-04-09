@@ -1,11 +1,10 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { X, Plus, ChevronDown } from 'lucide-react'
+import { X, Plus } from 'lucide-react'
 import { addExercise } from '@/lib/db'
 import type { Exercise } from '@/types'
 import { clsx } from 'clsx'
-
-const MUSCLE_GROUPS = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Bíceps', 'Tríceps', 'Core', 'Glúteos', 'Cardio']
+import { useI18n } from '@/contexts/I18nContext'
 
 interface Props {
   workoutId: string
@@ -15,11 +14,24 @@ interface Props {
 }
 
 export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClose }: Props) {
+  const { t } = useI18n()
   const [name, setName] = useState('')
   const [muscleGroup, setMuscleGroup] = useState('')
   const [loading, setLoading] = useState(false)
   const [filtered, setFiltered] = useState<string[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const MUSCLE_GROUPS = [
+    { key: 'chest', label: t('workout.muscle_groups.chest') },
+    { key: 'back', label: t('workout.muscle_groups.back') },
+    { key: 'legs', label: t('workout.muscle_groups.legs') },
+    { key: 'shoulders', label: t('workout.muscle_groups.shoulders') },
+    { key: 'biceps', label: t('workout.muscle_groups.biceps') },
+    { key: 'triceps', label: t('workout.muscle_groups.triceps') },
+    { key: 'core', label: t('workout.muscle_groups.core') },
+    { key: 'glutes', label: t('workout.muscle_groups.glutes') },
+    { key: 'cardio', label: t('workout.muscle_groups.cardio') },
+  ]
 
   useEffect(() => { inputRef.current?.focus() }, [])
 
@@ -48,7 +60,7 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-surface-1 border border-surface-border rounded-t-2xl w-full max-w-lg p-5 animate-slide-up" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5 px-1">
-          <h3 className="font-semibold text-lg text-main">Añadir ejercicio</h3>
+          <h3 className="font-semibold text-lg text-main">{t('workout.modal.title')}</h3>
           <button onClick={onClose} className="text-muted hover:text-main p-1 transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
@@ -57,7 +69,7 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
             <input
               ref={inputRef}
               type="text"
-              placeholder="Nombre del ejercicio"
+              placeholder={t('workout.modal.placeholder')}
               value={name}
               onChange={e => handleNameChange(e.target.value)}
               className="input-field"
@@ -76,12 +88,12 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
           </div>
 
           <div>
-            <p className="text-xs text-muted mb-2 font-semibold uppercase tracking-wider">Grupo muscular (opcional)</p>
+            <p className="text-xs text-muted mb-2 font-semibold uppercase tracking-wider">{t('workout.modal.optional')}</p>
             <div className="flex flex-wrap gap-2">
-              {MUSCLE_GROUPS.map(m => (
-                <button key={m} onClick={() => setMuscleGroup(muscleGroup === m ? '' : m)}
-                  className={clsx('px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200', muscleGroup === m ? 'bg-brand-500 text-brand-foreground shadow-sm' : 'bg-surface-3 text-muted hover:bg-surface-4 hover:text-main')}>
-                  {m}
+              {MUSCLE_GROUPS.map(({ key, label }) => (
+                <button key={key} onClick={() => setMuscleGroup(muscleGroup === label ? '' : label)}
+                  className={clsx('px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200', muscleGroup === label ? 'bg-brand-500 text-brand-foreground shadow-sm' : 'bg-surface-3 text-muted hover:bg-surface-4 hover:text-main')}>
+                  {label}
                 </button>
               ))}
             </div>
@@ -90,7 +102,7 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
           <button onClick={handleSubmit} disabled={loading || !name.trim()}
             className="btn-primary w-full flex items-center justify-center gap-2 mt-2 disabled:opacity-40">
             <Plus className="w-4 h-4" />
-            {loading ? 'Añadiendo...' : 'Añadir ejercicio'}
+            {loading ? t('workout.modal.adding') : t('workout.modal.add_button')}
           </button>
         </div>
       </div>

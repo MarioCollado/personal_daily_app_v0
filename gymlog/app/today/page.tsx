@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, ChevronRight, Lock, User } from 'lucide-react'
+import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, Lock, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import {
   getTodayWorkout, createWorkout, getExercisesForWorkout,
@@ -13,23 +13,20 @@ import ExerciseCard from '@/components/workout/ExerciseCard'
 import AddExerciseModal from '@/components/workout/AddExerciseModal'
 import BottomNav from '@/components/ui/BottomNav'
 import PageHeader from '@/components/ui/PageHeader'
-import RestTimer from '@/components/ui/RestTimer'
 import { useLongPress } from '@/hooks/useLongPress'
 import { useRouter } from 'next/navigation'
 import { clsx } from 'clsx'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { LanguageToggle } from '@/components/ui/LanguageToggle'
+import { useI18n } from '@/contexts/I18nContext'
 
 function getLocalISODate() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function formatDate(iso: string) {
-  const d = new Date(iso + 'T00:00:00')
-  return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
-}
-
 export default function TodayPage() {
+  const { t, language } = useI18n()
   const [workout, setWorkout] = useState<Workout | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,7 +35,6 @@ export default function TodayPage() {
   const [workoutName, setWorkoutName] = useState('')
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [userId, setUserId] = useState<string | null>(null)
-  const [showDuplicate, setShowDuplicate] = useState(false)
   const [lastWorkout, setLastWorkout] = useState<Workout | null>(null)
   const [duplicating, setDuplicating] = useState(false)
   const [isLocked, setIsLocked] = useState(false)
@@ -48,6 +44,11 @@ export default function TodayPage() {
   const router = useRouter()
 
   const [currentDate, setCurrentDate] = useState(getLocalISODate)
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso + 'T12:00:00')
+    return d.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })
+  }
 
   const loadData = useCallback(async () => {
     const supabase = createClient()
@@ -62,9 +63,6 @@ export default function TodayPage() {
     setIsLocked(metrics?.workout_locked || false)
     setProfile(userProfile)
 
-    if (!w) {
-      // show empty state, don't auto-create
-    }
     setWorkout(w)
     if (w) {
       setWorkoutName(w.name || '')
@@ -130,7 +128,6 @@ export default function TodayPage() {
       setWorkout(w)
       const exs = await getExercisesForWorkout(w.id)
       setExercises(exs)
-      setShowDuplicate(false)
     } finally {
       setDuplicating(false)
     }
@@ -198,7 +195,7 @@ export default function TodayPage() {
       <div className="min-h-screen bg-surface-0 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted text-sm font-medium">Cargando sesión...</p>
+          <p className="text-muted text-sm font-medium">{t('today_page.loading')}</p>
         </div>
       </div>
     )
@@ -206,16 +203,16 @@ export default function TodayPage() {
 
   return (
     <div className="min-h-screen bg-surface-0 pb-32">
-      {/* Header */}
       <PageHeader innerClassName="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <Dumbbell className="w-5 h-5 text-brand" />
-              <h1 className="font-bold text-base text-main">Entreno de hoy</h1>
+              <h1 className="font-bold text-base text-main">{t('today_page.title')}</h1>
             </div>
             <p className="text-muted text-xs font-bold capitalize mt-0.5 tracking-tight">{formatDate(currentDate)}</p>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <ThemeToggle />
             <button onClick={handleSignOut} className="text-muted hover:text-main p-2 rounded-lg hover:bg-surface-2 transition-colors">
               <LogOut className="w-4 h-4" />
@@ -235,8 +232,8 @@ export default function TodayPage() {
             <div className="w-16 h-16 rounded-full bg-brand-500/20 flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-brand" />
             </div>
-            <span className="text-brand font-bold text-xl">Entreno Finalizado</span>
-            <span className="text-muted mt-2 text-sm text-center font-bold">Mantén pulsado para desbloquear</span>
+            <span className="text-brand font-bold text-xl">{t('today_page.finalized')}</span>
+            <span className="text-muted mt-2 text-sm text-center font-bold">{t('today_page.unlock_hint')}</span>
           </div>
         )}
 
@@ -251,21 +248,21 @@ export default function TodayPage() {
                 <input
                   type="number"
                   step="0.1"
-                  placeholder="kg"
+                  placeholder={t('profile.weight_placeholder')}
                   value={profileInput.weight}
                   onChange={e => setProfileInput(s => ({ ...s, weight: e.target.value }))}
                   className="w-14 sm:w-16 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
                 />
                 <input
                   type="number"
-                  placeholder="cm"
+                  placeholder={t('profile.height_placeholder')}
                   value={profileInput.height}
                   onChange={e => setProfileInput(s => ({ ...s, height: e.target.value }))}
                   className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
                 />
                 <input
                   type="number"
-                  placeholder="años"
+                  placeholder={t('profile.age_placeholder')}
                   value={profileInput.age}
                   onChange={e => setProfileInput(s => ({ ...s, age: e.target.value }))}
                   className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
@@ -277,10 +274,10 @@ export default function TodayPage() {
             ) : (
               <div onClick={startEditingProfile} className="flex flex-col cursor-pointer touch-manipulation group">
                 <span className="text-xs font-bold text-main group-hover:text-brand transition-colors">
-                  {profile?.weight ? `${profile.weight}kg` : '--kg'} • {profile?.height ? `${profile.height}cm` : '--cm'}
+                  {profile?.weight ? `${profile.weight}kg` : `--kg`} • {profile?.height ? `${profile.height}cm` : `--cm`}
                 </span>
                 <span className="text-[10px] text-muted font-bold tracking-tight">
-                  {profile?.age ? `${profile.age} años` : 'Añadir edad'}
+                  {profile?.age ? t('profile.years', { count: profile.age }) : t('profile.add_age')}
                 </span>
               </div>
             )}
@@ -293,29 +290,27 @@ export default function TodayPage() {
         </div>
 
         {!workout ? (
-          /* Empty state */
           <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
             <div className="w-20 h-20 rounded-2xl bg-surface-2 flex items-center justify-center mb-5 border border-surface-border shadow-inner">
               <Dumbbell className="w-10 h-10 text-muted" />
             </div>
-            <h2 className="font-bold text-2xl mb-2 text-main">Sin entreno hoy</h2>
-            <p className="text-muted text-sm mb-6 max-w-xs font-medium">Empieza tu sesión de entrenamiento o duplica la última de tu historial.</p>
+            <h2 className="font-bold text-2xl mb-2 text-main">{t('today_page.empty_title')}</h2>
+            <p className="text-muted text-sm mb-6 max-w-xs font-medium">{t('today_page.empty_desc')}</p>
             <div className="flex flex-col gap-3 w-full max-w-xs">
               <button onClick={startWorkout} className="btn-primary flex items-center justify-center gap-2">
-                <Plus className="w-4 h-4" /> Empezar entreno
+                <Plus className="w-4 h-4" /> {t('today_page.start_workout')}
               </button>
               {lastWorkout && (
                 <button onClick={handleDuplicate} disabled={duplicating}
                   className="btn-ghost flex items-center justify-center gap-2 text-sm">
                   <Copy className="w-4 h-4" />
-                  {duplicating ? 'Duplicando...' : `Copiar ${formatDate(lastWorkout.date)}`}
+                  {duplicating ? t('today_page.duplicating') : t('today_page.copy_last', { date: formatDate(lastWorkout.date) })}
                 </button>
               )}
             </div>
           </div>
         ) : (
           <>
-            {/* Workout name */}
             <div className="flex items-center gap-2">
               {editingName ? (
                 <>
@@ -325,7 +320,7 @@ export default function TodayPage() {
                     value={workoutName}
                     onChange={e => setWorkoutName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && saveName()}
-                    placeholder="Nombre del entreno..."
+                    placeholder={t('today_page.workout_placeholder')}
                     className="input-field flex-1 text-sm"
                   />
                   <button onClick={saveName} className="btn-primary px-3 py-2"><Check className="w-4 h-4" /></button>
@@ -333,35 +328,33 @@ export default function TodayPage() {
               ) : (
                 <button onClick={() => setEditingName(true)}
                   className="flex items-center gap-2 text-muted hover:text-main text-sm transition-colors group py-1">
-                  <span className="font-bold tracking-tight">{workout.name || 'Sesión sin nombre'}</span>
+                  <span className="font-bold tracking-tight">{workout.name || t('today_page.workout_no_name')}</span>
                   <Pencil className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               )}
             </div>
 
-            {/* Stats bar */}
             {exercises.length > 0 && (
               <div className="flex gap-4 text-sm bg-surface-1 border border-surface-border rounded-xl px-4 py-3 animate-fade-in shadow-sm">
                 <div className="text-center flex-1">
                   <div className="font-mono font-bold text-lg text-brand leading-none mb-1">{exercises.length}</div>
-                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">ejercicios</div>
+                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">{t('today_page.stats.exercises')}</div>
                 </div>
                 <div className="w-px bg-surface-border" />
                 <div className="text-center flex-1">
                   <div className="font-mono font-bold text-lg text-main leading-none mb-1">{exercises.reduce((a, e) => a + (e.sets?.length || 0), 0)}</div>
-                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">series</div>
+                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">{t('today_page.stats.sets')}</div>
                 </div>
                 <div className="w-px bg-surface-border" />
                 <div className="text-center flex-1">
                   <div className="font-mono font-bold text-lg text-main leading-none mb-1">
                     {exercises.reduce((a, e) => a + (e.sets || []).reduce((b, s) => b + s.reps * s.weight, 0), 0).toLocaleString()}
                   </div>
-                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">volumen kg</div>
+                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">{t('today_page.stats.volume')}</div>
                 </div>
               </div>
             )}
 
-            {/* Exercise cards */}
             <div className="space-y-3">
               {exercises.map(ex => (
                 <ExerciseCard
@@ -374,19 +367,14 @@ export default function TodayPage() {
               ))}
             </div>
 
-            {/* Add exercise button */}
             <button onClick={() => setShowAddExercise(true)}
               className="w-full border-2 border-dashed border-surface-border hover:border-brand/40 hover:bg-brand/5 rounded-2xl py-5 flex items-center justify-center gap-2 text-muted hover:text-brand transition-all duration-200 touch-manipulation group">
               <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="font-bold uppercase tracking-widest text-xs">Añadir ejercicio</span>
+              <span className="font-bold uppercase tracking-widest text-xs">{t('today_page.add_exercise')}</span>
             </button>
           </>
         )}
       </main>
-
-      {/* {workout && (
-        <RestTimer />
-      )} */}
 
       {showAddExercise && workout && (
         <AddExerciseModal
