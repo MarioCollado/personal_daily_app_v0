@@ -29,6 +29,16 @@
         "stable": "Día estable: el score refleja consistencia más que picos."
       }
     },
+    "advisor": {
+      "extreme_rest": "Batería en valores críticos. Cero exigencias hoy, tu único objetivo es sobrevivir y dormir pronto.",
+      "high_stress": "Día asfixiante de estrés y mucho tiempo de pantalla. Apaga el móvil 10 minutos y simplemente respira.",
+      "go_workout": "Tienes energía y estás usando mucho el móvil. No hay excusa, es el momento perfecto para arrancar el entreno.",
+      "low_motivation": "Hoy la mente pone frenos. No lo pienses: ponte las zapatillas solo por 5 minutos. Si luego quieres parar, para.",
+      "praise_tired": "Entrenamiento liquidado a pesar del cansancio. Gran disciplina. Cena bien y prioriza irte a la cama.",
+      "praise_perfect": "Cuerpo entrenado, estrés bajo y avance intelectual. Día redondo, aprovéchalo y mantén el ritmo.",
+      "read_prompt": "Mucho tiempo de móvil y aún no le has dado a la mente. Tira el móvil a otra habitación y lee 15 minutos.",
+      "general_active": "Mucho uso de pantalla hoy. Tómate un respiro visual y dedícate al menos 30 minutos a moverte."
+    },
     "readiness": "Estado de recuperación",
     "motivation": "Nivel de motivación",
     "stress": "Nivel de estrés",
@@ -164,16 +174,6 @@
       "glutes": "Glúteos",
       "cardio": "Cardio"
     }
-  },
-  "advisor": {
-    "extreme_rest": "Batería en valores críticos. Cero exigencias hoy, tu único objetivo es sobrevivir y dormir pronto.",
-    "high_stress": "Día asfixiante de estrés y mucho tiempo de pantalla. Apaga el móvil 10 minutos y simplemente respira.",
-    "go_workout": "Tienes energía y estás usando mucho el móvil. No hay excusa, es el momento perfecto para arrancar el entreno.",
-    "low_motivation": "Hoy la mente pone frenos. No lo pienses: ponte las zapatillas solo por 5 minutos. Si luego quieres parar, para.",
-    "praise_tired": "Entrenamiento liquidado a pesar del cansancio. Gran disciplina. Cena bien y prioriza irte a la cama.",
-    "praise_perfect": "Cuerpo entrenado, estrés bajo y avance intelectual. Día redondo, aprovéchalo y mantén el ritmo.",
-    "read_prompt": "Mucho tiempo de móvil y aún no le has dado a la mente. Tira el móvil a otra habitación y lee 15 minutos.",
-    "general_active": "Mucho uso de pantalla hoy. Tómate un respiro visual y dedícate al menos 30 minutos a moverte."
   },
   "profile": {
     "weight_placeholder": "kg",

@@ -29,6 +29,16 @@
         "stable": "Stable day: score reflects consistency rather than peaks."
       }
     },
+    "advisor": {
+      "extreme_rest": "Critical battery levels. Zero demands today, your only goal is to survive and sleep early.",
+      "high_stress": "Suffocating day of stress and too much screen time. Turn off your phone for 10 minutes and just breathe.",
+      "go_workout": "You have energy and you're using your phone a lot. No excuses, it's the perfect time to start your workout.",
+      "low_motivation": "Today the mind is putting on the brakes. Don't think: just put on your sneakers for 5 minutes. If you want to stop then, stop.",
+      "praise_tired": "Workout finished despite being tired. Great discipline. Eat well and prioritize getting to bed.",
+      "praise_perfect": "Trained body, low stress, and intellectual progress. Perfect day, enjoy it and keep up the pace.",
+      "read_prompt": "Too much phone time and you haven't stimulated the mind yet. Throw the phone in another room and read for 15 minutes.",
+      "general_active": "Too much screen use today. Take a visual break and spend at least 30 minutes moving."
+    },
     "readiness": "Readiness",
     "motivation": "Motivation",
     "stress": "Stress Level",
@@ -164,16 +174,6 @@
       "glutes": "Glutes",
       "cardio": "Cardio"
     }
-  },
-  "advisor": {
-    "extreme_rest": "Critical battery levels. Zero demands today, your only goal is to survive and sleep early.",
-    "high_stress": "Suffocating day of stress and too much screen time. Turn off your phone for 10 minutes and just breathe.",
-    "go_workout": "You have energy and you're using your phone a lot. No excuses, it's the perfect time to start your workout.",
-    "low_motivation": "Today the mind is putting on the brakes. Don't think: just put on your sneakers for 5 minutes. If you want to stop then, stop.",
-    "praise_tired": "Workout finished despite being tired. Great discipline. Eat well and prioritize getting to bed.",
-    "praise_perfect": "Trained body, low stress, and intellectual progress. Perfect day, enjoy it and keep up the pace.",
-    "read_prompt": "Too much phone time and you haven't stimulated the mind yet. Throw the phone in another room and read for 15 minutes.",
-    "general_active": "Too much screen use today. Take a visual break and spend at least 30 minutes moving."
   },
   "profile": {
     "weight_placeholder": "kg",

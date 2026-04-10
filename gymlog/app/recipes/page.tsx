@@ -186,7 +186,7 @@ export default function RecipesPage() {
             type="button"
             onClick={handleRecommend}
             disabled={ingredients.length === 0 || loading}
-            title={ingredients.length === 0 ? 'Anade al menos un ingrediente' : undefined}
+            title={ingredients.length === 0 ? 'Añade al menos un ingrediente' : undefined}
             className={clsx(
               btn.primary,
               'sm:min-w-[220px]',
@@ -209,7 +209,7 @@ export default function RecipesPage() {
         {isMockMode && aiRecipes ? (
           <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5 text-xs text-amber-400">
             <span>⚡</span>
-            <span>Modo preview — anade tu API key de Anthropic para recomendaciones reales basadas en tus metricas</span>
+            <span>Modo preview — Añade tu API key de Anthropic para recomendaciones reales basadas en tus métricas</span>
           </div>
         ) : null}
 
@@ -240,7 +240,7 @@ export default function RecipesPage() {
           <EmptyState
             icon={<ChefHat className="w-8 h-8 text-muted" />}
             title="Listo para recomendar"
-            description="Anade ingredientes y pulsa el boton para generar recetas ajustadas a tus metricas de hoy."
+            description="Añade ingredientes y pulsa el boton para generar recetas ajustadas a tus métricas de hoy."
           />
         )}
       </main>

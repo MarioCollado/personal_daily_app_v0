@@ -140,7 +140,7 @@ function getMetricReadiness(metrics: DailyMetrics | null, workoutLoad: number = 
 
 export function getRecoveryScore(metrics: DailyMetrics | null, workoutLoad: number = 0) {
   const readiness = getMetricReadiness(metrics, workoutLoad)
-  return clamp(25 + readiness * 45, 20, 70)
+  return clamp(22 + readiness * 53, 20, 75)  // techo subido de 70 a 75
 }
 
 function getHistoricalLoadAverage(recentWorkouts: WorkoutWithExercises[], weight: number | null | undefined) {
@@ -166,15 +166,17 @@ export function getIntensityScore(exercises: Exercise[], profile: UserProfile | 
 }
 
 export function getBalanceModifier(effort: number, recovery: number) {
-  const balance = (recovery - effort) / 18
-  return clamp(0.68 + sigmoid(balance) * 0.58, 0.68, 1.26)
+  // si recovery >= 50 (buena recuperación), el esfuerzo alto suma en vez de restar
+  const recoveryBonus = clamp((recovery - 45) / 30, 0, 1) // 0 si recovery<45, 1 si recovery>=75
+  const adjustedBalance = (recovery - effort * (0.75 - recoveryBonus * 0.35)) / 18
+  return clamp(0.72 + sigmoid(adjustedBalance) * 0.56, 0.72, 1.28)
 }
 
 function getRecentSleepDebt(recentMetrics: DailyMetrics[]) {
   return recentMetrics.reduce((sum, metric) => {
     const sleep = metric.sleep_hours
     if (sleep == null) return sum
-    return sum + Math.max(0, 7 - sleep)
+    return sum + Math.max(0, 6 - sleep)  // umbral bajado de 7h a 6h
   }, 0)
 }
 
@@ -288,7 +290,7 @@ export function computeVitalityScore(input: VitalityInput): VitalityResult {
     input.metrics
   )
   const confidence = getConfidence(input)
-  const baseScore = clamp(recovery * 0.7 + effort * 0.55, 18, 92)
+  const baseScore = clamp(recovery * 0.72 + effort * 0.52, 18, 88)
   const finalScore = clamp(Math.round(baseScore * balanceModifier * ageFactor - fatiguePenalty), 0, 100)
 
   const breakdown: VitalityBreakdown = {
