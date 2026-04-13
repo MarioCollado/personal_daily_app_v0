@@ -72,7 +72,8 @@
         "equal": "equal",
         "increase": "+{delta} kg",
         "decrease": "{delta} kg"
-      }
+      },
+      "completed": "Workout completed"
     },
     "state_block": {
       "title": "State",
@@ -199,7 +200,14 @@
       "sets": "sets",
       "volume": "volume kg"
     },
-    "add_exercise": "Add exercise"
+    "add_exercise": "Add exercise",
+    "finish_workout": "Finish workout",
+    "add_template": "Add template",
+    "template_name": "Template name",
+    "save_template": "Save as template",
+    "onsave_exercises": "Exercises to be saved",
+    "cancel": "Cancel",
+    "tip": "Only names and muscle groups are saved; weights and sets are not."
   },
   "history": {
     "title": "History",

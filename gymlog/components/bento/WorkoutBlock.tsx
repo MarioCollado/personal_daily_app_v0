@@ -1,5 +1,5 @@
 'use client'
-import { Dumbbell, TrendingUp, TrendingDown, Minus, ChevronRight, Plus, Lock } from 'lucide-react'
+import { Dumbbell, TrendingUp, TrendingDown, Minus, ChevronRight, Plus, Lock, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import type { Workout, Exercise } from '@/types'
 import { useLongPress } from '@/hooks/useLongPress'
@@ -100,12 +100,31 @@ export default function WorkoutBlock({ workout, exercises, onStart, starting, is
             </div>
           )}
 
-          <Link href="/today" className="flex items-center justify-between bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 rounded-xl px-3 py-2 transition-colors group">
-            <span className="text-xs font-medium text-brand-400">
-              {exercises.length === 0 ? t('dashboard.workout_block.add_exercises') : t('dashboard.workout_block.continue_workout')}
-            </span>
-            <ChevronRight className="w-3.5 h-3.5 text-brand-500 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+          {workout.finished_at ? (
+            <div className="flex items-center justify-between bg-brand-500/10 border border-brand-500/20 rounded-xl px-3 py-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-3.5 h-3.5 text-brand-500" />
+                <span className="text-xs font-medium text-brand-400">{t('dashboard.workout_block.completed')}</span>
+              </div>
+              {workout.started_at && (
+                <span className="text-[10px] font-mono text-muted">
+                  {(() => {
+                    const ms = new Date(workout.finished_at!).getTime() - new Date(workout.started_at).getTime()
+                    const mins = Math.floor(ms / 60000)
+                    const h = Math.floor(mins / 60)
+                    return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
+                  })()}
+                </span>
+              )}
+            </div>
+          ) : (
+            <Link href="/today" className="flex items-center justify-between bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 rounded-xl px-3 py-2 transition-colors group">
+              <span className="text-xs font-medium text-brand-400">
+                {exercises.length === 0 ? t('dashboard.workout_block.add_exercises') : t('dashboard.workout_block.continue_workout')}
+              </span>
+              <ChevronRight className="w-3.5 h-3.5 text-brand-500 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          )}
         </>
       )}
     </div>

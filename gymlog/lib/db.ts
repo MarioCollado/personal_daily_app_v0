@@ -1,5 +1,6 @@
 import { createClient } from './supabase-client'
-import type { Workout, Exercise, Set, UserProfile, WorkoutWithExercises } from '../types'
+import type { Workout, Exercise, Set, UserProfile, WorkoutWithExercises, WorkoutTemplate, TemplateExercise } from '../types'
+
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const supabase = createClient()
@@ -46,7 +47,7 @@ export async function createWorkout(userId: string, date: string, name?: string)
   const supabase = createClient()
   const { data, error } = await supabase
     .from('workouts')
-    .insert({ user_id: userId, date, name: name || null })
+    .insert({ user_id: userId, date, name: name || null, started_at: new Date().toISOString() })
     .select()
     .single()
   if (error) throw error
@@ -227,4 +228,93 @@ export async function getExerciseNames(userId: string): Promise<string[]> {
   if (!data) return []
   const names = Array.from(new Set(data.map((e) => e.name as string)))
   return names.sort()
+}
+
+export async function finishWorkout(workoutId: string): Promise<void> {
+  const supabase = createClient()
+  await supabase
+    .from('workouts')
+    .update({ finished_at: new Date().toISOString() })
+    .eq('id', workoutId)
+}
+
+export async function deleteWorkout(workoutId: string): Promise<void> {
+  const supabase = createClient()
+  await supabase.from('workouts').delete().eq('id', workoutId)
+}
+
+// ─── Plantillas ───────────────────────────────────────────────
+
+export async function getTemplates(userId: string): Promise<WorkoutTemplate[]> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('workout_templates')
+    .select('*, template_exercises(*)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(6)
+  return (data || []).map(t => ({
+    ...t,
+    exercises: (t.template_exercises || []).sort(
+      (a: TemplateExercise, b: TemplateExercise) => a.order_index - b.order_index
+    ),
+  }))
+}
+
+export async function saveTemplate(
+  userId:    string,
+  name:      string,
+  exercises: { name: string; muscle_group: string | null }[]
+): Promise<WorkoutTemplate> {
+  const supabase = createClient()
+  const { data: template, error } = await supabase
+    .from('workout_templates')
+    .insert({ user_id: userId, name })
+    .select()
+    .single()
+  if (error) throw error
+
+  if (exercises.length > 0) {
+    await supabase.from('template_exercises').insert(
+      exercises.map((ex, i) => ({
+        template_id:  template.id,
+        name:         ex.name,
+        muscle_group: ex.muscle_group,
+        order_index:  i,
+      }))
+    )
+  }
+  return template
+}
+
+export async function deleteTemplate(templateId: string): Promise<void> {
+  const supabase = createClient()
+  await supabase.from('workout_templates').delete().eq('id', templateId)
+}
+
+export async function applyTemplate(
+  workoutId:  string,
+  templateId: string
+): Promise<Exercise[]> {
+  const supabase = createClient()
+  const { data: templateExercises } = await supabase
+    .from('template_exercises')
+    .select('*')
+    .eq('template_id', templateId)
+    .order('order_index', { ascending: true })
+
+  if (!templateExercises?.length) return []
+
+  const { data: inserted } = await supabase
+    .from('exercises')
+    .insert(
+      templateExercises.map((ex: TemplateExercise) => ({
+        workout_id:   workoutId,
+        name:         ex.name,
+        muscle_group: ex.muscle_group,
+      }))
+    )
+    .select()
+
+  return (inserted || []).map((ex: Exercise) => ({ ...ex, sets: [] }))
 }

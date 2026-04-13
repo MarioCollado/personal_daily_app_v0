@@ -72,7 +72,8 @@
         "equal": "igual",
         "increase": "+{delta} kg",
         "decrease": "{delta} kg"
-      }
+      },
+      "completed": "Entrenamiento completado"
     },
     "state_block": {
       "title": "Estado",
@@ -199,7 +200,14 @@
       "sets": "series",
       "volume": "volumen kg"
     },
-    "add_exercise": "Añadir ejercicio"
+    "add_exercise": "Añadir ejercicio",
+    "finish_workout": "Finalizar entreno",
+    "add_template": "Añadir plantilla",
+    "template_name": "Nombre de la plantilla",
+    "save_template": "Guardar como plantilla",
+    "onsave_exercises": "Ejercicios que se guardarán",
+    "cancel": "Cancelar",
+    "tip": "Solo se guardan nombres y grupos musculares, no los pesos ni series."
   },
   "history": {
     "title": "Historial",

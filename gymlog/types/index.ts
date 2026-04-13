@@ -4,6 +4,8 @@ export interface Workout {
   date: string
   name: string | null
   created_at: string
+  started_at: string | null
+  finished_at: string | null
 }
 
 export interface UserProfile {
@@ -83,4 +85,20 @@ export interface IngredientMock {
   name: string
   amount: string
   emoji: string
+}
+
+export interface WorkoutTemplate {
+  id:         string
+  user_id:    string
+  name:       string
+  created_at: string
+  exercises?: TemplateExercise[]
+}
+
+export interface TemplateExercise {
+  id:           string
+  template_id:  string
+  name:         string
+  muscle_group: string | null
+  order_index:  number
 }

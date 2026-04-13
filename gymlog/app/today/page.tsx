@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, Lock, User } from 'lucide-react'
+import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, Lock, User, CheckCircle, LayoutTemplate, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import {
   getTodayWorkout, createWorkout, getExercisesForWorkout,
   updateWorkoutName, getExerciseNames, getWorkoutHistory, duplicateWorkout,
-  getUserProfile, upsertUserProfile
+  getUserProfile, upsertUserProfile, finishWorkout, deleteWorkout
 } from '@/lib/db'
 import { getDailyMetrics, upsertDailyMetrics } from '@/lib/metrics'
 import type { Workout, Exercise, Set, UserProfile } from '@/types'
@@ -13,12 +13,18 @@ import ExerciseCard from '@/components/workout/ExerciseCard'
 import AddExerciseModal from '@/components/workout/AddExerciseModal'
 import BottomNav from '@/components/ui/BottomNav'
 import PageHeader from '@/components/ui/PageHeader'
+
 import { useLongPress } from '@/hooks/useLongPress'
 import { useRouter } from 'next/navigation'
 import { clsx } from 'clsx'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { useI18n } from '@/contexts/I18nContext'
+import WorkoutSummaryModal from '@/components/workout/WorkoutSummaryModal'
+import { getTemplates, saveTemplate, applyTemplate } from '@/lib/db'
+import TemplatePickerModal from '@/components/workout/TemplatePickerModal'
+import type { WorkoutTemplate } from '@/types'
+
 
 function getLocalISODate() {
   const d = new Date()
@@ -44,6 +50,10 @@ export default function TodayPage() {
   const router = useRouter()
 
   const [currentDate, setCurrentDate] = useState(getLocalISODate)
+  const [showSummary, setShowSummary] = useState(false)
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([])
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
+  const [applyingTemplate, setApplyingTemplate] = useState(false)
 
   const formatDate = (iso: string) => {
     const d = new Date(iso + 'T12:00:00')
@@ -78,6 +88,9 @@ export default function TodayPage() {
     const history = await getWorkoutHistory(user.id, 5)
     const last = history.find(h => h.date !== currentDate)
     setLastWorkout(last || null)
+
+    const userTemplates = await getTemplates(user.id)
+    setTemplates(userTemplates)
 
     setLoading(false)
   }, [currentDate, router])
@@ -137,6 +150,53 @@ export default function TodayPage() {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/auth/login')
+  }
+
+  async function handleFinishWorkout() {
+    if (!workout) return
+    await finishWorkout(workout.id)
+    setShowSummary(false)
+    setIsLocked(true)
+  }
+
+  async function handleDeleteWorkout() {
+    if (!workout) return
+    if (!confirm('¿Estás seguro de que quieres borrar el entreno de hoy? Esta acción no se puede deshacer.')) return
+
+    await deleteWorkout(workout.id)
+    setWorkout(null)
+    setExercises([])
+    setIsLocked(false)
+  }
+
+  async function handleApplyTemplate(template: WorkoutTemplate) {
+    let targetWorkout = workout
+    setApplyingTemplate(true)
+    setShowTemplatePicker(false)
+    try {
+      if (!targetWorkout && userId) {
+        targetWorkout = await createWorkout(userId, currentDate)
+        setWorkout(targetWorkout)
+      }
+      if (!targetWorkout) return
+
+      const newExercises = await applyTemplate(targetWorkout.id, template.id)
+      setExercises(prev => [...prev, ...newExercises])
+    } finally {
+      setApplyingTemplate(false)
+    }
+  }
+
+  async function handleSaveTemplate(name: string, filteredExercises?: Exercise[]) {
+    if (!userId) return
+    if (templates.length >= 6) throw new Error('Has alcanzado el límite de 6 plantillas')
+    const exsToSave = filteredExercises ?? exercises
+    const newTemplate = await saveTemplate(
+      userId,
+      name,
+      exsToSave.map(ex => ({ name: ex.name, muscle_group: ex.muscle_group }))
+    )
+    setTemplates(prev => [{ ...newTemplate, exercises: [] }, ...prev])
   }
 
   function handleExerciseAdded(ex: Exercise) {
@@ -204,20 +264,20 @@ export default function TodayPage() {
   return (
     <div className="min-h-screen bg-surface-0 pb-32">
       <PageHeader innerClassName="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Dumbbell className="w-5 h-5 text-brand" />
-              <h1 className="font-bold text-base text-main">{t('today_page.title')}</h1>
-            </div>
-            <p className="text-muted text-xs font-bold capitalize mt-0.5 tracking-tight">{formatDate(currentDate)}</p>
-          </div>
+        <div>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
-            <button onClick={handleSignOut} className="text-muted hover:text-main p-2 rounded-lg hover:bg-surface-2 transition-colors">
-              <LogOut className="w-4 h-4" />
-            </button>
+            <Dumbbell className="w-5 h-5 text-brand" />
+            <h1 className="font-bold text-base text-main">{t('today_page.title')}</h1>
           </div>
+          <p className="text-muted text-xs font-bold capitalize mt-0.5 tracking-tight">{formatDate(currentDate)}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <ThemeToggle />
+          <button onClick={handleSignOut} className="text-muted hover:text-main p-2 rounded-lg hover:bg-surface-2 transition-colors">
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </PageHeader>
 
       <main
@@ -300,6 +360,14 @@ export default function TodayPage() {
               <button onClick={startWorkout} className="btn-primary flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" /> {t('today_page.start_workout')}
               </button>
+              <button
+                onClick={() => setShowTemplatePicker(true)}
+                disabled={templates.length === 0}
+                className="btn-ghost flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+              >
+                <LayoutTemplate className="w-4 h-4" />
+                Usar plantilla
+              </button>
               {lastWorkout && (
                 <button onClick={handleDuplicate} disabled={duplicating}
                   className="btn-ghost flex items-center justify-center gap-2 text-sm">
@@ -367,11 +435,57 @@ export default function TodayPage() {
               ))}
             </div>
 
-            <button onClick={() => setShowAddExercise(true)}
-              className="w-full border-2 border-dashed border-surface-border hover:border-brand/40 hover:bg-brand/5 rounded-2xl py-5 flex items-center justify-center gap-2 text-muted hover:text-brand transition-all duration-200 touch-manipulation group">
-              <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="font-bold uppercase tracking-widest text-xs">{t('today_page.add_exercise')}</span>
-            </button>
+            {workout.finished_at && (
+              <div className="flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 rounded-2xl px-4 py-3 text-brand-400 text-sm font-medium">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <span>Entreno completado</span>
+                {workout.started_at && (
+                  <span className="ml-auto text-xs text-zinc-500 font-normal">
+                    {(() => {
+                      const ms = new Date(workout.finished_at!).getTime() - new Date(workout.started_at).getTime()
+                      const mins = Math.floor(ms / 60000)
+                      const h = Math.floor(mins / 60)
+                      return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
+                    })()}
+                  </span>
+                )}
+                <button
+                  onClick={handleDeleteWorkout}
+                  className="ml-3 p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                  title="Borrar entreno"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {exercises.length > 0 && !workout.finished_at && (
+              <button
+                onClick={() => setShowSummary(true)}
+                className="w-full bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 hover:border-brand-500/50 text-brand-400 font-semibold rounded-2xl py-3 flex items-center justify-center gap-2 transition-all duration-150 touch-manipulation"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {t('today_page.finish_workout')}
+              </button>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <button onClick={() => setShowAddExercise(true)}
+                className="w-full border-2 border-dashed border-surface-border hover:border-brand/40 hover:bg-brand/5 rounded-2xl py-5 flex items-center justify-center gap-2 text-muted hover:text-brand transition-all duration-200 touch-manipulation group">
+                <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="font-bold uppercase tracking-widest text-xs">{t('today_page.add_exercise')}</span>
+              </button>
+
+              {templates.length > 0 && !workout.finished_at && (
+                <button
+                  onClick={() => setShowTemplatePicker(true)}
+                  className="w-full py-2 flex items-center justify-center gap-2 text-[10px] text-zinc-500 hover:text-brand-400 transition-colors uppercase tracking-widest font-bold opacity-60 hover:opacity-100"
+                >
+                  <LayoutTemplate className="w-3 h-3" />
+                  {t('today_page.add_template')}
+                </button>
+              )}
+            </div>
           </>
         )}
       </main>
@@ -382,6 +496,26 @@ export default function TodayPage() {
           suggestions={suggestions}
           onAdd={handleExerciseAdded}
           onClose={() => setShowAddExercise(false)}
+        />
+      )}
+
+      {showSummary && workout && (
+        <WorkoutSummaryModal
+          workout={workout}
+          exercises={exercises}
+          onConfirm={handleFinishWorkout}
+          onCancel={() => setShowSummary(false)}
+          onSaveTemplate={handleSaveTemplate}
+          canSaveTemplate={templates.length < 6}
+        />
+      )}
+
+      {showTemplatePicker && (
+        <TemplatePickerModal
+          templates={templates}
+          onSelect={handleApplyTemplate}
+          onDeleted={id => setTemplates(prev => prev.filter(t => t.id !== id))}
+          onClose={() => setShowTemplatePicker(false)}
         />
       )}
 

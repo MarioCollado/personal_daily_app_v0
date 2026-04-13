@@ -41,7 +41,7 @@ export default function HistoryPage() {
     const d2 = new Date()
     d2.setHours(0, 0, 0, 0)
     const diff = Math.floor((d2.getTime() - d1.getTime()) / 86400000)
-    
+
     if (diff === 0) return ''
     if (diff === 1) return t('common.dayAgo')
     return t('common.daysAgo', { count: diff })
@@ -109,10 +109,26 @@ export default function HistoryPage() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-main capitalize">{formatDate(workout.date)}</div>
-                  <div className="text-muted text-xs flex items-center gap-2">
+                  <div className="font-semibold capitalize">{formatDate(workout.date)}</div>
+                  <div className="text-muted text-xs flex items-center gap-2 flex-wrap">
                     <span>{daysAgoStr(workout.date)}</span>
                     {workout.name && <><span>·</span><span className="truncate">{workout.name}</span></>}
+                    {workout.started_at && workout.finished_at && (
+                      <>
+                        <span>·</span>
+                        <span className="font-mono">
+                          {(() => {
+                            const ms = new Date(workout.finished_at).getTime() - new Date(workout.started_at).getTime()
+                            const mins = Math.floor(ms / 60000)
+                            const h = Math.floor(mins / 60)
+                            return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
+                          })()}
+                        </span>
+                      </>
+                    )}
+                    {!workout.finished_at && (
+                      <span className="text-zinc-700 italic">sin cerrar</span>
+                    )}
                   </div>
                 </div>
 
