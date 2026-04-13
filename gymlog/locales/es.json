@@ -203,6 +203,8 @@
     "add_exercise": "Añadir ejercicio",
     "finish_workout": "Finalizar entreno",
     "add_template": "Añadir plantilla",
+    "create_template": "Crear plantilla",
+    "use_template": "Usar plantilla",
     "template_name": "Nombre de la plantilla",
     "save_template": "Guardar como plantilla",
     "onsave_exercises": "Ejercicios que se guardarán",

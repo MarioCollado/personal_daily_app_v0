@@ -203,6 +203,8 @@
     "add_exercise": "Add exercise",
     "finish_workout": "Finish workout",
     "add_template": "Add template",
+    "create_template": "Create template",
+    "use_template": "Use template",
     "template_name": "Template name",
     "save_template": "Save as template",
     "onsave_exercises": "Exercises to be saved",

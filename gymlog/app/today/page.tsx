@@ -470,22 +470,23 @@ export default function TodayPage() {
             )}
 
             <div className="flex flex-col gap-2">
+              {!workout.finished_at && (
+                <button
+                  onClick={() => setShowTemplatePicker(true)}
+                  className="w-full py-3 flex items-center justify-center gap-2 text-sm text-zinc-500 hover:text-brand-400 border border-dashed border-surface-border hover:border-brand-500/30 rounded-2xl transition-all touch-manipulation"
+                >
+                  <LayoutTemplate className="w-4 h-4" />
+                  {templates.length === 0 ? t('today_page.create_template') : t('today_page.use_template')}
+                </button>
+              )}
+
               <button onClick={() => setShowAddExercise(true)}
                 className="w-full border-2 border-dashed border-surface-border hover:border-brand/40 hover:bg-brand/5 rounded-2xl py-5 flex items-center justify-center gap-2 text-muted hover:text-brand transition-all duration-200 touch-manipulation group">
                 <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span className="font-bold uppercase tracking-widest text-xs">{t('today_page.add_exercise')}</span>
               </button>
-
-              {templates.length > 0 && !workout.finished_at && (
-                <button
-                  onClick={() => setShowTemplatePicker(true)}
-                  className="w-full py-2 flex items-center justify-center gap-2 text-[10px] text-zinc-500 hover:text-brand-400 transition-colors uppercase tracking-widest font-bold opacity-60 hover:opacity-100"
-                >
-                  <LayoutTemplate className="w-3 h-3" />
-                  {t('today_page.add_template')}
-                </button>
-              )}
             </div>
+
           </>
         )}
       </main>

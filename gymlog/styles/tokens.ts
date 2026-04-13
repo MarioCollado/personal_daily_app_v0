@@ -54,21 +54,22 @@ export function getGrade(score: number): { grade: string; color: string } {
   return gradeThresholds.find(t => score >= t.min) ?? { grade: '—', color: colors.zinc }
 }
 
-export const muscleGroupStyles: Record<string, string> = {
-  pecho:    'bg-red-500/20 text-red-300',
-  espalda:  'bg-blue-500/20 text-blue-300',
-  piernas:  'bg-purple-500/20 text-purple-300',
-  hombros:  'bg-orange-500/20 text-orange-300',
-  bíceps:   'bg-yellow-500/20 text-yellow-300',
-  tríceps:  'bg-cyan-500/20 text-cyan-300',
-  core:     'bg-green-500/20 text-green-300',
-  glúteos:  'bg-pink-500/20 text-pink-300',
-  cardio:   'bg-sky-500/20 text-sky-300',
+export const muscleGroupColors: Record<string, { bg: string; text: string }> = {
+  pecho:   { bg: 'rgba(239,68,68,0.15)',   text: '#fca5a5' },
+  espalda: { bg: 'rgba(59,130,246,0.15)',  text: '#93c5fd' },
+  piernas: { bg: 'rgba(168,85,247,0.15)',  text: '#d8b4fe' },
+  hombros: { bg: 'rgba(249,115,22,0.15)',  text: '#fdba74' },
+  biceps:  { bg: 'rgba(234,179,8,0.15)',   text: '#fde047' },
+  triceps: { bg: 'rgba(6,182,212,0.15)',   text: '#67e8f9' },
+  core:    { bg: 'rgba(34,197,94,0.15)',   text: '#86efac' },
+  gluteos: { bg: 'rgba(236,72,153,0.15)',  text: '#f9a8d4' },
+  cardio:  { bg: 'rgba(14,165,233,0.15)',  text: '#7dd3fc' },
 }
 
-export function getMuscleGroupStyle(group?: string | null): string {
-  if (!group) return 'bg-zinc-500/20 text-zinc-400'
-  return muscleGroupStyles[group.toLowerCase()] ?? 'bg-zinc-500/20 text-zinc-400'
+export function getMuscleGroupStyle(group?: string | null): { bg: string; text: string } {
+  if (!group) return { bg: 'rgba(113,113,122,0.15)', text: '#a1a1aa' }
+  const normalized = group.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return muscleGroupColors[normalized] ?? { bg: 'rgba(113,113,122,0.15)', text: '#a1a1aa' }
 }
 
 export const sleepDial = {

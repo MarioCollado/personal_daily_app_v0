@@ -115,17 +115,20 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-base truncate text-main">{exercise.name}</h3>
-            {exercise.muscle_group && (
-              <span className={clsx(
-                'text-xs px-2 py-0.5 rounded-full font-medium',
-                getMuscleGroupStyle(exercise.muscle_group)
-              )}>
-                {exercise.muscle_group}
-              </span>
-            )}
+            {exercise.muscle_group && (() => {
+              const style = getMuscleGroupStyle(exercise.muscle_group)
+              return (
+                <span
+                  style={{ backgroundColor: style.bg, color: style.text }}
+                  className="text-xs px-2 py-0.5 rounded-full font-medium"
+                >
+                  {exercise.muscle_group}
+                </span>
+              )
+            })()}
           </div>
 
-          <div className="flex items-center gap-3 mt-0.5 text-muted text-xs">
+          {/* <div className="flex items-center gap-3 mt-0.5 text-muted text-xs">
             {isCardio ? (
               <>
                 <span>{t('workout.exercise_card.records_unit', { count: exercise.sets?.length || 0 })}</span>
@@ -137,7 +140,7 @@ export default function ExerciseCard({ exercise, onDelete, onSetAdded, onSetDele
                 {(totalVolume ?? 0) > 0 && <span>{t('workout.exercise_card.volume_kg_short', { count: (totalVolume ?? 0).toLocaleString() })}</span>}
               </>
             )}
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center gap-1">
