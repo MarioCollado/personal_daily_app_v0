@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Dumbbell, Clock, ChefHat } from 'lucide-react'
+import { LayoutDashboard, Dumbbell, Clock, ChefHat, Palette } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useI18n } from '@/contexts/I18nContext'
 
@@ -12,8 +12,8 @@ export default function BottomNav() {
   const TABS = [
     { href: '/dashboard', label: t('nav.dashboard'), Icon: LayoutDashboard },
     { href: '/today',     label: t('nav.today'),     Icon: Dumbbell        },
-    { href: '/history',   label: t('nav.history'),   Icon: Clock           },
-    { href: '/recipes',   label: t('nav.recipes'),   Icon: ChefHat          },
+    { href: '/arts',      label: t('nav.arts'),      Icon: Palette         },
+    { href: '/recipes',   label: t('nav.recipes'),   Icon: ChefHat         },
   ]
 
   return (

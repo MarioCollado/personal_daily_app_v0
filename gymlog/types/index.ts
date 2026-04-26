@@ -102,3 +102,76 @@ export interface TemplateExercise {
   muscle_group: string | null
   order_index:  number
 }
+
+// ─── Arts Module ─────────────────────────────────────────────
+
+export type ArtDiscipline =
+  | 'music'
+  | 'film'
+  | 'painting'
+  | 'photography'
+  | 'book'
+  | 'theater'
+  | 'dance'
+  | 'design'
+  | 'writing'
+  | 'other'
+
+export type ArtItemStatus = 'planned' | 'active' | 'completed'
+
+export interface ArtItem {
+  id: string
+  user_id: string
+  discipline: ArtDiscipline
+  title: string
+  creator_name: string | null
+  format: string | null
+  total_units: number | null
+  unit_label: string | null
+  status: ArtItemStatus
+  started_on: string | null
+  completed_on: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ArtSession {
+  id: string
+  user_id: string
+  art_item_id: string | null
+  date: string
+  // Observation axis (consuming/appreciating)
+  observation_units: number | null
+  observation_minutes: number | null
+  // Practice axis (creating/rehearsing) — independent from observation
+  practice_units: number | null
+  practice_minutes: number | null
+  session_type: string | null
+  effort: number | null
+  public_output: boolean
+  collaborative: boolean
+  notes: string | null
+  created_at: string
+}
+
+export interface ArtDailyState {
+  user_id: string
+  date: string
+  arts_locked: boolean
+  featured_art_item_id: string | null
+}
+
+export interface ArtSessionWithItem extends ArtSession {
+  art_item?: ArtItem | null
+}
+
+export interface TodayArtsSummary {
+  sessions: ArtSessionWithItem[]
+  totalObservationMinutes: number
+  totalPracticeMinutes: number
+  totalObservationUnits: number
+  totalPracticeUnits: number
+  dailyState: ArtDailyState | null
+  featuredItem: ArtItem | null
+}

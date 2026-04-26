@@ -111,10 +111,17 @@ gymlog/
 │   ├── supabase-server.ts    # Cliente server (SSR)
 │   └── db.ts                 # Todas las queries DB
 │
+├── locales/
+│   ├── en.json               # Traducciones al inglés
+│   └── es.json               # Traducciones al español
+│
+├── contexts/                 # React Contexts (i18n, etc)
+├── hooks/                    # Custom Hooks
+│
 ├── types/
 │   └── index.ts              # TypeScript interfaces
 │
-├── middleware.ts              # Auth guard rutas
+├── middleware.ts              # Auth guard rutas & i18n
 ├── supabase-schema.sql        # SQL completo para Supabase
 ├── .env.example               # Plantilla variables entorno
 ├── next.config.js             # Config Next.js + PWA
@@ -128,6 +135,8 @@ gymlog/
 
 ### ✅ Implementadas
 
+- **Internacionalización (i18n)**: Soporte bilingüe completo (Español / Inglés) detectado automáticamente.
+- **Plantillas de rutinas**: Crea y guarda tus entrenamientos habituales para empezar rápido.
 - **Auth completa**: Login / Registro / Logout con Supabase Auth
 - **Entreno del día**: Crea automáticamente la sesión con la fecha
 - **Nombre de rutina**: Editable inline
@@ -147,7 +156,6 @@ gymlog/
 
 - **Notificaciones push**: Supabase Edge Functions + Web Push API
 - **Modo offline completo**: Ampliar workbox en `next.config.js`
-- **Plantillas de rutinas**: Nueva tabla `routine_templates`
 - **Compartir entreno**: Página pública con slug único
 - **Peso corporal**: Nueva tabla `body_weight` con gráfica
 

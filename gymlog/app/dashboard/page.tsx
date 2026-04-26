@@ -3,12 +3,13 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { LogOut, RotateCcw, Sparkles, Bell, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import { getTodayWorkout, createWorkout, getExercisesForWorkout, getRecentWorkoutsWithExercises, getUserProfile } from '@/lib/db'
-import { getDailyMetrics, upsertDailyMetrics, getUserBooks, getRecentMetrics, getBookStats } from '@/lib/metrics'
-import type { Workout, Exercise, DailyMetrics, UserProfile, WorkoutWithExercises } from '@/types'
+import { getDailyMetrics, upsertDailyMetrics, getRecentMetrics } from '@/lib/metrics'
+import { getTodayArtsSummary, upsertArtDailyState } from '@/lib/arts'
+import type { Workout, Exercise, DailyMetrics, UserProfile, WorkoutWithExercises, TodayArtsSummary } from '@/types'
 import SleepBlock from '@/components/bento/SleepBlock'
 import ClockWeatherBlock from '@/components/bento/ClockWeatherBlock'
 import StateBlock from '@/components/bento/StateBlock'
-import ReadingBlock from '@/components/bento/ReadingBlock'
+import ArtsBlock from '@/components/bento/ArtsBlock'
 import WorkoutBlock from '@/components/bento/WorkoutBlock'
 import ScoreBlock from '@/components/bento/ScoreBlock'
 import BottomNav from '@/components/ui/BottomNav'
@@ -16,6 +17,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import PageLoader from '@/components/ui/PageLoader'
 import { useRouter } from 'next/navigation'
 import { getDailyAdvice } from '@/lib/advisor'
+import { computeVitalityScore } from '@/lib/vitality'
 import { useAdvisor } from '@/hooks/useAdvisor'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
@@ -41,8 +43,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [recentMetrics, setRecentMetrics] = useState<DailyMetrics[]>([])
   const [recentWorkouts, setRecentWorkouts] = useState<WorkoutWithExercises[]>([])
-  const [books, setBooks] = useState<string[]>([])
-  const [bookStats, setBookStats] = useState<{ totalRead: number; bookTotalPages: number | null }>({ totalRead: 0, bookTotalPages: null })
+  const [artsSummary, setArtsSummary] = useState<TodayArtsSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
   const [startingWorkout, setStartingWorkout] = useState(false)
@@ -58,34 +59,60 @@ export default function DashboardPage() {
     return () => clearInterval(id)
   }, [])
 
+  const calculatedScores = useMemo(() => {
+    if (!profile) return []
+    const dates = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(currentDate + 'T12:00:00')
+      d.setDate(d.getDate() - i)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    }).reverse()
+
+    return dates.map(d => {
+      let dMetrics = recentMetrics.find(m => m.date === d) || null
+      if (d === currentDate && metrics) dMetrics = metrics
+
+      let dWorkout = recentWorkouts.find(w => w.date === d) || null
+      if (d === currentDate && workout) {
+         dWorkout = { ...workout, exercises }
+      }
+
+      let dArts = null
+      if (d === currentDate) dArts = artsSummary
+
+      const res = computeVitalityScore({
+        profile,
+        metrics: dMetrics,
+        recentMetrics,
+        recentWorkouts,
+        todayExercises: dWorkout?.exercises || [],
+        hasWorkout: !!dWorkout,
+        artsSummary: dArts,
+      })
+      return res.score
+    })
+  }, [currentDate, metrics, workout, exercises, profile, recentMetrics, recentWorkouts, artsSummary])
+
   const load = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
     setUserId(user.id)
 
-    const [m, w, b, p, metricsHistory, workoutsHistory] = await Promise.all([
+    const [m, w, p, metricsHistory, workoutsHistory, arts] = await Promise.all([
       getDailyMetrics(user.id, currentDate),
       getTodayWorkout(user.id, currentDate),
-      getUserBooks(user.id),
       getUserProfile(user.id).catch(() => null),
       getRecentMetrics(user.id, 7),
       getRecentWorkoutsWithExercises(user.id, 7),
+      getTodayArtsSummary(user.id, currentDate),
     ])
 
     setMetrics(m)
     setWorkout(w)
-    setBooks(b)
     setProfile(p)
     setRecentMetrics(metricsHistory)
     setRecentWorkouts(workoutsHistory)
-
-    if (m?.book_title) {
-      const stats = await getBookStats(user.id, m.book_title)
-      setBookStats(stats)
-    } else {
-      setBookStats({ totalRead: 0, bookTotalPages: null })
-    }
+    setArtsSummary(arts)
 
     if (w) {
       const historicalWorkout = workoutsHistory.find(item => item.id === w.id)
@@ -154,28 +181,22 @@ export default function DashboardPage() {
   }
 
   async function handleReadingChange(updates: { book_title?: string; pages_read?: number; book_total_pages?: number }) {
-    const curTitle = updates.book_title || metrics?.book_title
+    if (!userId) return
     setMetrics(m => m ? { ...m, ...updates } : { ...updates } as any)
     saveMetrics(updates as any, Object.keys(updates))
-    
-    if (updates.book_title && !books.includes(updates.book_title)) {
-      setBooks(b => [...b, updates.book_title!].sort())
-    }
-
-    if (curTitle) {
-      const stats = await getBookStats(userId!, curTitle)
-      setBookStats(stats)
-      // Si hoy no tenemos el total pero la historia sí, lo actualizamos localmente para el componente
-      if (stats.bookTotalPages && !metrics?.book_total_pages && !updates.book_total_pages) {
-        setMetrics(m => m ? { ...m, book_total_pages: stats.bookTotalPages } : m)
-      }
-    }
   }
 
-  function handleToggleLock(field: 'reading_locked' | 'workout_locked') {
+  function handleToggleLock(field: 'workout_locked') {
     const isLocked = metrics?.[field] === true
     setMetrics(m => m ? { ...m, [field]: !isLocked } : { [field]: !isLocked } as any)
     saveMetrics({ [field]: !isLocked }, [field])
+  }
+
+  async function handleToggleArtsLock() {
+    if (!userId) return
+    const newLocked = !(artsSummary?.dailyState?.arts_locked ?? false)
+    const newState = await upsertArtDailyState(userId, currentDate, { arts_locked: newLocked })
+    setArtsSummary(prev => prev ? { ...prev, dailyState: newState } : prev)
   }
 
   async function handleStartWorkout() {
@@ -303,6 +324,8 @@ export default function DashboardPage() {
               recentMetrics={recentMetrics}
               recentWorkouts={recentWorkouts}
               todayExercises={exercises}
+              artsSummary={artsSummary}
+              historicalScores={calculatedScores}
             />
           </div>
 
@@ -318,16 +341,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="col-span-1 min-h-[220px]">
-            <ReadingBlock
-              bookTitle={metrics?.book_title ?? null}
-              pagesRead={metrics?.pages_read ?? 0}
-              bookTotalPages={metrics?.book_total_pages ?? bookStats.bookTotalPages}
-              accumulatedPages={bookStats.totalRead + (metrics?.pages_read ?? 0)}
-              bookSuggestions={books}
-              onChange={handleReadingChange}
-              saving={savingFields.has('book_title') || savingFields.has('pages_read') || savingFields.has('book_total_pages')}
-              isLocked={metrics?.reading_locked ?? false}
-              onToggleLock={() => handleToggleLock('reading_locked')}
+            <ArtsBlock
+              summary={artsSummary}
+              isLocked={artsSummary?.dailyState?.arts_locked ?? false}
+              onToggleLock={handleToggleArtsLock}
             />
           </div>
 

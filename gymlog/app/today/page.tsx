@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, Lock, User, CheckCircle, LayoutTemplate, X } from 'lucide-react'
+import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, Lock, User, CheckCircle, LayoutTemplate, X, Calendar, ChevronRight, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import {
   getTodayWorkout, createWorkout, getExercisesForWorkout,
@@ -24,6 +24,11 @@ import WorkoutSummaryModal from '@/components/workout/WorkoutSummaryModal'
 import { getTemplates, saveTemplate, applyTemplate } from '@/lib/db'
 import TemplatePickerModal from '@/components/workout/TemplatePickerModal'
 import type { WorkoutTemplate } from '@/types'
+import Link from 'next/link'
+
+interface WorkoutWithExercises extends Workout {
+  exercises?: Exercise[]
+}
 
 
 function getLocalISODate() {
@@ -54,6 +59,21 @@ export default function TodayPage() {
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([])
   const [showTemplatePicker, setShowTemplatePicker] = useState(false)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
+  
+  const [historyWorkouts, setHistoryWorkouts] = useState<WorkoutWithExercises[]>([])
+  const [showHistoryList, setShowHistoryList] = useState(false)
+  const [expandedHistory, setExpandedHistory] = useState<string | null>(null)
+  const [loadingHistoryDetail, setLoadingHistoryDetail] = useState<string | null>(null)
+
+  const daysAgoStr = (iso: string) => {
+    const d1 = new Date(iso + 'T00:00:00')
+    const d2 = new Date()
+    d2.setHours(0, 0, 0, 0)
+    const diff = Math.floor((d2.getTime() - d1.getTime()) / 86400000)
+    if (diff === 0) return ''
+    if (diff === 1) return t('common.dayAgo')
+    return t('common.daysAgo', { count: diff })
+  }
 
   const formatDate = (iso: string) => {
     const d = new Date(iso + 'T12:00:00')
@@ -85,7 +105,8 @@ export default function TodayPage() {
     const names = await getExerciseNames(user.id)
     setSuggestions(names)
 
-    const history = await getWorkoutHistory(user.id, 5)
+    const history = await getWorkoutHistory(user.id, 15)
+    setHistoryWorkouts(history)
     const last = history.find(h => h.date !== currentDate)
     setLastWorkout(last || null)
 
@@ -152,9 +173,9 @@ export default function TodayPage() {
     router.push('/auth/login')
   }
 
-  async function handleFinishWorkout() {
+  async function handleFinishWorkout(durationMinutes?: number) {
     if (!workout) return
-    await finishWorkout(workout.id)
+    await finishWorkout(workout.id, durationMinutes)
     setShowSummary(false)
     setIsLocked(true)
   }
@@ -246,6 +267,18 @@ export default function TodayPage() {
     const up = await upsertUserProfile(userId, updates).catch(() => null)
     if (up) setProfile(up)
     setEditingProfile(false)
+  }
+
+  async function toggleExpandHistory(workoutId: string) {
+    if (expandedHistory === workoutId) { setExpandedHistory(null); return }
+    const hw = historyWorkouts.find(item => item.id === workoutId)
+    if (!hw?.exercises) {
+      setLoadingHistoryDetail(workoutId)
+      const exs = await getExercisesForWorkout(workoutId)
+      setHistoryWorkouts(prev => prev.map(item => item.id === workoutId ? { ...item, exercises: exs } : item))
+      setLoadingHistoryDetail(null)
+    }
+    setExpandedHistory(workoutId)
   }
 
   const longPress = useLongPress({ onLongPress: toggleLock })
@@ -489,6 +522,110 @@ export default function TodayPage() {
 
           </>
         )}
+
+        {/* ── History Section ── */}
+        {historyWorkouts.filter(w => w.date !== currentDate).length > 0 && (
+          <div className="pt-6 space-y-3">
+            <button 
+              onClick={() => setShowHistoryList(!showHistoryList)}
+              className="flex items-center justify-between w-full p-2 -ml-2 rounded-xl hover:bg-surface-2 transition-colors group touch-manipulation"
+            >
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted pl-1 group-hover:text-main transition-colors">
+                {t('history.title')}
+              </h3>
+              <ChevronRight className={clsx("w-4 h-4 text-muted transition-transform", showHistoryList && "rotate-90")} />
+            </button>
+            
+            {showHistoryList && (
+              <div className="space-y-2 animate-slide-up">
+              {historyWorkouts.filter(w => w.date !== currentDate).map(hw => (
+                <div key={hw.id} className="card overflow-hidden">
+                  <button
+                    onClick={() => toggleExpandHistory(hw.id)}
+                    className="w-full flex items-center gap-3 p-4 text-left touch-manipulation"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-4 h-4 text-muted" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold capitalize text-sm">{formatDate(hw.date)}</div>
+                      <div className="text-muted text-[11px] flex items-center gap-2 flex-wrap mt-0.5">
+                        <span>{daysAgoStr(hw.date)}</span>
+                        {hw.name && <><span>·</span><span className="truncate">{hw.name}</span></>}
+                        {hw.started_at && hw.finished_at && (
+                          <>
+                            <span>·</span>
+                            <span className="font-mono">
+                              {(() => {
+                                const ms = new Date(hw.finished_at).getTime() - new Date(hw.started_at).getTime()
+                                const mins = Math.floor(ms / 60000)
+                                const h = Math.floor(mins / 60)
+                                return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
+                              })()}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <ChevronRight
+                      className={clsx(
+                        'w-4 h-4 text-muted transition-transform flex-shrink-0',
+                        expandedHistory === hw.id && 'rotate-90'
+                      )}
+                    />
+                  </button>
+
+                  {expandedHistory === hw.id && (
+                    <div className="border-t border-surface-border animate-slide-up">
+                      {loadingHistoryDetail === hw.id ? (
+                        <div className="p-4 flex justify-center">
+                          <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      ) : (
+                        <div className="p-4 space-y-3">
+                          {(hw.exercises || []).map(exercise => (
+                            <div key={exercise.id}>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-medium text-sm text-main">{exercise.name}</span>
+                                {exercise.muscle_group && (
+                                  <span className="text-xs text-muted">{exercise.muscle_group}</span>
+                                )}
+                              </div>
+
+                              {(exercise.sets || []).length > 0 && (
+                                <div className="space-y-0.5">
+                                  {(exercise.sets || []).map((set, index) => (
+                                    <div key={set.id} className="flex items-center gap-3 text-xs text-muted font-mono">
+                                      <span className="text-muted/70">#{index + 1}</span>
+                                      <span className="text-main">{set.weight}kg × {set.reps}</span>
+                                      {set.rir != null && <span>@{set.rir} RIR</span>}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              <Link
+                                href={`/exercise/${encodeURIComponent(exercise.name)}`}
+                                className="inline-flex items-center gap-1 mt-1 text-xs text-brand-500/70 hover:text-brand-400 transition-colors"
+                              >
+                                <TrendingUp className="w-3 h-3" />
+                                {t('history.view_progression')}
+                              </Link>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            )}
+          </div>
+        )}
+
       </main>
 
       {showAddExercise && workout && (

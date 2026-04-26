@@ -79,7 +79,7 @@ export default function ExercisePage() {
     <div className="min-h-screen bg-surface-0 pb-24">
       <PageHeader innerClassName="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/history" className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors text-muted hover:text-main">
+          <Link href="/today" className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors text-muted hover:text-main">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>

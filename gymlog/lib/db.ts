@@ -230,11 +230,18 @@ export async function getExerciseNames(userId: string): Promise<string[]> {
   return names.sort()
 }
 
-export async function finishWorkout(workoutId: string): Promise<void> {
+export async function finishWorkout(workoutId: string, durationMinutes?: number): Promise<void> {
   const supabase = createClient()
+  const finishedAt = new Date()
+  const updates: any = { finished_at: finishedAt.toISOString() }
+  
+  if (durationMinutes !== undefined && durationMinutes > 0) {
+    updates.started_at = new Date(finishedAt.getTime() - durationMinutes * 60000).toISOString()
+  }
+
   await supabase
     .from('workouts')
-    .update({ finished_at: new Date().toISOString() })
+    .update(updates)
     .eq('id', workoutId)
 }
 

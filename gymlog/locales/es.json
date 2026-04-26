@@ -14,7 +14,8 @@
     "today": "Entreno",
     "history": "Historial",
     "profile": "Perfil",
-    "recipes": "Recetas"
+    "recipes": "Recetas",
+    "arts": "Artes"
   },
   "dashboard": {
     "greeting": "Hola",
@@ -96,6 +97,19 @@
       "total_pages": "{current} / {total} pág. totales",
       "add_total": "+ añadir total páginas",
       "prompt_total": "Total de páginas del libro:"
+    },
+    "arts_block": {
+      "title": "Artes",
+      "locked": "Bloqueado",
+      "locked_desc": "Mantén pulsado para abrir",
+      "no_session": "Sin sesión artística hoy",
+      "start": "Registrar",
+      "observe": "Observación",
+      "practice": "Práctica",
+      "synergy": "Sinergia activa",
+      "session": "Sesión libre",
+      "continue": "Ver / registrar artes",
+      "more_count": "+{count} más"
     },
     "weather": {
       "near_you": "Cerca de ti",
@@ -250,5 +264,35 @@
     "check_email": "Revisa tu email para confirmar la cuenta.",
     "already_registered": "Este email ya tiene una cuenta. Inicia sesión.",
     "subtitle": "Harder, Better, Faster, Stronger"
+  },
+  "arts": {
+    "title": "Artes",
+    "locked": "Bloqueado",
+    "locked_desc": "Mantén pulsado para abrir",
+    "today_summary": "Resumen de hoy",
+    "log_session": "Registrar sesión",
+    "discipline": "Disciplina",
+    "item": "Obra / proyecto",
+    "new_item": "Nueva obra",
+    "item_placeholder": "Título de la obra...",
+    "observe": "Observación",
+    "practice": "Práctica",
+    "minutes": "Minutos",
+    "units": "Unidades",
+    "session_type": "Tipo de sesión",
+    "session_type_placeholder": "ensayo, rodaje...",
+    "effort": "Esfuerzo",
+    "notes": "Notas",
+    "notes_placeholder": "Observaciones de la sesión...",
+    "save_session": "Guardar sesión",
+    "recent": "Historial reciente",
+    "session": "Sesión libre",
+    "my_items": "Mis obras",
+    "synergy": "Sinergia activa",
+    "status": {
+      "planned": "Planificado",
+      "active": "Activo",
+      "completed": "Completado"
+    }
   }
 }

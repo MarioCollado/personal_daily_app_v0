@@ -14,7 +14,8 @@
     "today": "Workout",
     "history": "History",
     "profile": "Profile",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "arts": "Arts"
   },
   "dashboard": {
     "greeting": "Hello",
@@ -96,6 +97,19 @@
       "total_pages": "{current} / {total} total pages",
       "add_total": "+ add total pages",
       "prompt_total": "Total book pages:"
+    },
+    "arts_block": {
+      "title": "Arts",
+      "locked": "Locked",
+      "locked_desc": "Long press to unlock",
+      "no_session": "No arts session today",
+      "start": "Log session",
+      "observe": "Observation",
+      "practice": "Practice",
+      "synergy": "Synergy active",
+      "session": "Free session",
+      "continue": "View / log arts",
+      "more_count": "+{count} more"
     },
     "weather": {
       "near_you": "Near you",
@@ -250,5 +264,35 @@
     "check_email": "Check your email to confirm your account.",
     "already_registered": "This email already has an account. Log in.",
     "subtitle": "Harder, Better, Faster, Stronger"
+  },
+  "arts": {
+    "title": "Arts",
+    "locked": "Locked",
+    "locked_desc": "Long press to unlock",
+    "today_summary": "Today's summary",
+    "log_session": "Log session",
+    "discipline": "Discipline",
+    "item": "Work / project",
+    "new_item": "New work",
+    "item_placeholder": "Title of the work...",
+    "observe": "Observation",
+    "practice": "Practice",
+    "minutes": "Minutes",
+    "units": "Units",
+    "session_type": "Session type",
+    "session_type_placeholder": "rehearsal, shoot...",
+    "effort": "Effort",
+    "notes": "Notes",
+    "notes_placeholder": "Session notes...",
+    "save_session": "Save session",
+    "recent": "Recent history",
+    "session": "Free session",
+    "my_items": "My works",
+    "synergy": "Synergy active",
+    "status": {
+      "planned": "Planned",
+      "active": "Active",
+      "completed": "Completed"
+    }
   }
 }
