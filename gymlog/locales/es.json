@@ -31,14 +31,17 @@
       }
     },
     "advisor": {
-      "extreme_rest": "Batería en valores críticos. Cero exigencias hoy, tu único objetivo es sobrevivir y dormir pronto.",
-      "high_stress": "Día asfixiante de estrés y mucho tiempo de pantalla. Apaga el móvil 10 minutos y simplemente respira.",
-      "go_workout": "Tienes energía y estás usando mucho el móvil. No hay excusa, es el momento perfecto para arrancar el entreno.",
-      "low_motivation": "Hoy la mente pone frenos. No lo pienses: ponte las zapatillas solo por 5 minutos. Si luego quieres parar, para.",
-      "praise_tired": "Entrenamiento liquidado a pesar del cansancio. Gran disciplina. Cena bien y prioriza irte a la cama.",
-      "praise_perfect": "Cuerpo entrenado, estrés bajo y avance intelectual. Día redondo, aprovéchalo y mantén el ritmo.",
-      "read_prompt": "Mucho tiempo de móvil y aún no le has dado a la mente. Tira el móvil a otra habitación y lee 15 minutos.",
-      "general_active": "Mucho uso de pantalla hoy. Tómate un respiro visual y dedícate al menos 30 minutos a moverte."
+      "extreme_rest": "Estás bastante tocado hoy. No te compliques: baja el ritmo, no te exijas y trata de dormir bien esta noche.",
+      "stress_screen_spiral": "Tienes bastante estrés y mucho móvil encima. Estás en bucle. Prueba a soltar la pantalla un rato y hacer algo tranquilo: ver o escuchar algo con calma, o una práctica ligera.",
+      "channel_energy": "Tienes energía, pero se te está yendo en el móvil. Muévela hacia algo real: entrenar o hacer algo creativo. Sal del modo consumo.",
+      "low_drive_activation": "Hoy no hay muchas ganas y tampoco has arrancado por ningún lado. No le des vueltas: empieza con algo pequeño, aunque sean 10 minutos.",
+      "arts_replacement": "Mucho móvil y nada creativo hoy. Cambia un poco de ese consumo rápido por algo con más intención: escuchar música de verdad, ver referencias o tocar un rato.",
+      "add_observation": "Has hecho cosas, pero sigues algo cargado. Igual hoy no va de producir más, sino de parar un poco: ver o escuchar algo con calma para bajar revoluciones.",
+      "protect_recovery": "Has tirado con poco sueño. Bien por sacar el día, pero ahora toca cuidarse: come bien, baja el ritmo y duerme en condiciones.",
+      "soften_tonight": "Buen uso del día, pero vienes con poco descanso. Esta noche mejor algo tranquilo para no pagarlo mañana.",
+      "full_stack_day": "Día bastante completo: te has movido, has hecho cosas creativas y sin mucho estrés. Esto es lo que suma de verdad. Intenta repetir este patrón.",
+      "creative_momentum": "Hoy has tirado por lo creativo, y eso también cuenta mucho. Aunque no hayas entrenado, estás avanzando. Mantén esa inercia sin pasarte.",
+      "move_or_make": "Mucho móvil y poca acción. Haz algo: muévete o crea. Cualquiera de las dos te va a sentar mejor que seguir consumiendo."
     },
     "readiness": "Estado de recuperación",
     "motivation": "Nivel de motivación",

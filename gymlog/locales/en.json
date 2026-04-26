@@ -31,14 +31,17 @@
       }
     },
     "advisor": {
-      "extreme_rest": "Critical battery levels. Zero demands today, your only goal is to survive and sleep early.",
-      "high_stress": "Suffocating day of stress and too much screen time. Turn off your phone for 10 minutes and just breathe.",
-      "go_workout": "You have energy and you're using your phone a lot. No excuses, it's the perfect time to start your workout.",
-      "low_motivation": "Today the mind is putting on the brakes. Don't think: just put on your sneakers for 5 minutes. If you want to stop then, stop.",
-      "praise_tired": "Workout finished despite being tired. Great discipline. Eat well and prioritize getting to bed.",
-      "praise_perfect": "Trained body, low stress, and intellectual progress. Perfect day, enjoy it and keep up the pace.",
-      "read_prompt": "Too much phone time and you haven't stimulated the mind yet. Throw the phone in another room and read for 15 minutes.",
-      "general_active": "Too much screen use today. Take a visual break and spend at least 30 minutes moving."
+      "extreme_rest": "You're pretty drained today. Keep it simple: slow down, don't push yourself, and try to get proper sleep tonight.",
+      "stress_screen_spiral": "Stress is high and you've been on your phone a lot. You're stuck in a loop. Put the screen down for a bit and do something calm: watch or listen to something properly, or do a light practice.",
+      "channel_energy": "You’ve got energy, but it’s going into your screen. Put it into something real: train or do something creative. Get out of passive mode.",
+      "low_drive_activation": "Low motivation and nothing has really started today. Don’t overthink it: just begin with something small, even 10 minutes is enough.",
+      "arts_replacement": "A lot of screen time and nothing creative today. Swap some of that quick consumption for something more intentional: really listen to music, check references, or play for a bit.",
+      "add_observation": "You’ve done things, but you still feel a bit tense. Maybe today isn’t about doing more, but slowing down: watch or listen to something properly to ease off.",
+      "protect_recovery": "You pushed through on low sleep. Good job getting it done, but now take care of yourself: eat well, slow down, and get real rest.",
+      "soften_tonight": "Good use of the day, but you’re running on low sleep. Take it easy tonight so you don’t pay for it tomorrow.",
+      "full_stack_day": "Solid day: you moved, created, and kept stress low. This is what actually builds momentum. Try to keep this pattern going.",
+      "creative_momentum": "You leaned into creative work today, and that counts. Even without training, you’re still moving forward. Keep the momentum without overdoing it.",
+      "move_or_make": "Too much screen time, not enough real action. Do something: move or create. Either one will feel better than more scrolling."
     },
     "readiness": "Readiness",
     "motivation": "Motivation",

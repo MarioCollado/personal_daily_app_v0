@@ -1,4 +1,4 @@
-import type { DailyMetrics } from '@/types'
+import type { DailyMetrics, TodayArtsSummary } from '@/types'
 
 export type AdviceType = 'rest' | 'action' | 'mind' | 'praise' | 'warning'
 
@@ -7,70 +7,100 @@ export interface Advice {
   type: AdviceType
 }
 
-export function getDailyAdvice(metrics: DailyMetrics | null, hasWorkout: boolean): Advice | null {
+export function getDailyAdvice(
+  metrics: DailyMetrics | null,
+  hasWorkout: boolean,
+  artsSummary?: TodayArtsSummary | null
+): Advice | null {
   if (!metrics) return null
 
-  const s = metrics.sleep_hours
-  const e = metrics.energy
-  const st = metrics.stress
-  const m = metrics.motivation
-  const pu = metrics.phone_usage
-  const p = metrics.pages_read
-  const w = hasWorkout
+  const sleep = metrics.sleep_hours
+  const energy = metrics.energy
+  const stress = metrics.stress
+  const motivation = metrics.motivation
+  const phone = metrics.phone_usage
 
-  if (s != null && s <= 5 && e != null && e <= 2) {
+  const observationMinutes = artsSummary?.totalObservationMinutes ?? 0
+  const practiceMinutes = artsSummary?.totalPracticeMinutes ?? 0
+  const hasArtsObservation = observationMinutes > 0
+  const hasArtsPractice = practiceMinutes > 0
+  const hasArtsAny = hasArtsObservation || hasArtsPractice
+  const hasArtsSynergy = hasArtsObservation && hasArtsPractice
+
+  if (sleep != null && sleep <= 5 && energy != null && energy <= 2) {
     return {
       id: 'extreme_rest',
-      type: 'warning'
+      type: 'warning',
     }
   }
 
-  if (st != null && st >= 4 && pu != null && pu >= 4) {
+  if (stress != null && stress >= 4 && phone != null && phone >= 4 && !hasArtsAny) {
     return {
-      id: 'high_stress',
-      type: 'mind'
+      id: 'stress_screen_spiral',
+      type: 'mind',
     }
   }
 
-  if (!w && e != null && e >= 4 && pu != null && pu >= 3) {
+  if (!hasWorkout && !hasArtsPractice && energy != null && energy >= 4 && phone != null && phone >= 3) {
     return {
-      id: 'go_workout',
-      type: 'action'
+      id: 'channel_energy',
+      type: 'action',
     }
   }
 
-  if (!w && m != null && m <= 2) {
+  if (motivation != null && motivation <= 2 && !hasWorkout && !hasArtsPractice) {
     return {
-      id: 'low_motivation',
-      type: 'warning'
+      id: 'low_drive_activation',
+      type: 'warning',
     }
   }
 
-  if (w && s != null && s <= 6) {
+  if (phone != null && phone >= 4 && !hasArtsObservation && !hasArtsPractice) {
     return {
-      id: 'praise_tired',
-      type: 'rest'
+      id: 'arts_replacement',
+      type: 'mind',
     }
   }
 
-  if (w && p != null && p >= 15 && e != null && e >= 4 && st != null && st <= 2) {
+  if (stress != null && stress >= 4 && !hasArtsObservation && hasArtsPractice) {
     return {
-      id: 'praise_perfect',
-      type: 'praise'
+      id: 'add_observation',
+      type: 'mind',
     }
   }
 
-  if (pu != null && pu >= 4 && (!p || p === 0)) {
+  if (sleep != null && sleep <= 6 && hasWorkout) {
     return {
-      id: 'read_prompt',
-      type: 'mind'
+      id: 'protect_recovery',
+      type: 'rest',
     }
   }
 
-  if (!w && pu != null && pu >= 3) {
+  if (sleep != null && sleep <= 6 && hasArtsPractice) {
     return {
-      id: 'general_active',
-      type: 'action'
+      id: 'soften_tonight',
+      type: 'rest',
+    }
+  }
+
+  if (hasWorkout && hasArtsSynergy && stress != null && stress <= 2) {
+    return {
+      id: 'full_stack_day',
+      type: 'praise',
+    }
+  }
+
+  if (!hasWorkout && hasArtsPractice && motivation != null && motivation >= 4) {
+    return {
+      id: 'creative_momentum',
+      type: 'praise',
+    }
+  }
+
+  if (!hasWorkout && phone != null && phone >= 3 && !hasArtsAny) {
+    return {
+      id: 'move_or_make',
+      type: 'action',
     }
   }
 

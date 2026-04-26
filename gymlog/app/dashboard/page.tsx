@@ -51,7 +51,7 @@ export default function DashboardPage() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
-  const rawAdvice = useMemo(() => getDailyAdvice(metrics, !!workout), [metrics, workout])
+  const rawAdvice = useMemo(() => getDailyAdvice(metrics, !!workout, artsSummary), [metrics, workout, artsSummary])
   const { advice, isDismissed, dismissAdvice, restoreAdvice } = useAdvisor(rawAdvice)
 
   useEffect(() => {
