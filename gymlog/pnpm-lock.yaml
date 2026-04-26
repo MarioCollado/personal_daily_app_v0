@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@mjcdev/react-body-highlighter':
+        specifier: ^0.0.4
+        version: 0.0.4(react@18.3.1)
       '@supabase/ssr':
         specifier: ^0.4.0
         version: 0.4.1(@supabase/supabase-js@2.101.1)
@@ -636,6 +639,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@mjcdev/react-body-highlighter@0.0.4':
+    resolution: {integrity: sha512-BKUGDmTGCzCSY5B7lu4ZzaZfmLJdhIDfD0a0FE67/AEi35YXmvza5FgWK6qXWtbeVW7H+TFwamq8n+HoQdVuWA==}
+    peerDependencies:
+      react: '*'
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -2561,6 +2569,9 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
+  ramda@0.30.1:
+    resolution: {integrity: sha512-tEF5I22zJnuclswcZMc8bDIrwRHRzf+NqVEmqg50ShAZMP7MWeR/RGDthfM/p+BlqvF2fXAzpn8i+SJcYD3alw==}
+
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
@@ -3933,6 +3944,11 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@mjcdev/react-body-highlighter@0.0.4(react@18.3.1)':
+    dependencies:
+      ramda: 0.30.1
+      react: 18.3.1
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -5956,6 +5972,8 @@ snapshots:
   punycode@2.3.1: {}
 
   queue-microtask@1.2.3: {}
+
+  ramda@0.30.1: {}
 
   randombytes@2.1.0:
     dependencies:

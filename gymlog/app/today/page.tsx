@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, Lock, User, CheckCircle, LayoutTemplate, X, Calendar, ChevronRight, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import {
@@ -21,10 +21,13 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { useI18n } from '@/contexts/I18nContext'
 import WorkoutSummaryModal from '@/components/workout/WorkoutSummaryModal'
-import { getTemplates, saveTemplate, applyTemplate } from '@/lib/db'
+import { getTemplates, saveTemplate, applyTemplate, getRecentWorkoutsWithExercises } from '@/lib/db'
 import TemplatePickerModal from '@/components/workout/TemplatePickerModal'
 import type { WorkoutTemplate } from '@/types'
 import Link from 'next/link'
+import WeeklySparkline from '@/components/workout/WeeklySparkline'
+import MuscleHighlighter from '@/components/workout/MuscleHighlighter'
+import TrainingSummaryCard from '@/components/workout/TrainingSummaryCard'
 
 interface WorkoutWithExercises extends Workout {
   exercises?: Exercise[]
@@ -59,8 +62,9 @@ export default function TodayPage() {
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([])
   const [showTemplatePicker, setShowTemplatePicker] = useState(false)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
-  
+
   const [historyWorkouts, setHistoryWorkouts] = useState<WorkoutWithExercises[]>([])
+  const [recentWorkouts, setRecentWorkouts] = useState<WorkoutWithExercises[]>([])
   const [showHistoryList, setShowHistoryList] = useState(false)
   const [expandedHistory, setExpandedHistory] = useState<string | null>(null)
   const [loadingHistoryDetail, setLoadingHistoryDetail] = useState<string | null>(null)
@@ -105,8 +109,12 @@ export default function TodayPage() {
     const names = await getExerciseNames(user.id)
     setSuggestions(names)
 
-    const history = await getWorkoutHistory(user.id, 15)
+    const [history, recentWithExercises] = await Promise.all([
+      getWorkoutHistory(user.id, 15),
+      getRecentWorkoutsWithExercises(user.id, 28),
+    ])
     setHistoryWorkouts(history)
+    setRecentWorkouts(recentWithExercises)
     const last = history.find(h => h.date !== currentDate)
     setLastWorkout(last || null)
 
@@ -283,6 +291,12 @@ export default function TodayPage() {
 
   const longPress = useLongPress({ onLongPress: toggleLock })
 
+  const sparklineWorkouts = useMemo(() => {
+    if (!workout) return recentWorkouts
+    const currentWorkout = { ...workout, exercises }
+    return [currentWorkout, ...recentWorkouts.filter(item => item.id !== workout.id)]
+  }, [workout, exercises, recentWorkouts])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-surface-0 flex items-center justify-center">
@@ -320,6 +334,7 @@ export default function TodayPage() {
         )}
         {...longPress}
       >
+
         {isLocked && workout && (
           <div className="absolute inset-0 z-20 bg-surface-0/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 m-2 rounded-2xl">
             <div className="w-16 h-16 rounded-full bg-brand-500/20 flex items-center justify-center mb-4">
@@ -412,7 +427,7 @@ export default function TodayPage() {
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2">
+            <div className="relative z-10 flex items-center gap-2">
               {editingName ? (
                 <>
                   <input
@@ -436,27 +451,16 @@ export default function TodayPage() {
             </div>
 
             {exercises.length > 0 && (
-              <div className="flex gap-4 text-sm bg-surface-1 border border-surface-border rounded-xl px-4 py-3 animate-fade-in shadow-sm">
-                <div className="text-center flex-1">
-                  <div className="font-mono font-bold text-lg text-brand leading-none mb-1">{exercises.length}</div>
-                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">{t('today_page.stats.exercises')}</div>
-                </div>
-                <div className="w-px bg-surface-border" />
-                <div className="text-center flex-1">
-                  <div className="font-mono font-bold text-lg text-main leading-none mb-1">{exercises.reduce((a, e) => a + (e.sets?.length || 0), 0)}</div>
-                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">{t('today_page.stats.sets')}</div>
-                </div>
-                <div className="w-px bg-surface-border" />
-                <div className="text-center flex-1">
-                  <div className="font-mono font-bold text-lg text-main leading-none mb-1">
-                    {exercises.reduce((a, e) => a + (e.sets || []).reduce((b, s) => b + s.reps * s.weight, 0), 0).toLocaleString()}
-                  </div>
-                  <div className="text-muted text-[10px] font-bold uppercase tracking-tighter">{t('today_page.stats.volume')}</div>
-                </div>
+              <div className="relative z-10 animate-fade-in">
+                <TrainingSummaryCard workout={workout} exercises={exercises} showContinue={false} />
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="relative z-10">
+              <WeeklySparkline workouts={sparklineWorkouts} currentDate={currentDate} />
+            </div>
+
+            <div className="relative z-10 space-y-3">
               {exercises.map(ex => (
                 <ExerciseCard
                   key={ex.id}
@@ -469,7 +473,7 @@ export default function TodayPage() {
             </div>
 
             {workout.finished_at && (
-              <div className="flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 rounded-2xl px-4 py-3 text-brand-400 text-sm font-medium">
+              <div className="relative z-10 flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 rounded-2xl px-4 py-3 text-brand-400 text-sm font-medium">
                 <CheckCircle className="w-4 h-4 flex-shrink-0" />
                 <span>Entreno completado</span>
                 {workout.started_at && (
@@ -495,14 +499,14 @@ export default function TodayPage() {
             {exercises.length > 0 && !workout.finished_at && (
               <button
                 onClick={() => setShowSummary(true)}
-                className="w-full bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 hover:border-brand-500/50 text-brand-400 font-semibold rounded-2xl py-3 flex items-center justify-center gap-2 transition-all duration-150 touch-manipulation"
+                className="relative z-10 w-full bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 hover:border-brand-500/50 text-brand-400 font-semibold rounded-2xl py-3 flex items-center justify-center gap-2 transition-all duration-150 touch-manipulation"
               >
                 <CheckCircle className="w-4 h-4" />
                 {t('today_page.finish_workout')}
               </button>
             )}
 
-            <div className="flex flex-col gap-2">
+            <div className="relative z-10 flex flex-col gap-2">
               {!workout.finished_at && (
                 <button
                   onClick={() => setShowTemplatePicker(true)}
@@ -526,7 +530,7 @@ export default function TodayPage() {
         {/* ── History Section ── */}
         {historyWorkouts.filter(w => w.date !== currentDate).length > 0 && (
           <div className="pt-6 space-y-3">
-            <button 
+            <button
               onClick={() => setShowHistoryList(!showHistoryList)}
               className="flex items-center justify-between w-full p-2 -ml-2 rounded-xl hover:bg-surface-2 transition-colors group touch-manipulation"
             >
@@ -535,93 +539,93 @@ export default function TodayPage() {
               </h3>
               <ChevronRight className={clsx("w-4 h-4 text-muted transition-transform", showHistoryList && "rotate-90")} />
             </button>
-            
+
             {showHistoryList && (
               <div className="space-y-2 animate-slide-up">
-              {historyWorkouts.filter(w => w.date !== currentDate).map(hw => (
-                <div key={hw.id} className="card overflow-hidden">
-                  <button
-                    onClick={() => toggleExpandHistory(hw.id)}
-                    className="w-full flex items-center gap-3 p-4 text-left touch-manipulation"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-4 h-4 text-muted" />
-                    </div>
+                {historyWorkouts.filter(w => w.date !== currentDate).map(hw => (
+                  <div key={hw.id} className="card overflow-hidden">
+                    <button
+                      onClick={() => toggleExpandHistory(hw.id)}
+                      className="w-full flex items-center gap-3 p-4 text-left touch-manipulation"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center flex-shrink-0">
+                        <Calendar className="w-4 h-4 text-muted" />
+                      </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold capitalize text-sm">{formatDate(hw.date)}</div>
-                      <div className="text-muted text-[11px] flex items-center gap-2 flex-wrap mt-0.5">
-                        <span>{daysAgoStr(hw.date)}</span>
-                        {hw.name && <><span>·</span><span className="truncate">{hw.name}</span></>}
-                        {hw.started_at && hw.finished_at && (
-                          <>
-                            <span>·</span>
-                            <span className="font-mono">
-                              {(() => {
-                                const ms = new Date(hw.finished_at).getTime() - new Date(hw.started_at).getTime()
-                                const mins = Math.floor(ms / 60000)
-                                const h = Math.floor(mins / 60)
-                                return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
-                              })()}
-                            </span>
-                          </>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold capitalize text-sm">{formatDate(hw.date)}</div>
+                        <div className="text-muted text-[11px] flex items-center gap-2 flex-wrap mt-0.5">
+                          <span>{daysAgoStr(hw.date)}</span>
+                          {hw.name && <><span>·</span><span className="truncate">{hw.name}</span></>}
+                          {hw.started_at && hw.finished_at && (
+                            <>
+                              <span>·</span>
+                              <span className="font-mono">
+                                {(() => {
+                                  const ms = new Date(hw.finished_at).getTime() - new Date(hw.started_at).getTime()
+                                  const mins = Math.floor(ms / 60000)
+                                  const h = Math.floor(mins / 60)
+                                  return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
+                                })()}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <ChevronRight
+                        className={clsx(
+                          'w-4 h-4 text-muted transition-transform flex-shrink-0',
+                          expandedHistory === hw.id && 'rotate-90'
+                        )}
+                      />
+                    </button>
+
+                    {expandedHistory === hw.id && (
+                      <div className="border-t border-surface-border animate-slide-up">
+                        {loadingHistoryDetail === hw.id ? (
+                          <div className="p-4 flex justify-center">
+                            <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        ) : (
+                          <div className="p-4 space-y-3">
+                            {(hw.exercises || []).map(exercise => (
+                              <div key={exercise.id}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-medium text-sm text-main">{exercise.name}</span>
+                                  {exercise.muscle_group && (
+                                    <span className="text-xs text-muted">{exercise.muscle_group}</span>
+                                  )}
+                                </div>
+
+                                {(exercise.sets || []).length > 0 && (
+                                  <div className="space-y-0.5">
+                                    {(exercise.sets || []).map((set, index) => (
+                                      <div key={set.id} className="flex items-center gap-3 text-xs text-muted font-mono">
+                                        <span className="text-muted/70">#{index + 1}</span>
+                                        <span className="text-main">{set.weight}kg × {set.reps}</span>
+                                        {set.rir != null && <span>@{set.rir} RIR</span>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                <Link
+                                  href={`/exercise/${encodeURIComponent(exercise.name)}`}
+                                  className="inline-flex items-center gap-1 mt-1 text-xs text-brand-500/70 hover:text-brand-400 transition-colors"
+                                >
+                                  <TrendingUp className="w-3 h-3" />
+                                  {t('history.view_progression')}
+                                </Link>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
-                    </div>
-
-                    <ChevronRight
-                      className={clsx(
-                        'w-4 h-4 text-muted transition-transform flex-shrink-0',
-                        expandedHistory === hw.id && 'rotate-90'
-                      )}
-                    />
-                  </button>
-
-                  {expandedHistory === hw.id && (
-                    <div className="border-t border-surface-border animate-slide-up">
-                      {loadingHistoryDetail === hw.id ? (
-                        <div className="p-4 flex justify-center">
-                          <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-                        </div>
-                      ) : (
-                        <div className="p-4 space-y-3">
-                          {(hw.exercises || []).map(exercise => (
-                            <div key={exercise.id}>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-sm text-main">{exercise.name}</span>
-                                {exercise.muscle_group && (
-                                  <span className="text-xs text-muted">{exercise.muscle_group}</span>
-                                )}
-                              </div>
-
-                              {(exercise.sets || []).length > 0 && (
-                                <div className="space-y-0.5">
-                                  {(exercise.sets || []).map((set, index) => (
-                                    <div key={set.id} className="flex items-center gap-3 text-xs text-muted font-mono">
-                                      <span className="text-muted/70">#{index + 1}</span>
-                                      <span className="text-main">{set.weight}kg × {set.reps}</span>
-                                      {set.rir != null && <span>@{set.rir} RIR</span>}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              <Link
-                                href={`/exercise/${encodeURIComponent(exercise.name)}`}
-                                className="inline-flex items-center gap-1 mt-1 text-xs text-brand-500/70 hover:text-brand-400 transition-colors"
-                              >
-                                <TrendingUp className="w-3 h-3" />
-                                {t('history.view_progression')}
-                              </Link>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
