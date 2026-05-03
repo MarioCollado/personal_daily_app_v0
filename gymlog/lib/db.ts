@@ -47,7 +47,7 @@ export async function createWorkout(userId: string, date: string, name?: string)
   const supabase = createClient()
   const { data, error } = await supabase
     .from('workouts')
-    .insert({ user_id: userId, date, name: name || null, started_at: new Date().toISOString() })
+    .insert({ user_id: userId, date, name: name || null, started_at: null })
     .select()
     .single()
   if (error) throw error
@@ -57,6 +57,32 @@ export async function createWorkout(userId: string, date: string, name?: string)
 export async function updateWorkoutName(workoutId: string, name: string) {
   const supabase = createClient()
   await supabase.from('workouts').update({ name }).eq('id', workoutId)
+}
+
+export async function startWorkoutTimer(workoutId: string): Promise<string> {
+  const supabase = createClient()
+  const startedAt = new Date().toISOString()
+  const { error } = await supabase
+    .from('workouts')
+    .update({ started_at: startedAt })
+    .eq('id', workoutId)
+    .is('started_at', null)
+
+  if (error) throw error
+  return startedAt
+}
+
+export async function resetWorkoutTimer(workoutId: string): Promise<string> {
+  const supabase = createClient()
+  const startedAt = new Date().toISOString()
+  const { error } = await supabase
+    .from('workouts')
+    .update({ started_at: startedAt })
+    .eq('id', workoutId)
+    .is('finished_at', null)
+
+  if (error) throw error
+  return startedAt
 }
 
 export async function getWorkoutHistory(userId: string, limit = 20): Promise<Workout[]> {
@@ -217,6 +243,33 @@ export async function getExerciseHistory(userId: string, exerciseName: string, l
     sessionMap.get(date)!.sets.push(...(ex.sets || []))
   }
   return Array.from(sessionMap.values()).slice(0, limit)
+}
+
+export async function getLastExerciseSession(
+  userId: string,
+  exerciseName: string,
+  excludeWorkoutId?: string
+): Promise<Set[]> {
+  const supabase = createClient()
+  let query = supabase
+    .from('exercises')
+    .select('workout_id, created_at, sets(*), workouts!inner(user_id)')
+    .eq('name', exerciseName)
+    .eq('workouts.user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(12)
+
+  if (excludeWorkoutId) {
+    query = query.neq('workout_id', excludeWorkoutId)
+  }
+
+  const { data } = await query
+  if (!data?.length) return []
+
+  const match = data.find(exercise => Array.isArray(exercise.sets) && exercise.sets.length > 0)
+  if (!match?.sets?.length) return []
+
+  return [...match.sets].sort((a: Set, b: Set) => a.created_at.localeCompare(b.created_at))
 }
 
 export async function getExerciseNames(userId: string): Promise<string[]> {

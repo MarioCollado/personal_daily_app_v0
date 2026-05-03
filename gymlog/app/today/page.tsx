@@ -1,50 +1,91 @@
 'use client'
+
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Plus, Dumbbell, Pencil, Check, Copy, LogOut, Lock, User, CheckCircle, LayoutTemplate, X, Calendar, ChevronRight, TrendingUp } from 'lucide-react'
+import {
+  Plus,
+  Dumbbell,
+  Pencil,
+  Check,
+  Copy,
+  LogOut,
+  Lock,
+  User,
+  CheckCircle,
+  LayoutTemplate,
+  X,
+  Calendar,
+  ChevronRight,
+  TrendingUp,
+  Clock3,
+  RotateCcw,
+  Layers3,
+  Flame,
+} from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { clsx } from 'clsx'
 import { createClient } from '@/lib/supabase-client'
 import {
-  getTodayWorkout, createWorkout, getExercisesForWorkout,
-  updateWorkoutName, getExerciseNames, getWorkoutHistory, duplicateWorkout,
-  getUserProfile, upsertUserProfile, finishWorkout, deleteWorkout
+  getTodayWorkout,
+  createWorkout,
+  getExercisesForWorkout,
+  updateWorkoutName,
+  getExerciseNames,
+  getWorkoutHistory,
+  duplicateWorkout,
+  getUserProfile,
+  upsertUserProfile,
+  finishWorkout,
+  deleteWorkout,
+  startWorkoutTimer,
+  resetWorkoutTimer,
+  getTemplates,
+  saveTemplate,
+  applyTemplate,
+  getRecentWorkoutsWithExercises,
 } from '@/lib/db'
 import { getDailyMetrics, upsertDailyMetrics } from '@/lib/metrics'
-import type { Workout, Exercise, Set, UserProfile } from '@/types'
+import { getWorkoutLoadValue } from '@/lib/workout-insights'
+import type { Workout, Exercise, Set, UserProfile, WorkoutTemplate } from '@/types'
 import ExerciseCard from '@/components/workout/ExerciseCard'
 import AddExerciseModal from '@/components/workout/AddExerciseModal'
 import BottomNav from '@/components/ui/BottomNav'
 import PageHeader from '@/components/ui/PageHeader'
-
 import { useLongPress } from '@/hooks/useLongPress'
-import { useRouter } from 'next/navigation'
-import { clsx } from 'clsx'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { useI18n } from '@/contexts/I18nContext'
 import WorkoutSummaryModal from '@/components/workout/WorkoutSummaryModal'
-import { getTemplates, saveTemplate, applyTemplate, getRecentWorkoutsWithExercises } from '@/lib/db'
 import TemplatePickerModal from '@/components/workout/TemplatePickerModal'
-import type { WorkoutTemplate } from '@/types'
-import Link from 'next/link'
-import WeeklySparkline from '@/components/workout/WeeklySparkline'
-import MuscleHighlighter from '@/components/workout/MuscleHighlighter'
-import TrainingSummaryCard from '@/components/workout/TrainingSummaryCard'
+import WorkoutQuickActionsSheet from '@/components/workout/WorkoutQuickActionsSheet'
+import MuscleInsightsPanel from '@/components/workout/MuscleInsightsPanel'
 
 interface WorkoutWithExercises extends Workout {
   exercises?: Exercise[]
 }
-
 
 function getLocalISODate() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+function formatElapsed(startedAt?: string | null, finishedAt?: string | null) {
+  if (!startedAt) return '--'
+  const endTime = finishedAt ? new Date(finishedAt).getTime() : Date.now()
+  const mins = Math.max(0, Math.floor((endTime - new Date(startedAt).getTime()) / 60000))
+  const h = Math.floor(mins / 60)
+  return h > 0 ? `${h}h ${mins % 60}m` : `${mins} min`
+}
+
 export default function TodayPage() {
   const { t, language } = useI18n()
+  const router = useRouter()
+
   const [workout, setWorkout] = useState<Workout | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddExercise, setShowAddExercise] = useState(false)
+  const [showQuickActions, setShowQuickActions] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [workoutName, setWorkoutName] = useState('')
   const [suggestions, setSuggestions] = useState<string[]>([])
@@ -55,19 +96,17 @@ export default function TodayPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [editingProfile, setEditingProfile] = useState(false)
   const [profileInput, setProfileInput] = useState({ weight: '', height: '', age: '' })
-  const router = useRouter()
-
   const [currentDate, setCurrentDate] = useState(getLocalISODate)
   const [showSummary, setShowSummary] = useState(false)
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([])
   const [showTemplatePicker, setShowTemplatePicker] = useState(false)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
-
   const [historyWorkouts, setHistoryWorkouts] = useState<WorkoutWithExercises[]>([])
   const [recentWorkouts, setRecentWorkouts] = useState<WorkoutWithExercises[]>([])
   const [showHistoryList, setShowHistoryList] = useState(false)
   const [expandedHistory, setExpandedHistory] = useState<string | null>(null)
   const [loadingHistoryDetail, setLoadingHistoryDetail] = useState<string | null>(null)
+  const [, setTimerTick] = useState(0)
 
   const daysAgoStr = (iso: string) => {
     const d1 = new Date(iso + 'T00:00:00')
@@ -87,40 +126,41 @@ export default function TodayPage() {
   const loadData = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/auth/login'); return }
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+
     setUserId(user.id)
 
-    let w = await getTodayWorkout(user.id, currentDate)
+    const w = await getTodayWorkout(user.id, currentDate)
     const metrics = await getDailyMetrics(user.id, currentDate)
     const userProfile = await getUserProfile(user.id).catch(() => null)
 
     setIsLocked(metrics?.workout_locked || false)
     setProfile(userProfile)
-
     setWorkout(w)
+
     if (w) {
       setWorkoutName(w.name || '')
-      const exs = await getExercisesForWorkout(w.id)
-      setExercises(exs)
+      setExercises(await getExercisesForWorkout(w.id))
     } else {
       setWorkoutName('')
       setExercises([])
     }
-    const names = await getExerciseNames(user.id)
-    setSuggestions(names)
 
-    const [history, recentWithExercises] = await Promise.all([
+    setSuggestions(await getExerciseNames(user.id))
+
+    const [history, recentWithExercises, userTemplates] = await Promise.all([
       getWorkoutHistory(user.id, 15),
       getRecentWorkoutsWithExercises(user.id, 28),
+      getTemplates(user.id),
     ])
+
     setHistoryWorkouts(history)
     setRecentWorkouts(recentWithExercises)
-    const last = history.find(h => h.date !== currentDate)
-    setLastWorkout(last || null)
-
-    const userTemplates = await getTemplates(user.id)
+    setLastWorkout(history.find(item => item.date !== currentDate) || null)
     setTemplates(userTemplates)
-
     setLoading(false)
   }, [currentDate, router])
 
@@ -135,41 +175,66 @@ export default function TodayPage() {
       }
     }
 
-    window.addEventListener('visibilitychange', () => {
+    const handleVisibility = () => {
       if (document.visibilityState === 'visible') checkDate()
-    })
+    }
+
+    window.addEventListener('visibilitychange', handleVisibility)
     window.addEventListener('focus', checkDate)
     const interval = setInterval(checkDate, 60000)
 
     return () => {
-      window.removeEventListener('visibilitychange', checkDate)
+      window.removeEventListener('visibilitychange', handleVisibility)
       window.removeEventListener('focus', checkDate)
       clearInterval(interval)
     }
   }, [currentDate])
 
-  async function startWorkout() {
+  useEffect(() => {
+    if (!workout?.started_at || workout.finished_at) return
+    const interval = setInterval(() => setTimerTick(value => value + 1), 15000)
+    return () => clearInterval(interval)
+  }, [workout?.started_at, workout?.finished_at])
+
+  async function startWorkout(openComposer = false) {
     if (!userId) return
     const w = await createWorkout(userId, currentDate)
     setWorkout(w)
     setExercises([])
+    setWorkoutName(w.name || '')
+    if (openComposer) setShowAddExercise(true)
   }
 
   async function saveName() {
     if (!workout) return
     await updateWorkoutName(workout.id, workoutName)
-    setWorkout(w => w ? { ...w, name: workoutName } : w)
+    setWorkout(prev => prev ? { ...prev, name: workoutName } : prev)
     setEditingName(false)
+  }
+
+  async function handleStartTimer() {
+    if (!workout || workout.started_at) return
+    const startedAt = await startWorkoutTimer(workout.id)
+    setWorkout(prev => prev ? { ...prev, started_at: startedAt } : prev)
+  }
+
+  async function handleResetTimer() {
+    if (!workout || !workout.started_at || workout.finished_at) return
+    const startedAt = await resetWorkoutTimer(workout.id)
+    setWorkout(prev => prev ? { ...prev, started_at: startedAt } : prev)
+    setTimerTick(value => value + 1)
   }
 
   async function handleDuplicate() {
     if (!lastWorkout || !userId) return
     setDuplicating(true)
+    setShowQuickActions(false)
+
     try {
       const w = await duplicateWorkout(lastWorkout.id, userId, currentDate)
       setWorkout(w)
-      const exs = await getExercisesForWorkout(w.id)
-      setExercises(exs)
+      setWorkoutName(w.name || '')
+      setExercises(await getExercisesForWorkout(w.id))
     } finally {
       setDuplicating(false)
     }
@@ -184,28 +249,35 @@ export default function TodayPage() {
   async function handleFinishWorkout(durationMinutes?: number) {
     if (!workout) return
     await finishWorkout(workout.id, durationMinutes)
+    setWorkout(prev => prev ? { ...prev, finished_at: new Date().toISOString() } : prev)
     setShowSummary(false)
+    setShowQuickActions(false)
     setIsLocked(true)
   }
 
   async function handleDeleteWorkout() {
     if (!workout) return
-    if (!confirm('¿Estás seguro de que quieres borrar el entreno de hoy? Esta acción no se puede deshacer.')) return
+    if (!confirm('Estas seguro de que quieres borrar el entreno de hoy? Esta accion no se puede deshacer.')) return
 
     await deleteWorkout(workout.id)
     setWorkout(null)
     setExercises([])
+    setWorkoutName('')
     setIsLocked(false)
+    setShowQuickActions(false)
   }
 
   async function handleApplyTemplate(template: WorkoutTemplate) {
     let targetWorkout = workout
     setApplyingTemplate(true)
     setShowTemplatePicker(false)
+    setShowQuickActions(false)
+
     try {
       if (!targetWorkout && userId) {
         targetWorkout = await createWorkout(userId, currentDate)
         setWorkout(targetWorkout)
+        setWorkoutName(targetWorkout.name || '')
       }
       if (!targetWorkout) return
 
@@ -218,13 +290,15 @@ export default function TodayPage() {
 
   async function handleSaveTemplate(name: string, filteredExercises?: Exercise[]) {
     if (!userId) return
-    if (templates.length >= 6) throw new Error('Has alcanzado el límite de 6 plantillas')
+    if (templates.length >= 6) throw new Error('Has alcanzado el limite de 6 plantillas')
+
     const exsToSave = filteredExercises ?? exercises
     const newTemplate = await saveTemplate(
       userId,
       name,
       exsToSave.map(ex => ({ name: ex.name, muscle_group: ex.muscle_group }))
     )
+
     setTemplates(prev => [{ ...newTemplate, exercises: [] }, ...prev])
   }
 
@@ -233,7 +307,7 @@ export default function TodayPage() {
   }
 
   function handleExerciseDeleted(id: string) {
-    setExercises(prev => prev.filter(e => e.id !== id))
+    setExercises(prev => prev.filter(ex => ex.id !== id))
   }
 
   function handleSetAdded(exerciseId: string, set: Set) {
@@ -244,7 +318,7 @@ export default function TodayPage() {
 
   function handleSetDeleted(exerciseId: string, setId: string) {
     setExercises(prev => prev.map(ex =>
-      ex.id === exerciseId ? { ...ex, sets: (ex.sets || []).filter(s => s.id !== setId) } : ex
+      ex.id === exerciseId ? { ...ex, sets: (ex.sets || []).filter(set => set.id !== setId) } : ex
     ))
   }
 
@@ -260,7 +334,7 @@ export default function TodayPage() {
     setProfileInput({
       weight: profile?.weight?.toString() || '',
       height: profile?.height?.toString() || '',
-      age: profile?.age?.toString() || ''
+      age: profile?.age?.toString() || '',
     })
     setEditingProfile(true)
   }
@@ -270,22 +344,28 @@ export default function TodayPage() {
     const updates = {
       weight: parseFloat(profileInput.weight) || null,
       height: parseInt(profileInput.height) || null,
-      age: parseInt(profileInput.age) || null
+      age: parseInt(profileInput.age) || null,
     }
-    const up = await upsertUserProfile(userId, updates).catch(() => null)
-    if (up) setProfile(up)
+
+    const updated = await upsertUserProfile(userId, updates).catch(() => null)
+    if (updated) setProfile(updated)
     setEditingProfile(false)
   }
 
   async function toggleExpandHistory(workoutId: string) {
-    if (expandedHistory === workoutId) { setExpandedHistory(null); return }
-    const hw = historyWorkouts.find(item => item.id === workoutId)
-    if (!hw?.exercises) {
+    if (expandedHistory === workoutId) {
+      setExpandedHistory(null)
+      return
+    }
+
+    const historyWorkout = historyWorkouts.find(item => item.id === workoutId)
+    if (!historyWorkout?.exercises) {
       setLoadingHistoryDetail(workoutId)
       const exs = await getExercisesForWorkout(workoutId)
       setHistoryWorkouts(prev => prev.map(item => item.id === workoutId ? { ...item, exercises: exs } : item))
       setLoadingHistoryDetail(null)
     }
+
     setExpandedHistory(workoutId)
   }
 
@@ -293,9 +373,16 @@ export default function TodayPage() {
 
   const sparklineWorkouts = useMemo(() => {
     if (!workout) return recentWorkouts
-    const currentWorkout = { ...workout, exercises }
-    return [currentWorkout, ...recentWorkouts.filter(item => item.id !== workout.id)]
+    return [{ ...workout, exercises }, ...recentWorkouts.filter(item => item.id !== workout.id)]
   }, [workout, exercises, recentWorkouts])
+
+  const totalSets = useMemo(
+    () => exercises.reduce((sum, exercise) => sum + (exercise.sets?.length || 0), 0),
+    [exercises]
+  )
+
+  const trainingLoad = useMemo(() => getWorkoutLoadValue(exercises), [exercises])
+  const historyCount = historyWorkouts.filter(item => item.date !== currentDate).length
 
   if (loading) {
     return (
@@ -309,7 +396,7 @@ export default function TodayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-0 pb-32">
+    <div className="min-h-screen bg-surface-0 pb-36">
       <PageHeader innerClassName="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -329,14 +416,13 @@ export default function TodayPage() {
 
       <main
         className={clsx(
-          "max-w-lg mx-auto px-4 pt-4 space-y-4 relative",
-          isLocked && "select-none [-webkit-touch-callout:none]"
+          'max-w-lg mx-auto px-4 pt-3 space-y-4 relative',
+          isLocked && 'select-none [-webkit-touch-callout:none]'
         )}
         {...longPress}
       >
-
         {isLocked && workout && (
-          <div className="absolute inset-0 z-20 bg-surface-0/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 m-2 rounded-2xl">
+          <div className="absolute inset-0 z-30 bg-surface-0/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 m-2 rounded-3xl">
             <div className="w-16 h-16 rounded-full bg-brand-500/20 flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-brand" />
             </div>
@@ -345,126 +431,267 @@ export default function TodayPage() {
           </div>
         )}
 
-        {/* User Profile Bar */}
-        <div className="bg-surface-1 border border-surface-border rounded-xl p-3 flex items-center justify-between shadow-sm animate-fade-in relative z-10 w-full">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-brand-500/10 flex items-center justify-center">
-              <User className="w-4 h-4 text-brand-500" />
-            </div>
-            {editingProfile ? (
-              <div className="flex items-center gap-1 sm:gap-2">
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder={t('profile.weight_placeholder')}
-                  value={profileInput.weight}
-                  onChange={e => setProfileInput(s => ({ ...s, weight: e.target.value }))}
-                  className="w-14 sm:w-16 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
-                />
-                <input
-                  type="number"
-                  placeholder={t('profile.height_placeholder')}
-                  value={profileInput.height}
-                  onChange={e => setProfileInput(s => ({ ...s, height: e.target.value }))}
-                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
-                />
-                <input
-                  type="number"
-                  placeholder={t('profile.age_placeholder')}
-                  value={profileInput.age}
-                  onChange={e => setProfileInput(s => ({ ...s, age: e.target.value }))}
-                  className="w-12 sm:w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main touch-manipulation focus:border-brand/40"
-                />
-                <button onClick={saveProfile} className="text-brand-400 p-1.5 hover:bg-brand-500/10 rounded-md">
-                  <Check className="w-4 h-4" />
+        <div className="rounded-2xl border border-surface-border bg-surface-1/90 p-3 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-brand-500/12 flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-brand-500" />
+              </div>
+              {editingProfile ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder={t('profile.weight_placeholder')}
+                    value={profileInput.weight}
+                    onChange={e => setProfileInput(s => ({ ...s, weight: e.target.value }))}
+                    className="w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main"
+                  />
+                  <input
+                    type="number"
+                    placeholder={t('profile.height_placeholder')}
+                    value={profileInput.height}
+                    onChange={e => setProfileInput(s => ({ ...s, height: e.target.value }))}
+                    className="w-14 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main"
+                  />
+                  <input
+                    type="number"
+                    placeholder={t('profile.age_placeholder')}
+                    value={profileInput.age}
+                    onChange={e => setProfileInput(s => ({ ...s, age: e.target.value }))}
+                    className="w-12 bg-surface-2 border border-surface-border rounded-md px-2 py-1.5 text-xs text-main"
+                  />
+                  <button onClick={saveProfile} className="text-brand-400 p-1.5 hover:bg-brand-500/10 rounded-md">
+                    <Check className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={startEditingProfile}
+                  className="text-left min-w-0"
+                >
+                  <p className="text-sm font-semibold text-main truncate">
+                    {profile?.weight ? `${profile.weight}kg` : '--kg'} · {profile?.height ? `${profile.height}cm` : '--cm'}
+                  </p>
+                  <p className="text-[11px] text-muted">
+                    {profile?.age ? t('profile.years', { count: profile.age }) : t('profile.add_age')}
+                  </p>
                 </button>
-              </div>
-            ) : (
-              <div onClick={startEditingProfile} className="flex flex-col cursor-pointer touch-manipulation group">
-                <span className="text-xs font-bold text-main group-hover:text-brand transition-colors">
-                  {profile?.weight ? `${profile.weight}kg` : `--kg`} • {profile?.height ? `${profile.height}cm` : `--cm`}
-                </span>
-                <span className="text-[10px] text-muted font-bold tracking-tight">
-                  {profile?.age ? t('profile.years', { count: profile.age }) : t('profile.add_age')}
-                </span>
-              </div>
+              )}
+            </div>
+
+            {!editingProfile && !isLocked && (
+              <button onClick={startEditingProfile} className="text-muted hover:text-main p-2 rounded-lg hover:bg-surface-2 transition-colors">
+                <Pencil className="w-4 h-4" />
+              </button>
             )}
           </div>
-          {!editingProfile && !isLocked && (
-            <button onClick={startEditingProfile} className="text-muted hover:text-main p-1.5 rounded-md hover:bg-surface-2 transition-colors touch-manipulation">
-              <Pencil className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
 
         {!workout ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-            <div className="w-20 h-20 rounded-2xl bg-surface-2 flex items-center justify-center mb-5 border border-surface-border shadow-inner">
-              <Dumbbell className="w-10 h-10 text-muted" />
-            </div>
-            <h2 className="font-bold text-2xl mb-2 text-main">{t('today_page.empty_title')}</h2>
-            <p className="text-muted text-sm mb-6 max-w-xs font-medium">{t('today_page.empty_desc')}</p>
-            <div className="flex flex-col gap-3 w-full max-w-xs">
-              <button onClick={startWorkout} className="btn-primary flex items-center justify-center gap-2">
-                <Plus className="w-4 h-4" /> {t('today_page.start_workout')}
-              </button>
+          <section className="space-y-4 animate-fade-in">
+            <div className="rounded-[28px] border border-surface-border bg-gradient-to-br from-surface-1 via-surface-1 to-surface-2/80 p-5 shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-brand-500/12 flex items-center justify-center mb-4">
+                <Dumbbell className="w-7 h-7 text-brand-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-main">{t('today_page.empty_title')}</h2>
+              <p className="mt-2 text-sm text-muted max-w-sm">{t('today_page.empty_desc')}</p>
               <button
-                onClick={() => setShowTemplatePicker(true)}
-                disabled={templates.length === 0}
-                className="btn-ghost flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+                onClick={() => startWorkout(true)}
+                className="btn-primary w-full mt-5 flex items-center justify-center gap-2"
               >
-                <LayoutTemplate className="w-4 h-4" />
-                Usar plantilla
+                <Plus className="w-4 h-4" />
+                {t('today_page.start_workout')}
               </button>
-              {lastWorkout && (
-                <button onClick={handleDuplicate} disabled={duplicating}
-                  className="btn-ghost flex items-center justify-center gap-2 text-sm">
-                  <Copy className="w-4 h-4" />
-                  {duplicating ? t('today_page.duplicating') : t('today_page.copy_last', { date: formatDate(lastWorkout.date) })}
-                </button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="relative z-10 flex items-center gap-2">
-              {editingName ? (
-                <>
-                  <input
-                    autoFocus
-                    type="text"
-                    value={workoutName}
-                    onChange={e => setWorkoutName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && saveName()}
-                    placeholder={t('today_page.workout_placeholder')}
-                    className="input-field flex-1 text-sm"
-                  />
-                  <button onClick={saveName} className="btn-primary px-3 py-2"><Check className="w-4 h-4" /></button>
-                </>
-              ) : (
-                <button onClick={() => setEditingName(true)}
-                  className="flex items-center gap-2 text-muted hover:text-main text-sm transition-colors group py-1">
-                  <span className="font-bold tracking-tight">{workout.name || t('today_page.workout_no_name')}</span>
-                  <Pencil className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              )}
             </div>
 
-            {exercises.length > 0 && (
-              <div className="relative z-10 animate-fade-in">
-                <TrainingSummaryCard workout={workout} exercises={exercises} showContinue={false} />
+            <div className="rounded-3xl border border-surface-border bg-surface-1 p-2 shadow-sm">
+              <button
+                onClick={() => setShowTemplatePicker(true)}
+                disabled={templates.length === 0 || applyingTemplate}
+                className="w-full flex items-center justify-between rounded-2xl px-4 py-3 text-left hover:bg-surface-2 transition-colors disabled:opacity-40"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center">
+                    <LayoutTemplate className="w-4 h-4 text-brand-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-main">Usar plantilla</p>
+                    <p className="text-[11px] text-muted">{templates.length > 0 ? `${templates.length} disponibles` : 'Aun no tienes plantillas'}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted" />
+              </button>
+
+              {lastWorkout && (
+                <button
+                  onClick={handleDuplicate}
+                  disabled={duplicating}
+                  className="w-full flex items-center justify-between rounded-2xl px-4 py-3 text-left hover:bg-surface-2 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center">
+                      <Copy className="w-4 h-4 text-brand-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-main">{duplicating ? t('today_page.duplicating') : 'Repetir ultimo entreno'}</p>
+                      <p className="text-[11px] text-muted capitalize">{formatDate(lastWorkout.date)}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted" />
+                </button>
+              )}
+            </div>
+          </section>
+        ) : (
+          <>
+            <section className="sticky top-2 z-20 rounded-[28px] border border-surface-border bg-surface-1/95 shadow-sm backdrop-blur-sm">
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    {editingName ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          autoFocus
+                          type="text"
+                          value={workoutName}
+                          onChange={e => setWorkoutName(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && saveName()}
+                          placeholder={t('today_page.workout_placeholder')}
+                          className="input-field flex-1 text-sm"
+                        />
+                        <button onClick={saveName} className="btn-primary px-3 py-2">
+                          <Check className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setEditingName(true)}
+                        className="flex items-center gap-2 text-left group"
+                      >
+                        <div>
+                          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted">Sesion activa</p>
+                          <p className="mt-1 text-base font-semibold text-main truncate">
+                            {workout.name || t('today_page.workout_no_name')}
+                          </p>
+                        </div>
+                        <Pencil className="w-3.5 h-3.5 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    )}
+                  </div>
+
+                  {workout.finished_at ? (
+                    <button
+                      onClick={handleDeleteWorkout}
+                      className="p-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors"
+                      title="Borrar entreno"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowSummary(true)}
+                      disabled={exercises.length === 0}
+                      className="shrink-0 rounded-2xl bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition-opacity disabled:opacity-40"
+                    >
+                      {t('today_page.finish_workout')}
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                  <div className="rounded-2xl border border-surface-border bg-surface-2/80 px-3 py-3">
+                    <div className="flex items-center justify-between gap-2 text-muted text-[11px] font-semibold uppercase tracking-[0.14em]">
+                      <div className="flex items-center gap-2">
+                        Tiempo
+                      </div>
+                      {workout.started_at && !workout.finished_at && (
+                        <button
+                          onClick={handleResetTimer}
+                          className="p-1.5 rounded-lg text-muted hover:text-main hover:bg-surface-1 transition-colors"
+                          title="Reiniciar cronometro"
+                          aria-label="Reiniciar cronometro"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    {workout.started_at ? (
+                      <>
+                        <p className="mt-2 text-base font-bold text-main">{formatElapsed(workout.started_at, workout.finished_at)}</p>
+                        <p className="text-[11px] text-muted mt-0.5">
+                          {workout.finished_at ? 'Cronometro finalizado' : 'Cronometro en marcha'}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={handleStartTimer}
+                          className="mt-2 w-full rounded-xl bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground"
+                        >
+                          Empezar entreno
+                        </button>
+                        <p className="text-[11px] text-muted mt-1.5">El tiempo empezara a contar desde este momento.</p>
+                      </>
+                    )}
+                  </div>
+                  <div className="rounded-2xl border border-surface-border bg-surface-2/80 px-3 py-3">
+                    <div className="flex items-center gap-2 text-muted text-[11px] font-semibold uppercase tracking-[0.14em]">
+                      Ejercicios
+                    </div>
+                    <p className="mt-2 text-base font-bold text-main">{exercises.length}</p>
+                    <p className="text-[11px] text-muted mt-0.5">{totalSets} series</p>
+                  </div>
+                  <div className="rounded-2xl border border-surface-border bg-surface-2/80 px-3 py-3">
+                    <div className="flex items-center gap-2 text-muted text-[11px] font-semibold uppercase tracking-[0.14em]">
+                      Carga
+                    </div>
+                    <p className="mt-2 text-base font-bold text-main">{trainingLoad}</p>
+                    <p className="text-[11px] text-muted mt-0.5">{workout.finished_at ? 'Sesion cerrada' : 'En progreso'}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {workout.finished_at && (
+              <div className="relative z-10 flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 rounded-2xl px-4 py-3 text-brand-400 text-sm font-medium">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <span>Entreno completado</span>
+                <span className="ml-auto text-xs text-muted font-normal">
+                  {formatElapsed(workout.started_at, workout.finished_at)}
+                </span>
               </div>
             )}
 
-            <div className="relative z-10">
-              <WeeklySparkline workouts={sparklineWorkouts} currentDate={currentDate} />
-            </div>
+            {!workout.finished_at && exercises.length === 0 && (
+              <div className="rounded-[28px] border border-dashed border-surface-border bg-surface-1/80 p-5 text-center">
+                <p className="text-lg font-semibold text-main">Empieza anadiendo tu primer ejercicio</p>
+                <p className="text-sm text-muted mt-2">Toca el boton flotante para crear un ejercicio o cargar una plantilla.</p>
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => setShowAddExercise(true)}
+                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Crear ejercicio
+                  </button>
+                  <button
+                    onClick={() => setShowTemplatePicker(true)}
+                    disabled={templates.length === 0 || applyingTemplate}
+                    className="flex-1 rounded-2xl border border-surface-border bg-surface-2 px-4 py-3 text-sm font-semibold text-main disabled:opacity-40"
+                  >
+                    Usar plantilla
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="relative z-10 space-y-3">
-              {exercises.map(ex => (
+              {exercises.map(exercise => (
                 <ExerciseCard
-                  key={ex.id}
-                  exercise={ex}
+                  key={exercise.id}
+                  exercise={exercise}
+                  userId={userId}
                   onDelete={handleExerciseDeleted}
                   onSetAdded={handleSetAdded}
                   onSetDeleted={handleSetDeleted}
@@ -472,80 +699,34 @@ export default function TodayPage() {
               ))}
             </div>
 
-            {workout.finished_at && (
-              <div className="relative z-10 flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 rounded-2xl px-4 py-3 text-brand-400 text-sm font-medium">
-                <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                <span>Entreno completado</span>
-                {workout.started_at && (
-                  <span className="ml-auto text-xs text-zinc-500 font-normal">
-                    {(() => {
-                      const ms = new Date(workout.finished_at!).getTime() - new Date(workout.started_at).getTime()
-                      const mins = Math.floor(ms / 60000)
-                      const h = Math.floor(mins / 60)
-                      return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
-                    })()}
-                  </span>
-                )}
-                <button
-                  onClick={handleDeleteWorkout}
-                  className="ml-3 p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                  title="Borrar entreno"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+            {exercises.length > 0 && (
+              <MuscleInsightsPanel
+                exercises={exercises}
+                workouts={sparklineWorkouts}
+                currentDate={currentDate}
+              />
             )}
-
-            {exercises.length > 0 && !workout.finished_at && (
-              <button
-                onClick={() => setShowSummary(true)}
-                className="relative z-10 w-full bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 hover:border-brand-500/50 text-brand-400 font-semibold rounded-2xl py-3 flex items-center justify-center gap-2 transition-all duration-150 touch-manipulation"
-              >
-                <CheckCircle className="w-4 h-4" />
-                {t('today_page.finish_workout')}
-              </button>
-            )}
-
-            <div className="relative z-10 flex flex-col gap-2">
-              {!workout.finished_at && (
-                <button
-                  onClick={() => setShowTemplatePicker(true)}
-                  className="w-full py-3 flex items-center justify-center gap-2 text-sm text-zinc-500 hover:text-brand-400 border border-dashed border-surface-border hover:border-brand-500/30 rounded-2xl transition-all touch-manipulation"
-                >
-                  <LayoutTemplate className="w-4 h-4" />
-                  {templates.length === 0 ? t('today_page.create_template') : t('today_page.use_template')}
-                </button>
-              )}
-
-              <button onClick={() => setShowAddExercise(true)}
-                className="w-full border-2 border-dashed border-surface-border hover:border-brand/40 hover:bg-brand/5 rounded-2xl py-5 flex items-center justify-center gap-2 text-muted hover:text-brand transition-all duration-200 touch-manipulation group">
-                <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="font-bold uppercase tracking-widest text-xs">{t('today_page.add_exercise')}</span>
-              </button>
-            </div>
-
           </>
         )}
 
-        {/* ── History Section ── */}
-        {historyWorkouts.filter(w => w.date !== currentDate).length > 0 && (
-          <div className="pt-6 space-y-3">
+        {historyCount > 0 && (
+          <div className="pt-2 space-y-3">
             <button
-              onClick={() => setShowHistoryList(!showHistoryList)}
+              onClick={() => setShowHistoryList(prev => !prev)}
               className="flex items-center justify-between w-full p-2 -ml-2 rounded-xl hover:bg-surface-2 transition-colors group touch-manipulation"
             >
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted pl-1 group-hover:text-main transition-colors">
-                {t('history.title')}
+                Historial
               </h3>
-              <ChevronRight className={clsx("w-4 h-4 text-muted transition-transform", showHistoryList && "rotate-90")} />
+              <ChevronRight className={clsx('w-4 h-4 text-muted transition-transform', showHistoryList && 'rotate-90')} />
             </button>
 
             {showHistoryList && (
               <div className="space-y-2 animate-slide-up">
-                {historyWorkouts.filter(w => w.date !== currentDate).map(hw => (
-                  <div key={hw.id} className="card overflow-hidden">
+                {historyWorkouts.filter(item => item.date !== currentDate).map(historyWorkout => (
+                  <div key={historyWorkout.id} className="card overflow-hidden">
                     <button
-                      onClick={() => toggleExpandHistory(hw.id)}
+                      onClick={() => toggleExpandHistory(historyWorkout.id)}
                       className="w-full flex items-center gap-3 p-4 text-left touch-manipulation"
                     >
                       <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center flex-shrink-0">
@@ -553,21 +734,14 @@ export default function TodayPage() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold capitalize text-sm">{formatDate(hw.date)}</div>
+                        <div className="font-semibold capitalize text-sm">{formatDate(historyWorkout.date)}</div>
                         <div className="text-muted text-[11px] flex items-center gap-2 flex-wrap mt-0.5">
-                          <span>{daysAgoStr(hw.date)}</span>
-                          {hw.name && <><span>·</span><span className="truncate">{hw.name}</span></>}
-                          {hw.started_at && hw.finished_at && (
+                          <span>{daysAgoStr(historyWorkout.date)}</span>
+                          {historyWorkout.name && <><span>·</span><span className="truncate">{historyWorkout.name}</span></>}
+                          {historyWorkout.started_at && historyWorkout.finished_at && (
                             <>
                               <span>·</span>
-                              <span className="font-mono">
-                                {(() => {
-                                  const ms = new Date(hw.finished_at).getTime() - new Date(hw.started_at).getTime()
-                                  const mins = Math.floor(ms / 60000)
-                                  const h = Math.floor(mins / 60)
-                                  return h > 0 ? `${h}h ${mins % 60}min` : `${mins} min`
-                                })()}
-                              </span>
+                              <span className="font-mono">{formatElapsed(historyWorkout.started_at, historyWorkout.finished_at)}</span>
                             </>
                           )}
                         </div>
@@ -576,20 +750,20 @@ export default function TodayPage() {
                       <ChevronRight
                         className={clsx(
                           'w-4 h-4 text-muted transition-transform flex-shrink-0',
-                          expandedHistory === hw.id && 'rotate-90'
+                          expandedHistory === historyWorkout.id && 'rotate-90'
                         )}
                       />
                     </button>
 
-                    {expandedHistory === hw.id && (
+                    {expandedHistory === historyWorkout.id && (
                       <div className="border-t border-surface-border animate-slide-up">
-                        {loadingHistoryDetail === hw.id ? (
+                        {loadingHistoryDetail === historyWorkout.id ? (
                           <div className="p-4 flex justify-center">
                             <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                           </div>
                         ) : (
                           <div className="p-4 space-y-3">
-                            {(hw.exercises || []).map(exercise => (
+                            {(historyWorkout.exercises || []).map(exercise => (
                               <div key={exercise.id}>
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="font-medium text-sm text-main">{exercise.name}</span>
@@ -603,7 +777,7 @@ export default function TodayPage() {
                                     {(exercise.sets || []).map((set, index) => (
                                       <div key={set.id} className="flex items-center gap-3 text-xs text-muted font-mono">
                                         <span className="text-muted/70">#{index + 1}</span>
-                                        <span className="text-main">{set.weight}kg × {set.reps}</span>
+                                        <span className="text-main">{set.weight}kg x {set.reps}</span>
                                         {set.rir != null && <span>@{set.rir} RIR</span>}
                                       </div>
                                     ))}
@@ -629,7 +803,6 @@ export default function TodayPage() {
             )}
           </div>
         )}
-
       </main>
 
       {showAddExercise && workout && (
@@ -656,9 +829,37 @@ export default function TodayPage() {
         <TemplatePickerModal
           templates={templates}
           onSelect={handleApplyTemplate}
-          onDeleted={id => setTemplates(prev => prev.filter(t => t.id !== id))}
+          onDeleted={id => setTemplates(prev => prev.filter(template => template.id !== id))}
           onClose={() => setShowTemplatePicker(false)}
         />
+      )}
+
+      {workout && !workout.finished_at && !isLocked && (
+        <>
+          <button
+            onClick={() => setShowQuickActions(true)}
+            className="fixed right-5 bottom-28 z-40 h-14 w-14 rounded-full bg-brand text-brand-foreground shadow-[0_18px_40px_rgba(0,0,0,0.28)] flex items-center justify-center transition-transform hover:scale-[1.03]"
+            aria-label="Abrir acciones rapidas"
+          >
+            <Plus className="w-6 h-6" />
+          </button>
+          <WorkoutQuickActionsSheet
+            open={showQuickActions}
+            onClose={() => setShowQuickActions(false)}
+            onAddExercise={() => {
+              setShowQuickActions(false)
+              setShowAddExercise(true)
+            }}
+            onUseTemplate={() => {
+              setShowQuickActions(false)
+              setShowTemplatePicker(true)
+            }}
+            onDuplicate={lastWorkout ? handleDuplicate : undefined}
+            duplicateLabel={lastWorkout ? `Repetir ${formatDate(lastWorkout.date)}` : undefined}
+            duplicating={duplicating}
+            templatesCount={templates.length}
+          />
+        </>
       )}
 
       <BottomNav />
