@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Cloud, Sun, CloudRain, CloudSnow, Wind, Loader2, MapPin, RotateCcw } from 'lucide-react'
 import type { WeatherData } from '@/types'
 import { useI18n } from '@/contexts/I18nContext'
