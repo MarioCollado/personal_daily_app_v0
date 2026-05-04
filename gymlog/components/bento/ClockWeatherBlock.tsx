@@ -104,33 +104,33 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
     <div className="bento-card flex flex-col justify-between h-full">
       <div>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-mono font-bold tracking-tight leading-none text-main">
+          <span className="text-3xl lg:text-4xl font-mono font-bold tracking-tight leading-none text-main">
             {hours}
             <span className="text-muted/40 mx-0.5">:</span>
             {mins}
           </span>
-          <span className="text-xs font-mono text-muted/60 ml-0.5">{secs}</span>
+          <span className="text-xs lg:text-sm font-mono text-muted/60 ml-0.5">{secs}</span>
         </div>
         <div className="flex items-center gap-1 mt-1 text-muted">
-          <span className="text-[11px] font-medium capitalize">{dayName},</span>
-          <span className="text-[11px] font-medium">{dateStr}</span>
+          <span className="text-[11px] lg:text-xs font-medium capitalize">{dayName},</span>
+          <span className="text-[11px] lg:text-xs font-medium">{dateStr}</span>
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 lg:mt-4">
         {loadingWeather ? (
           <div className="flex items-center gap-2 py-1">
-            <Loader2 className="w-4 h-4 text-muted animate-spin" />
-            <span className="text-[10px] text-muted font-medium animate-pulse">{t('dashboard.weather.updating')}</span>
+            <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 text-muted animate-spin" />
+            <span className="text-[10px] lg:text-xs text-muted font-medium animate-pulse">{t('dashboard.weather.updating')}</span>
           </div>
         ) : weather ? (
-          <div className="flex items-center gap-2">
-            {WeatherIcon}
+          <div className="flex items-center gap-2 lg:gap-3">
+            {React.cloneElement(WeatherIcon as React.ReactElement, { className: 'w-5 h-5 lg:w-6 lg:h-6' })}
             <div>
-              <span className="text-xl font-mono font-bold text-main">{weather.temp}°</span>
+              <span className="text-xl lg:text-2xl font-mono font-bold text-main">{weather.temp}°</span>
               <div className="flex items-center gap-1">
-                <MapPin className="w-2.5 h-2.5 text-muted" />
-                <span className="text-[10px] text-muted font-medium uppercase tracking-titer transform scale-90 origin-left">
+                <MapPin className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-muted" />
+                <span className="text-[10px] lg:text-xs text-muted font-medium uppercase tracking-titer transform scale-90 origin-left">
                   {weather.city} · {t(`dashboard.weather.conditions.${conditionKey}`) || weather.condition}
                 </span>
                 <button 
@@ -138,7 +138,7 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
                   className="ml-1 text-muted hover:text-main transition-colors p-0.5"
                   title={t('dashboard.weather.refresh')}
                 >
-                  <RotateCcw className="w-2 h-2" />
+                  <RotateCcw className="w-2 h-2 lg:w-2.5 lg:h-2.5" />
                 </button>
               </div>
             </div>
@@ -146,10 +146,10 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
         ) : (
           <button 
             onClick={handleRequestLocation}
-            className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-surface-2 hover:bg-surface-3 text-muted hover:text-main transition-all group border border-surface-border active:scale-95"
+            className="flex items-center gap-2 py-1.5 lg:py-2 px-3 lg:px-4 rounded-lg bg-surface-2 hover:bg-surface-3 text-muted hover:text-main transition-all group border border-surface-border active:scale-95"
           >
-            <MapPin className="w-3.5 h-3.5 text-violet-400 group-hover:animate-bounce" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">{t('dashboard.weather.get_weather')}</span>
+            <MapPin className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-violet-400 group-hover:animate-bounce" />
+            <span className="text-[10px] lg:text-xs font-bold uppercase tracking-wider">{t('dashboard.weather.get_weather')}</span>
           </button>
         )}
       </div>

@@ -53,30 +53,30 @@ export default function ArtsBlock({ summary, isLocked, onToggleLock }: Props) {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 lg:mb-4">
         <div className="flex items-center gap-1.5">
-          <Palette className="w-3.5 h-3.5 text-violet-400" />
-          <span className="text-[11px] font-bold text-muted uppercase tracking-widest">
+          <Palette className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-violet-400" />
+          <span className="text-[11px] lg:text-xs font-bold text-muted uppercase tracking-widest">
             {t('dashboard.arts_block.title')}
           </span>
         </div>
         {hasSessions && (
-          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse-dot" />
+          <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-violet-500 animate-pulse-dot" />
         )}
       </div>
 
       {!hasSessions ? (
         /* ── Empty state ── */
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 py-2">
-          <div className="text-3xl opacity-40">🎨</div>
-          <p className="text-[11px] text-muted text-center leading-relaxed px-1">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 py-2 lg:py-4">
+          <div className="text-3xl lg:text-4xl opacity-40">🎨</div>
+          <p className="text-[11px] lg:text-xs text-muted text-center leading-relaxed px-1">
             {t('dashboard.arts_block.no_session')}
           </p>
           <Link
             href="/arts"
-            className="flex items-center gap-1.5 text-xs font-semibold text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/25 px-3 py-1.5 rounded-xl transition-all duration-200 group"
+            className="flex items-center gap-1.5 text-xs lg:text-sm font-semibold text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/25 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl transition-all duration-200 group"
           >
-            <Plus className="w-3 h-3 group-hover:rotate-90 transition-transform duration-300" />
+            <Plus className="w-3 h-3 lg:w-3.5 lg:h-3.5 group-hover:rotate-90 transition-transform duration-300" />
             {t('dashboard.arts_block.start')}
           </Link>
         </div>
@@ -84,32 +84,32 @@ export default function ArtsBlock({ summary, isLocked, onToggleLock }: Props) {
         <>
           {/* Featured item */}
           {summary?.featuredItem && (
-            <div className="flex items-center gap-2 mb-3 bg-surface-2/60 rounded-xl px-2.5 py-2 border border-surface-border/40">
-              <span className="text-base flex-shrink-0 leading-none">
+            <div className="flex items-center gap-2 mb-3 lg:mb-4 bg-surface-2/60 rounded-xl px-2.5 lg:px-3 py-2 lg:py-2.5 border border-surface-border/40">
+              <span className="text-base lg:text-lg flex-shrink-0 leading-none">
                 {DISC_EMOJI[summary.featuredItem.discipline] ?? '🌀'}
               </span>
-              <span className="text-xs font-bold text-main truncate flex-1">
+              <span className="text-xs lg:text-sm font-bold text-main truncate flex-1">
                 {summary.featuredItem.title}
               </span>
             </div>
           )}
 
           {/* Stat tiles */}
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-2 mb-3 lg:mb-4">
             {obsMin > 0 && (
-              <div className="flex-1 rounded-xl p-2 text-center bg-sky-500/8 border border-sky-500/20">
-                <Eye className="w-3 h-3 text-sky-400 mx-auto mb-1" />
-                <div className="text-base font-mono font-bold text-sky-400 leading-none">{fmt(obsMin)}</div>
-                <div className="text-[9px] text-sky-400/60 font-bold uppercase tracking-tighter mt-0.5">
+              <div className="flex-1 rounded-xl p-2 lg:p-3 text-center bg-sky-500/8 border border-sky-500/20">
+                <Eye className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-sky-400 mx-auto mb-1" />
+                <div className="text-base lg:text-lg font-mono font-bold text-sky-400 leading-none">{fmt(obsMin)}</div>
+                <div className="text-[9px] lg:text-[10px] text-sky-400/60 font-bold uppercase tracking-tighter mt-0.5">
                   {t('dashboard.arts_block.observe')}
                 </div>
               </div>
             )}
             {practMin > 0 && (
-              <div className="flex-1 rounded-xl p-2 text-center bg-violet-500/8 border border-violet-500/20">
-                <Palette className="w-3 h-3 text-violet-400 mx-auto mb-1" />
-                <div className="text-base font-mono font-bold text-violet-400 leading-none">{fmt(practMin)}</div>
-                <div className="text-[9px] text-violet-400/60 font-bold uppercase tracking-tighter mt-0.5">
+              <div className="flex-1 rounded-xl p-2 lg:p-3 text-center bg-violet-500/8 border border-violet-500/20">
+                <Palette className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-violet-400 mx-auto mb-1" />
+                <div className="text-base lg:text-lg font-mono font-bold text-violet-400 leading-none">{fmt(practMin)}</div>
+                <div className="text-[9px] lg:text-[10px] text-violet-400/60 font-bold uppercase tracking-tighter mt-0.5">
                   {t('dashboard.arts_block.practice')}
                 </div>
               </div>
@@ -118,8 +118,8 @@ export default function ArtsBlock({ summary, isLocked, onToggleLock }: Props) {
 
           {/* Dual-axis bar */}
           {hasSynergy && (
-            <div className="mb-3">
-              <div className="h-1.5 rounded-full overflow-hidden flex gap-px bg-surface-3">
+            <div className="mb-3 lg:mb-4">
+              <div className="h-1.5 lg:h-2 rounded-full overflow-hidden flex gap-px bg-surface-3">
                 <div
                   className="h-full bg-sky-500 rounded-full transition-all duration-500"
                   style={{ width: `${obsPct}%` }}
@@ -129,11 +129,11 @@ export default function ArtsBlock({ summary, isLocked, onToggleLock }: Props) {
                   style={{ width: `${100 - obsPct}%` }}
                 />
               </div>
-              <div className="flex justify-between mt-1">
-                <span className="text-[9px] text-sky-400/70 font-bold uppercase tracking-tight">
+              <div className="flex justify-between mt-1 lg:mt-1.5">
+                <span className="text-[9px] lg:text-[10px] text-sky-400/70 font-bold uppercase tracking-tight">
                   {t('dashboard.arts_block.observe')} {obsPct}%
                 </span>
-                <span className="text-[9px] text-violet-400/70 font-bold uppercase tracking-tight">
+                <span className="text-[9px] lg:text-[10px] text-violet-400/70 font-bold uppercase tracking-tight">
                   {100 - obsPct}% {t('dashboard.arts_block.practice')}
                 </span>
               </div>
@@ -142,9 +142,9 @@ export default function ArtsBlock({ summary, isLocked, onToggleLock }: Props) {
 
           {/* Synergy badge */}
           {hasSynergy && (
-            <div className="mb-3 flex items-center justify-center gap-1.5 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20">
-              <span className="text-[11px]">✦</span>
-              <span className="text-[10px] font-bold text-violet-400">
+            <div className="mb-3 lg:mb-4 flex items-center justify-center gap-1.5 py-1 lg:py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20">
+              <span className="text-[11px] lg:text-xs">✦</span>
+              <span className="text-[10px] lg:text-xs font-bold text-violet-400">
                 {t('dashboard.arts_block.synergy')}
               </span>
             </div>

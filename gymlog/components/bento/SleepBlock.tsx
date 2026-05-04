@@ -96,10 +96,10 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
 
   return (
     <div className="bento-card flex flex-col h-full">
-      <div className="relative flex items-center justify-center mb-2 min-h-[20px]">
+      <div className="relative flex items-center justify-center mb-2 lg:mb-3 min-h-[20px]">
         <div className="flex items-center gap-1.5">
-          <Moon className="w-3.5 h-3.5 text-blue-400" />
-          <span className="text-[11px] font-bold text-muted uppercase tracking-widest">{t('dashboard.sleep_block.title')}</span>
+          <Moon className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-blue-400" />
+          <span className="text-[11px] lg:text-xs font-bold text-muted uppercase tracking-widest">{t('dashboard.sleep_block.title')}</span>
         </div>
         {saving && <span className="absolute right-0 text-[10px] text-muted animate-pulse-dot">{t('dashboard.sleep_block.saving')}</span>}
       </div>
@@ -108,7 +108,7 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
         <svg
           ref={svgRef}
           viewBox="0 0 120 120"
-          className="w-full max-w-[140px] cursor-pointer select-none touch-none"
+          className="w-full max-w-[140px] lg:max-w-[170px] cursor-pointer select-none touch-none"
           onMouseDown={e => { setDragging(true); handleInteract(e.clientX, e.clientY) }}
           onMouseMove={e => dragging && handleInteract(e.clientX, e.clientY)}
           onMouseUp={commit}
@@ -163,13 +163,13 @@ export default function SleepBlock({ value, onChange, saving }: Props) {
         </svg>
       </div>
 
-      <div className="flex justify-between mt-1 gap-1">
+      <div className="flex justify-between mt-1 lg:mt-2 gap-1">
         {[5, 6, 7, 8, 9].map(h => (
           <button
             key={h}
             onClick={() => { setLocalVal(h); onChange(h) }}
             className={clsx(
-              'flex-1 text-[11px] font-mono py-1 rounded-lg transition-all duration-200',
+              'flex-1 text-[11px] lg:text-xs font-mono py-1 lg:py-1.5 rounded-lg transition-all duration-200',
               display === h 
                 ? 'bg-brand-500 text-brand-foreground font-bold shadow-sm' 
                 : 'bg-surface-2 text-muted hover:text-main hover:bg-surface-3'

@@ -348,26 +348,26 @@ export default function ScoreBlock({
     <>
       <div 
         onClick={() => setShowDetail(true)}
-        className={clsx(card.bento, bgColor, glow, 'relative flex flex-col h-full p-4 transition-all cursor-pointer group touch-manipulation')}
+        className={clsx(card.bento, bgColor, glow, 'relative flex flex-col h-full transition-all cursor-pointer group touch-manipulation')}
       >
-        <div className="relative flex items-center justify-between mb-2 min-h-[20px]">
+        <div className="relative flex items-center justify-between mb-2 lg:mb-3 min-h-[20px]">
           <div className="flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-[11px] font-bold text-muted uppercase tracking-widest group-hover:text-main transition-colors">
+            <Flame className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-amber-400" />
+            <span className="text-[11px] lg:text-xs font-bold text-muted uppercase tracking-widest group-hover:text-main transition-colors">
               {t('dashboard.vitality.title')}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-medium text-muted/60">
+            <span className="text-[10px] lg:text-xs font-medium text-muted/60">
               {filled}/{total}
             </span>
-            <ChevronRight className="w-3.5 h-3.5 text-muted/40 group-hover:text-main transition-colors" />
+            <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-muted/40 group-hover:text-main transition-colors" />
           </div>
         </div>
 
-        <div className="flex items-center justify-center flex-1 min-h-[80px]">
+        <div className="flex items-center justify-center flex-1 min-h-[80px] lg:min-h-[120px]">
           <div className="relative">
-            <svg viewBox="0 0 64 64" className="w-20 h-20">
+            <svg viewBox="0 0 64 64" className="w-20 h-20 lg:w-28 lg:h-28">
               <circle
                 cx="32"
                 cy="32"
@@ -394,12 +394,12 @@ export default function ScoreBlock({
 
             <div className="absolute inset-0 flex items-center justify-center flex-col">
               <span
-                className="text-2xl font-bold font-mono leading-none"
+                className="text-2xl lg:text-3xl font-bold font-mono leading-none"
                 style={{ color }}
               >
                 {score}
               </span>
-              <span className="text-[10px] text-muted font-bold tracking-tighter">/100</span>
+              <span className="text-[10px] lg:text-xs text-muted font-bold tracking-tighter">/100</span>
             </div>
           </div>
         </div>
@@ -407,7 +407,7 @@ export default function ScoreBlock({
         {historicalScores && historicalScores.length >= 2 ? (
           <ScoreSparkline scores={historicalScores} />
         ) : (
-          <div className={clsx('text-[10px] text-center mt-2 font-medium min-h-[28px]', lowConfidence ? 'text-yellow-300' : 'text-muted')}>
+          <div className={clsx('text-[10px] lg:text-xs text-center mt-2 lg:mt-3 font-medium min-h-[28px]', lowConfidence ? 'text-yellow-300' : 'text-muted')}>
             {t(`dashboard.vitality.hints.${result.hint}`)}
           </div>
         )}

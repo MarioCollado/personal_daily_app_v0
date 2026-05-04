@@ -299,16 +299,16 @@ export default function DashboardPage() {
 
       <main className="w-full max-w-lg sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-4">
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 auto-rows-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 xl:gap-5 auto-rows-auto">
 
-          <div className="col-span-1 min-h-[130px]">
+          <div className="col-span-1 min-h-[130px] lg:min-h-[160px]">
             <ClockWeatherBlock
               cachedTemp={metrics?.weather_temp}
               cachedCondition={metrics?.weather_condition}
             />
           </div>
 
-          <div className="col-span-1 row-span-2 min-h-[280px]">
+          <div className="col-span-1 row-span-2 min-h-[280px] lg:min-h-[360px]">
             <SleepBlock
               value={metrics?.sleep_hours ?? null}
               onChange={handleSleepChange}
@@ -316,7 +316,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="col-span-1 min-h-[140px]">
+          <div className="col-span-1 min-h-[140px] lg:min-h-[160px]">
             <ScoreBlock
               metrics={metrics}
               hasWorkout={!!workout}
@@ -329,7 +329,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="col-span-2 md:col-span-3 xl:col-span-1 min-h-[160px]">
+          <div className="col-span-2 md:col-span-3 lg:col-span-1 xl:col-span-1 min-h-[160px] lg:min-h-[200px]">
             <StateBlock
               energy={metrics?.energy ?? null}
               stress={metrics?.stress ?? null}
@@ -340,7 +340,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="col-span-1 min-h-[220px]">
+          <div className="col-span-1 min-h-[220px] lg:min-h-[280px]">
             <ArtsBlock
               summary={artsSummary}
               isLocked={artsSummary?.dailyState?.arts_locked ?? false}
@@ -348,7 +348,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="col-span-1 min-h-[220px]">
+          <div className="col-span-1 min-h-[220px] lg:min-h-[280px]">
             <WorkoutBlock
               workout={workout}
               exercises={exercises}
