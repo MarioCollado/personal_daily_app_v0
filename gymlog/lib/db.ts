@@ -1,5 +1,5 @@
 import { createClient } from './supabase-client'
-import type { Workout, Exercise, Set, UserProfile, WorkoutWithExercises, WorkoutTemplate, TemplateExercise } from '../types'
+import type { Workout, Exercise, Set, UserProfile, WorkoutWithExercises, WorkoutTemplate, TemplateExercise, ExerciseType } from '../types'
 
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
@@ -153,7 +153,12 @@ export async function duplicateWorkout(sourceWorkoutId: string, userId: string, 
   for (const ex of (exercises || [])) {
     const { data: newEx } = await supabase
       .from('exercises')
-      .insert({ workout_id: newWorkout.id, name: ex.name, muscle_group: ex.muscle_group })
+      .insert({ 
+        workout_id: newWorkout.id, 
+        name: ex.name, 
+        muscle_group: ex.muscle_group,
+        type: ex.type || 'strength'
+      })
       .select().single()
     if (newEx && ex.sets?.length) {
       await supabase.from('sets').insert(
@@ -185,14 +190,23 @@ export async function getExercisesForWorkout(workoutId: string): Promise<Exercis
   }))
 }
 
-export async function addExercise(workoutId: string, name: string, muscleGroup?: string): Promise<Exercise> {
+export async function addExercise(workoutId: string, name: string, muscleGroup?: string, type?: ExerciseType): Promise<Exercise> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('exercises')
-    .insert({ workout_id: workoutId, name, muscle_group: muscleGroup || null })
+    .insert({ 
+      workout_id: workoutId, 
+      name: name, 
+      muscle_group: muscleGroup || null, 
+      type: type || 'strength' 
+    })
     .select()
     .single()
-  if (error) throw error
+  
+  if (error) {
+    console.error('Error adding exercise:', error)
+    throw error
+  }
   return data
 }
 

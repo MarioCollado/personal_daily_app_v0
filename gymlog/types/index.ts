@@ -17,11 +17,14 @@ export interface UserProfile {
   updated_at: string
 }
 
+export type ExerciseType = 'strength' | 'time' | 'cardio'
+
 export interface Exercise {
   id: string
   workout_id: string
   name: string
   muscle_group: string | null
+  type?: ExerciseType
   created_at: string
   sets?: Set[]
 }

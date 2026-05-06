@@ -174,6 +174,17 @@
       "rir_placeholder": "RIR",
       "saving": "Guardando..."
     },
+    "timer": {
+      "start": "START",
+      "stop": "STOP",
+      "recording": "Grabando serie...",
+      "ready": "Listo para empezar",
+      "best": "Mejor:",
+      "session_sets": "Series de la sesión",
+      "total_count": "{count} total",
+      "no_sets": "Sin series registradas. ¡Inicia el cronómetro!",
+      "reset": "Reiniciar"
+    },
     "modal": {
       "title": "Añadir ejercicio",
       "placeholder": "Nombre del ejercicio",

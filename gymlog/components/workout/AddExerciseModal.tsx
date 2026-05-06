@@ -1,8 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, Dumbbell, Timer, Activity } from 'lucide-react'
 import { addExercise } from '@/lib/db'
-import type { Exercise } from '@/types'
+import type { Exercise, ExerciseType } from '@/types'
 import { clsx } from 'clsx'
 import { useI18n } from '@/contexts/I18nContext'
 
@@ -17,6 +17,7 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
   const { t } = useI18n()
   const [name, setName] = useState('')
   const [muscleGroup, setMuscleGroup] = useState('')
+  const [exerciseType, setExerciseType] = useState<ExerciseType>('strength')
   const [loading, setLoading] = useState(false)
   const [filtered, setFiltered] = useState<string[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
@@ -48,9 +49,12 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
     if (!name.trim()) return
     setLoading(true)
     try {
-      const ex = await addExercise(workoutId, name.trim(), muscleGroup || undefined)
+      const ex = await addExercise(workoutId, name.trim(), muscleGroup || undefined, exerciseType)
       onAdd(ex)
       onClose()
+    } catch (error: any) {
+      console.error('Failed to add exercise:', error)
+      alert('No se pudo añadir el ejercicio. Revisa si has añadido la columna "type" a la tabla "exercises" en Supabase.')
     } finally {
       setLoading(false)
     }
@@ -88,10 +92,46 @@ export default function AddExerciseModal({ workoutId, suggestions, onAdd, onClos
           </div>
 
           <div>
+            <p className="text-xs text-muted mb-2 font-semibold uppercase tracking-wider">Tipo de registro</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setExerciseType('strength')}
+                className={clsx(
+                  'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border',
+                  exerciseType === 'strength'
+                    ? 'bg-brand-500/10 border-brand-500/30 text-brand-400 shadow-sm'
+                    : 'bg-surface-2 border-surface-border text-muted hover:text-main'
+                )}
+              >
+                <Dumbbell className="w-4 h-4" />
+                Fuerza
+              </button>
+              <button
+                type="button"
+                onClick={() => setExerciseType('time')}
+                className={clsx(
+                  'flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border',
+                  exerciseType === 'time'
+                    ? 'bg-sky-500/10 border-sky-500/30 text-sky-400 shadow-sm'
+                    : 'bg-surface-2 border-surface-border text-muted hover:text-main'
+                )}
+              >
+                <Timer className="w-4 h-4" />
+                Tiempo
+              </button>
+            </div>
+          </div>
+
+          <div>
             <p className="text-xs text-muted mb-2 font-semibold uppercase tracking-wider">{t('workout.modal.optional')}</p>
             <div className="flex flex-wrap gap-2">
               {MUSCLE_GROUPS.map(({ key, label }) => (
-                <button key={key} onClick={() => setMuscleGroup(muscleGroup === label ? '' : label)}
+                <button key={key} onClick={() => {
+                  setMuscleGroup(muscleGroup === label ? '' : label)
+                  if (key === 'cardio') setExerciseType('cardio')
+                  else if (exerciseType === 'cardio') setExerciseType('strength')
+                }}
                   className={clsx('px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200', muscleGroup === label ? 'bg-brand-500 text-brand-foreground shadow-sm' : 'bg-surface-3 text-muted hover:bg-surface-4 hover:text-main')}>
                   {label}
                 </button>

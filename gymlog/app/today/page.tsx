@@ -545,7 +545,7 @@ export default function TodayPage() {
           </section>
         ) : (
           <>
-            <section className="sticky top-2 z-20 rounded-[28px] border border-surface-border bg-surface-1/95 shadow-sm backdrop-blur-sm">
+            <section className="rounded-[28px] border border-surface-border bg-surface-1 shadow-sm mb-4">
               <div className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
@@ -631,7 +631,6 @@ export default function TodayPage() {
                         >
                           Empezar entreno
                         </button>
-                        <p className="text-[11px] text-muted mt-1.5">El tiempo empezara a contar desde este momento.</p>
                       </>
                     )}
                   </div>
