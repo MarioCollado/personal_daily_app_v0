@@ -1,24 +1,34 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
+
+const withPWA = require("next-pwa")({
+  dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+
+  // Desactiva PWA en desarrollo (evita bugs y locks en Windows)
+  disable: process.env.NODE_ENV === "development",
+
+  // Evita conflictos con archivos internos de Next
+  buildExcludes: [/middleware-manifest\.json$/],
+
   runtimeCaching: [
+    // Cache SOLO de assets estáticos (seguro)
     {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff2?)$/,
+      handler: "CacheFirst",
       options: {
-        cacheName: 'gymlog-cache',
-        expiration: { maxEntries: 200, maxAgeSeconds: 24 * 60 * 60 },
-        networkTimeoutSeconds: 10,
+        cacheName: "static-assets",
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 días
+        },
       },
     },
   ],
-})
+});
 
 const nextConfig = {
   reactStrictMode: true,
-}
+};
 
-module.exports = withPWA(nextConfig)
+module.exports = withPWA(nextConfig);

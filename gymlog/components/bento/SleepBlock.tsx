@@ -17,11 +17,11 @@ const TOTAL_DEG = 240
 
 function getSleepColor(h: number | null): string {
   if (h === null) return 'var(--text-muted)'
-  if (h < 5) return '#ef4444' // Red
-  if (h < 6) return '#f97316' // Orange
-  if (h < 7) return '#eab308' // Yellow
-  if (h <= 8.5) return '#22c55e' // Green (7-8.5h)
-  return '#3b82f6' // Blue (>8.5h)
+  if (h < 5) return '#ef4444'
+  if (h < 6) return '#f97316'
+  if (h < 7) return '#eab308'
+  if (h <= 8.5) return '#22c55e'
+  return '#3b82f6'
 }
 
 const CX = 60, CY = 60, R = 46

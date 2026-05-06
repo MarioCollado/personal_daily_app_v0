@@ -21,19 +21,17 @@ export default function WorkoutSummaryModal({ workout, exercises, onConfirm, onC
     
     const [showSaveTemplate, setShowSaveTemplate] = useState(false)
 
-    // Calculate smart default duration
     const [durationMinutes, setDurationMinutes] = useState(() => {
         let elapsed = 0
         if (workout.started_at) {
             elapsed = Math.floor((Date.now() - new Date(workout.started_at).getTime()) / 60000)
         }
-        
-        // Sum up cardio durations if any (stored in seconds)
-        const cardioSeconds = exercises.reduce((a, e) => 
+
+        const cardioSeconds = exercises.reduce((a, e) =>
             a + (e.sets || []).reduce((b, s) => b + (s.duration_seconds || 0), 0), 0)
         const cardioMinutes = Math.floor(cardioSeconds / 60)
-        
-        return Math.max(elapsed, cardioMinutes, 1) // At least 1 minute
+
+        return Math.max(elapsed, cardioMinutes, 1)
     })
 
     return (

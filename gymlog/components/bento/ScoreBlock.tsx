@@ -10,7 +10,6 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 
 import type { DailyMetrics, Exercise, UserProfile, WorkoutWithExercises, TodayArtsSummary } from '@/types'
 
-// Re-implement clamp since we can't easily import it if it's not exported
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max)
 }
@@ -66,7 +65,6 @@ function ExpandedSparkline({ scores, color }: { scores: number[], color: string 
     return days[d.getDay()]
   })
 
-  // We might have less than 7 scores, so slice labels to match length
   const activeLabels = labels.slice(7 - scores.length)
 
   const width = 300
@@ -161,11 +159,9 @@ function ScoreDetailModal({
   ]
 
   if (penVal > 0) {
-    // Sort to find largest
     data.sort((a, b) => b.value - a.value)
     data[0].value = Math.max(0, data[0].value - penVal)
     
-    // Add penalty
     data.push({
       name: 'Penalización',
       value: penVal,
@@ -174,7 +170,6 @@ function ScoreDetailModal({
     })
   }
 
-  // Ensure stable display order for legend
   const legendData = [...data].sort((a, b) => {
     const order = ['Recuperación', 'Esfuerzo', 'Balance', 'Hábitos', 'Penalización']
     return order.indexOf(a.name) - order.indexOf(b.name)

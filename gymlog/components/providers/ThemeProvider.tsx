@@ -15,7 +15,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isSober, setIsSober] = useState(false)
 
   useEffect(() => {
-    // Check initial preference
     const stored = localStorage.getItem('app-theme-mode')
     const forceSober = stored === 'sober'
     setIsSober(forceSober)
@@ -40,7 +39,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
 
     updateTheme()
-    const interval = setInterval(updateTheme, 60000) // Re-check every minute
+    const interval = setInterval(updateTheme, 60000)
 
     return () => clearInterval(interval)
   }, [isSober])

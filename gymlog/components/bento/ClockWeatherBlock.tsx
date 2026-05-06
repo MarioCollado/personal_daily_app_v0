@@ -38,7 +38,6 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
   )
   const [loadingWeather, setLoadingWeather] = useState(false)
 
-  // Clock Update
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(t)
@@ -58,7 +57,6 @@ export default function ClockWeatherBlock({ cachedTemp, cachedCondition }: Props
     )
   }
 
-  // Weather Fetch
   useEffect(() => {
     if (!coords) return
     const { lat, lon } = coords

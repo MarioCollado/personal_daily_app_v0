@@ -18,7 +18,6 @@ export default function SaveTemplateModal({ exercises, onSave, onClose }: Props)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    // Filtrar solo ejercicios de fuerza (sin cardio puro)
     const validExercises = exercises.filter(ex =>
         ex.name && ex.muscle_group?.toLowerCase() !== 'cardio'
             ? true
