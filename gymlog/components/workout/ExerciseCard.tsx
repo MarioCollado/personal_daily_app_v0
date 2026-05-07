@@ -342,7 +342,7 @@ export default function ExerciseCard({ exercise, userId, onDelete, onSetAdded, o
                     </div>
 
                     <button
-                      onClick={handleAddSet}
+                      onClick={() => handleAddSet()}
                       disabled={adding || !durationSeconds}
                       className={clsx(btn.primary, 'w-full flex items-center justify-center gap-2 disabled:opacity-40')}
                     >
